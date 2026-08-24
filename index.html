@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>말랑말랑 타자연습</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Jua&family=Gowun+Dodum&family=Nunito:wght@400;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="bg-decor" aria-hidden="true">
+  <span style="--x:6%; --d:0s; --dur:9s;">🐣</span>
+  <span style="--x:88%; --d:1.5s; --dur:11s;">🌸</span>
+  <span style="--x:20%; --d:3s; --dur:10s;">☁️</span>
+  <span style="--x:70%; --d:2s; --dur:8s;">🍬</span>
+  <span style="--x:45%; --d:4s; --dur:12s;">⭐</span>
+  <span style="--x:60%; --d:0.5s; --dur:9.5s;">🧁</span>
+</div>
+
+<header class="app-header">
+  <h1 id="home-link" role="button" tabindex="0">🐰 말랑말랑 타자연습</h1>
+  <div class="lang-toggle" id="lang-toggle">
+    <button data-lang="ko" class="active" type="button">한글</button>
+    <button data-lang="en" type="button">ENGLISH</button>
+  </div>
+</header>
+
+<nav class="mode-tabs" id="mode-tabs">
+  <button data-mode="position" class="tab active" type="button"><span class="tab-emoji">⌨️</span>자리연습</button>
+  <button data-mode="rowword" class="tab" type="button"><span class="tab-emoji">🔤</span>자리별 단어연습</button>
+  <button data-mode="randomword" class="tab" type="button"><span class="tab-emoji">🍭</span>무작위 단어연습</button>
+  <button data-mode="sentence" class="tab" type="button"><span class="tab-emoji">📝</span>문장연습</button>
+  <button data-mode="passage" class="tab" type="button"><span class="tab-emoji">📖</span>글연습</button>
+  <button data-mode="game" class="tab" type="button"><span class="tab-emoji">🎮</span>타자게임</button>
+</nav>
+
+<main>
+  <section id="home-view" class="home-view">
+    <p class="home-intro">오늘은 뭘 연습해볼까요? 원하는 카드를 눌러 시작하세요 🐣</p>
+    <div class="tile-grid" id="tile-grid">
+      <button class="tile" data-mode="position" type="button">
+        <span class="tile-emoji">⌨️</span>
+        <span class="tile-title">자리연습</span>
+        <span class="tile-desc">손가락 자리를 하나씩 익혀요</span>
+      </button>
+      <button class="tile" data-mode="rowword" type="button">
+        <span class="tile-emoji">🔤</span>
+        <span class="tile-title">자리별 단어연습</span>
+        <span class="tile-desc">배운 자리로 짧은 단어를 쳐요</span>
+      </button>
+      <button class="tile" data-mode="randomword" type="button">
+        <span class="tile-emoji">🍭</span>
+        <span class="tile-title">무작위 단어연습</span>
+        <span class="tile-desc">다양한 단어로 연습해요</span>
+      </button>
+      <button class="tile" data-mode="sentence" type="button">
+        <span class="tile-emoji">📝</span>
+        <span class="tile-title">문장연습</span>
+        <span class="tile-desc">짧은 문장을 완성해요</span>
+      </button>
+      <button class="tile" data-mode="passage" type="button">
+        <span class="tile-emoji">📖</span>
+        <span class="tile-title">글연습</span>
+        <span class="tile-desc">긴 글로 실력을 다져요</span>
+      </button>
+      <button class="tile" data-mode="game" type="button">
+        <span class="tile-emoji">🎮</span>
+        <span class="tile-title">타자게임</span>
+        <span class="tile-desc">폭탄을 격침시켜요!</span>
+      </button>
+    </div>
+  </section>
+
+  <section id="stats-bar">
+    <div class="stat"><span class="label">속도</span><span id="stat-speed" class="value">0</span><span class="unit">타/분</span></div>
+    <div class="stat"><span class="label">정확도</span><span id="stat-accuracy" class="value">100</span><span class="unit">%</span></div>
+    <div class="stat"><span class="label">시간</span><span id="stat-time" class="value">0</span><span class="unit">초</span></div>
+    <button id="restart-btn" type="button">🔄 새로하기</button>
+  </section>
+
+  <div class="stage-select" id="stage-select">
+    <span class="stage-label">자리 단계</span>
+    <button data-stage="0" class="active" type="button">기본자리</button>
+    <button data-stage="1" type="button">윗자리</button>
+    <button data-stage="2" type="button">아랫자리</button>
+  </div>
+
+  <div class="category-select" id="category-select">
+    <span class="stage-label">글 종류</span>
+    <button data-category="essay" class="active" type="button">📰 에세이</button>
+    <button data-category="novel" type="button">📚 소설</button>
+    <button data-category="lyrics" type="button">🎵 노래가사</button>
+    <button data-category="script" type="button">🎬 드라마 대본</button>
+  </div>
+
+  <!-- 자리연습 -->
+  <section id="mode-position" class="mode-panel active">
+    <div class="key-prompt">
+      <div class="prompt-current" id="position-current">ㅁ</div>
+      <div class="prompt-next-wrap">
+        <span class="prompt-next-label">다음</span>
+        <div class="prompt-next" id="position-next">ㄴ</div>
+      </div>
+    </div>
+    <div class="finger-label" id="finger-label">왼손 새끼손가락</div>
+    <div class="finger-guide" id="finger-guide"></div>
+    <div class="virtual-keyboard" id="virtual-keyboard"></div>
+    <div class="position-progress"><div class="bar" id="position-progress-bar"></div></div>
+  </section>
+
+  <!-- 단어/문장/글 공용 -->
+  <section id="mode-typing" class="mode-panel">
+    <div class="typing-display" id="typing-display"></div>
+    <p class="passage-source" id="passage-source"></p>
+    <textarea id="typing-input" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="여기를 클릭하고 입력을 시작하세요"></textarea>
+  </section>
+
+  <!-- 타자게임: 폭탄 격침 게임 -->
+  <section id="mode-game" class="mode-panel">
+    <div class="difficulty-select" id="difficulty-select">
+      <span class="stage-label">난이도</span>
+      <button data-difficulty="easy" type="button">쉬움</button>
+      <button data-difficulty="normal" class="active" type="button">보통</button>
+      <button data-difficulty="hard" type="button">어려움</button>
+    </div>
+    <div class="game-hud">
+      <div class="hud-item">❤️ <span id="game-lives">3</span></div>
+      <div class="hud-item">⭐ <span id="game-score">0</span></div>
+      <div class="hud-item">🚀 Lv.<span id="game-level">1</span> / 5</div>
+    </div>
+    <div class="game-field" id="game-field">
+      <div class="game-sea">
+        <div class="wave-layer"></div>
+        <div class="game-boat" id="game-boat">⛵</div>
+      </div>
+      <div class="game-start-overlay" id="game-start-overlay">
+        <p>하늘에서 폭탄이 떨어져요! 글자를 입력하고 <strong>Enter</strong>를 눌러 격침하세요 🌊</p>
+        <button id="game-start-btn" type="button">🎮 게임 시작</button>
+      </div>
+    </div>
+    <input id="game-input" type="text" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="입력 후 Enter로 폭탄을 격침하세요" disabled>
+  </section>
+
+  <div class="result-modal" id="result-modal">
+    <div class="result-card">
+      <h2>🎉 완료했어요!</h2>
+      <div class="result-stats">
+        <div><span id="result-speed">0</span><small>타/분</small></div>
+        <div><span id="result-accuracy">0</span><small>정확도 %</small></div>
+        <div><span id="result-time">0</span><small>초</small></div>
+      </div>
+      <button id="result-restart" type="button">한번 더! 🐾</button>
+    </div>
+  </div>
+
+  <div class="result-modal" id="game-over-modal">
+    <div class="result-card">
+      <h2>💥 게임 종료!</h2>
+      <div class="result-stats">
+        <div><span id="game-final-score">0</span><small>점수</small></div>
+        <div><span id="game-final-words">0</span><small>처치한 단어</small></div>
+        <div><span id="game-final-level">1</span><small>도달 레벨</small></div>
+      </div>
+      <button id="game-restart-btn" type="button">한번 더! 🐾</button>
+    </div>
+  </div>
+</main>
+
+<footer>
+  <p>토닥토닥 오늘도 즐겁게 타자연습 💗</p>
+</footer>
+
+<script src="script.js"></script>
+</body>
+</html>
