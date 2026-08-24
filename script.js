@@ -357,8 +357,10 @@ const el = {
   positionProgressBar: document.getElementById('position-progress-bar'),
   typingDisplay: document.getElementById('typing-display'),
   passageSource: document.getElementById('passage-source'),
+  typingHint: document.getElementById('typing-hint'),
   typingInput: document.getElementById('typing-input'),
   typingKeyboard: document.getElementById('typing-keyboard'),
+  soundToggleBtn: document.getElementById('sound-toggle-btn'),
   resultModal: document.getElementById('result-modal'),
   resultSpeed: document.getElementById('result-speed'),
   resultAccuracy: document.getElementById('result-accuracy'),
@@ -379,6 +381,110 @@ const el = {
   gameFinalLevel: document.getElementById('game-final-level'),
   gameRestartBtn: document.getElementById('game-restart-btn'),
 };
+
+// ===================== 사운드 =====================
+// Web Audio API로 직접 합성한 효과음 (iOS/Safari에서도 별도 파일 없이 재생 가능)
+
+class SoundEngine {
+  constructor() {
+    this.ctx = null;
+    this.muted = false;
+  }
+  init() {
+    if (!this.ctx) {
+      const AudioCtx = window.AudioContext || window.webkitAudioContext;
+      if (AudioCtx) this.ctx = new AudioCtx();
+    }
+    if (this.ctx && this.ctx.state === 'suspended') this.ctx.resume();
+  }
+  playClick() {
+    if (this.muted) return;
+    this.init();
+    if (!this.ctx) return;
+    const now = this.ctx.currentTime;
+    const osc = this.ctx.createOscillator();
+    const gain = this.ctx.createGain();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(450, now);
+    osc.frequency.exponentialRampToValueAtTime(150, now + 0.03);
+    gain.gain.setValueAtTime(0.12, now);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.03);
+    osc.connect(gain);
+    gain.connect(this.ctx.destination);
+    osc.start(now);
+    osc.stop(now + 0.03);
+  }
+  playCorrect() {
+    if (this.muted) return;
+    this.init();
+    if (!this.ctx) return;
+    const now = this.ctx.currentTime;
+    const osc = this.ctx.createOscillator();
+    const gain = this.ctx.createGain();
+    osc.type = 'triangle';
+    osc.frequency.setValueAtTime(523.25, now);
+    osc.frequency.setValueAtTime(659.25, now + 0.05);
+    gain.gain.setValueAtTime(0.18, now);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.18);
+    osc.connect(gain);
+    gain.connect(this.ctx.destination);
+    osc.start(now);
+    osc.stop(now + 0.18);
+  }
+  playWrong() {
+    if (this.muted) return;
+    this.init();
+    if (!this.ctx) return;
+    const now = this.ctx.currentTime;
+    const osc = this.ctx.createOscillator();
+    const gain = this.ctx.createGain();
+    osc.type = 'sawtooth';
+    osc.frequency.setValueAtTime(180, now);
+    osc.frequency.linearRampToValueAtTime(120, now + 0.14);
+    gain.gain.setValueAtTime(0.18, now);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.14);
+    osc.connect(gain);
+    gain.connect(this.ctx.destination);
+    osc.start(now);
+    osc.stop(now + 0.14);
+  }
+  playFanfare() {
+    if (this.muted) return;
+    this.init();
+    if (!this.ctx) return;
+    const notes = [523.25, 659.25, 783.99, 1046.5];
+    notes.forEach((freq, i) => {
+      const now = this.ctx.currentTime + i * 0.08;
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(freq, now);
+      gain.gain.setValueAtTime(0.22, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.25);
+      osc.connect(gain);
+      gain.connect(this.ctx.destination);
+      osc.start(now);
+      osc.stop(now + 0.25);
+    });
+  }
+}
+const soundEngine = new SoundEngine();
+
+// iOS Safari는 사용자 제스처 안에서 한 번은 AudioContext를 직접 생성/재개해야
+// 이후 소리가 정상 재생된다 (최초 터치/클릭 1회로 잠금 해제)
+const unlockAudio = () => {
+  soundEngine.init();
+  document.removeEventListener('touchstart', unlockAudio);
+  document.removeEventListener('click', unlockAudio);
+};
+document.addEventListener('touchstart', unlockAudio, { once: true });
+document.addEventListener('click', unlockAudio, { once: true });
+
+function toggleSound() {
+  soundEngine.muted = !soundEngine.muted;
+  el.soundToggleBtn.textContent = soundEngine.muted ? '🔇 소리 끔' : '🔊 소리 켬';
+  el.soundToggleBtn.classList.toggle('active', !soundEngine.muted);
+}
 
 // ===================== 유틸 =====================
 
@@ -450,6 +556,7 @@ function showResult() {
   el.resultAccuracy.textContent = Math.round(accuracy);
   el.resultTime.textContent = Math.round(elapsed);
   el.resultModal.classList.add('show');
+  soundEngine.playFanfare();
 }
 
 function hideResult() {
@@ -614,6 +721,7 @@ function highlightFinger(fingerCode) {
 }
 
 function flashKeyInRegistry(registry, code, ok) {
+  ok ? soundEngine.playCorrect() : soundEngine.playWrong();
   const keyEl = registry[code];
   if (!keyEl) return;
   const cls = ok ? 'correct-flash' : 'wrong-flash';
@@ -782,8 +890,34 @@ function startTypingDrill() {
   updateKeyboardLang();
   renderTypingDisplay('');
   updateTypingKeyboardHighlight();
+  updateTypingHint('');
   el.typingInput.disabled = false;
   el.typingInput.focus();
+}
+
+// 입력 상태에 따라 안내 문구를 바꾼다: 오타가 나면 빨갛게, 다 쓰면 Enter를 안내한다
+function updateTypingHint(value) {
+  const target = state.targetText;
+  el.typingHint.classList.remove('bad', 'good');
+  if (!target) {
+    el.typingHint.textContent = '';
+    return;
+  }
+  if (value.length > 0 && value[value.length - 1] !== target[value.length - 1]) {
+    el.typingHint.textContent = '❌ 오타예요! 다시 확인해보세요';
+    el.typingHint.classList.add('bad');
+    return;
+  }
+  if (value.length >= target.length) {
+    el.typingHint.textContent = '✅ 다 썼어요! Enter를 눌러 결과를 확인하세요';
+    el.typingHint.classList.add('good');
+    return;
+  }
+  if (value.length === 0) {
+    el.typingHint.textContent = '⌨️ 키보드로 입력을 시작해보세요!';
+    return;
+  }
+  el.typingHint.textContent = '👍 잘하고 있어요! 이대로 계속 쳐보세요';
 }
 
 function renderTypingDisplay(typed) {
@@ -840,6 +974,7 @@ function handleTypingInput() {
   renderTypingDisplay(value);
   typingComposedSoFar = '';
   updateTypingKeyboardHighlight();
+  updateTypingHint(value);
 
   const { correct, incorrect } = evaluateTyped(value);
   state.correctCount = correct;
@@ -954,6 +1089,7 @@ function scheduleNextSpawn() {
 }
 
 function popWord(index) {
+  soundEngine.playCorrect();
   const w = state.game.words[index];
   w.el.innerHTML = '💥';
   w.el.classList.add('pop');
@@ -966,6 +1102,7 @@ function popWord(index) {
 }
 
 function missWord(index) {
+  soundEngine.playWrong();
   const w = state.game.words[index];
   w.el.innerHTML = '💦';
   w.el.classList.add('miss');
@@ -1063,6 +1200,7 @@ function handleGameKeydown(e) {
     popWord(idx);
     if (bonusType) triggerBonusEffect(bonusType);
   } else {
+    soundEngine.playWrong();
     el.gameInput.classList.remove('shake');
     void el.gameInput.offsetWidth; // 리플레이를 위한 강제 리플로우
     el.gameInput.classList.add('shake');
@@ -1165,7 +1303,8 @@ el.typingInput.addEventListener('keydown', handleTypingKeydown);
 // 물리 키보드로 입력할 때, 눌린 키에 해당하는 가상 키보드 키를 정오 색으로 반짝여준다
 el.typingInput.addEventListener('keydown', e => {
   if (state.mode === 'position' || state.finished) return;
-  if (['Enter', 'Backspace', 'Shift', 'Control', 'Alt', 'Meta', 'Tab'].includes(e.key)) return;
+  if (e.key === 'Backspace') { soundEngine.playClick(); return; }
+  if (['Enter', 'Shift', 'Control', 'Alt', 'Meta', 'Tab'].includes(e.key)) return;
 
   const expectedCode = currentExpectedKeyCode();
   let pressedCode = null;
@@ -1191,6 +1330,8 @@ document.addEventListener('keydown', e => {
     el.gameRestartBtn.click();
   }
 });
+
+el.soundToggleBtn.addEventListener('click', toggleSound);
 
 el.gameStartBtn.addEventListener('click', startGame);
 el.gameRestartBtn.addEventListener('click', () => {

@@ -23,7 +23,7 @@ html, body {
   min-height: 100%;
   background: linear-gradient(160deg, #fff6fb 0%, #f2ecff 45%, #eaf7ff 100%);
   color: var(--text);
-  font-family: 'Gowun Dodum', 'Nunito', sans-serif;
+  font-family: 'Pretendard', 'Gowun Dodum', 'Nunito', sans-serif;
   overflow-x: hidden;
 }
 
@@ -89,7 +89,7 @@ header, nav, main, footer {
   background: transparent;
   padding: 8px 18px;
   border-radius: 999px;
-  font-family: 'Nunito', 'Gowun Dodum', sans-serif;
+  font-family: 'Pretendard', 'Nunito', 'Gowun Dodum', sans-serif;
   font-weight: 800;
   font-size: 0.95rem;
   color: var(--text-soft);
@@ -98,6 +98,24 @@ header, nav, main, footer {
 }
 .lang-toggle button.active {
   background: linear-gradient(135deg, var(--pink-dark), var(--lavender-dark));
+  color: #fff;
+}
+
+.tool-btn {
+  border: none;
+  background: #fff;
+  padding: 10px 16px;
+  border-radius: 999px;
+  font-family: 'Pretendard', 'Gowun Dodum', sans-serif;
+  font-weight: 800;
+  font-size: 0.9rem;
+  color: var(--text-soft);
+  cursor: pointer;
+  box-shadow: var(--shadow);
+  transition: all 0.2s;
+}
+.tool-btn.active {
+  background: linear-gradient(135deg, var(--mint-dark), var(--sky-dark));
   color: #fff;
 }
 
@@ -114,7 +132,7 @@ header, nav, main, footer {
   color: var(--text);
   padding: 10px 18px;
   border-radius: 18px;
-  font-family: 'Gowun Dodum', sans-serif;
+  font-family: 'Pretendard', 'Gowun Dodum', sans-serif;
   font-size: 1rem;
   font-weight: 700;
   cursor: pointer;
@@ -157,8 +175,11 @@ body.home-active .home-view { display: block; }
 
 .tile-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  grid-template-columns: repeat(3, 1fr);
   gap: 18px;
+}
+@media (max-width: 700px) {
+  .tile-grid { grid-template-columns: repeat(2, 1fr); }
 }
 
 .tile {
@@ -174,7 +195,7 @@ body.home-active .home-view { display: block; }
   cursor: pointer;
   box-shadow: var(--shadow);
   transition: transform 0.15s, box-shadow 0.15s;
-  font-family: 'Gowun Dodum', sans-serif;
+  font-family: 'Pretendard', 'Gowun Dodum', sans-serif;
 }
 .tile:hover { transform: translateY(-4px); }
 .tile:active { transform: translateY(2px); box-shadow: 0 2px 0 rgba(179, 157, 219, 0.35); }
@@ -221,7 +242,7 @@ body.home-active .home-view { display: block; }
   color: var(--text-soft);
 }
 .stat .value {
-  font-family: 'Nunito', sans-serif;
+  font-family: 'Pretendard', 'Nunito', sans-serif;
   font-weight: 800;
   font-size: 1.3rem;
   color: var(--pink-dark);
@@ -239,7 +260,7 @@ body.home-active .home-view { display: block; }
   padding: 10px 16px;
   border-radius: 14px;
   cursor: pointer;
-  font-family: 'Gowun Dodum', sans-serif;
+  font-family: 'Pretendard', 'Gowun Dodum', sans-serif;
   box-shadow: 0 4px 0 #9adfbc;
   transition: transform 0.1s;
 }
@@ -270,7 +291,7 @@ body.home-active .home-view { display: block; }
   border-radius: 12px;
   font-weight: 700;
   cursor: pointer;
-  font-family: 'Gowun Dodum', sans-serif;
+  font-family: 'Pretendard', 'Gowun Dodum', sans-serif;
 }
 .stage-select button.active {
   background: var(--sky-dark);
@@ -297,7 +318,7 @@ body.home-active .home-view { display: block; }
   border-radius: 12px;
   font-weight: 700;
   cursor: pointer;
-  font-family: 'Gowun Dodum', sans-serif;
+  font-family: 'Pretendard', 'Gowun Dodum', sans-serif;
 }
 .category-select button.active {
   background: var(--mint-dark);
@@ -327,7 +348,7 @@ body.home-active .home-view { display: block; }
   font-weight: 800;
   color: var(--pink-dark);
   box-shadow: var(--shadow);
-  font-family: 'Nunito', 'Gowun Dodum', sans-serif;
+  font-family: 'Pretendard', 'Nunito', 'Gowun Dodum', sans-serif;
 }
 .prompt-next-wrap { text-align: center; }
 .prompt-next-label {
@@ -349,14 +370,14 @@ body.home-active .home-view { display: block; }
   color: var(--lavender-dark);
   box-shadow: var(--shadow);
   opacity: 0.85;
-  font-family: 'Nunito', 'Gowun Dodum', sans-serif;
+  font-family: 'Pretendard', 'Nunito', 'Gowun Dodum', sans-serif;
 }
 
 .finger-label {
   text-align: center;
   font-weight: 800;
   color: var(--lavender-dark);
-  font-family: 'Gowun Dodum', sans-serif;
+  font-family: 'Pretendard', 'Gowun Dodum', sans-serif;
   margin-bottom: 8px;
 }
 
@@ -412,7 +433,7 @@ body.home-active .home-view { display: block; }
   color: var(--text);
   box-shadow: 0 4px 0 #cabbe9, 0 6px 10px rgba(91, 75, 107, 0.12);
   transition: all 0.08s ease;
-  font-family: 'Nunito', 'Gowun Dodum', sans-serif;
+  font-family: 'Pretendard', 'Nunito', 'Gowun Dodum', sans-serif;
   border: 1px solid rgba(255, 255, 255, 0.7);
 }
 .key.dim { opacity: 0.3; }
@@ -465,9 +486,10 @@ body.home-active .home-view { display: block; }
   border-radius: 22px;
   padding: 26px 28px;
   box-shadow: var(--shadow);
-  font-size: 1.5rem;
-  line-height: 2.1;
-  max-height: 260px;
+  font-size: clamp(1.6rem, 3.2vw, 2.3rem);
+  font-weight: 800;
+  line-height: 1.9;
+  max-height: 320px;
   overflow-y: auto;
   overflow-x: hidden;
   word-break: keep-all;
@@ -495,6 +517,21 @@ body.home-active .home-view { display: block; }
   min-height: 1em;
 }
 
+.typing-hint {
+  text-align: center;
+  font-weight: 700;
+  color: var(--text-soft);
+  margin: -4px 0 10px;
+  min-height: 1.3em;
+  transition: color 0.15s;
+}
+.typing-hint.bad {
+  color: var(--incorrect);
+}
+.typing-hint.good {
+  color: var(--mint-dark);
+}
+
 #typing-input {
   width: 100%;
   min-height: 74px;
@@ -503,7 +540,7 @@ body.home-active .home-view { display: block; }
   border-radius: 18px;
   padding: 16px 18px;
   font-size: 1.2rem;
-  font-family: 'Gowun Dodum', 'Nunito', sans-serif;
+  font-family: 'Pretendard', 'Gowun Dodum', 'Nunito', sans-serif;
   outline: none;
   background: #fff;
   color: var(--text);
@@ -533,7 +570,7 @@ body.home-active .home-view { display: block; }
   border-radius: 12px;
   font-weight: 700;
   cursor: pointer;
-  font-family: 'Gowun Dodum', sans-serif;
+  font-family: 'Pretendard', 'Gowun Dodum', sans-serif;
 }
 .difficulty-select button.active { background: #f4a15c; color: #fff; }
 
@@ -546,7 +583,7 @@ body.home-active .home-view { display: block; }
   padding: 10px 16px;
   box-shadow: var(--shadow);
   margin-bottom: 14px;
-  font-family: 'Nunito', sans-serif;
+  font-family: 'Pretendard', 'Nunito', sans-serif;
   font-weight: 800;
   color: var(--pink-dark);
 }
@@ -631,7 +668,7 @@ body.home-active .home-view { display: block; }
   border-radius: 16px;
   cursor: pointer;
   font-size: 1rem;
-  font-family: 'Gowun Dodum', sans-serif;
+  font-family: 'Pretendard', 'Gowun Dodum', sans-serif;
   box-shadow: 0 4px 0 #a877b8;
 }
 #game-start-btn:active, #game-restart-btn:active { transform: translateY(3px); box-shadow: none; }
@@ -705,7 +742,7 @@ body.home-active .home-view { display: block; }
   border-radius: 18px;
   padding: 14px 18px;
   font-size: 1.2rem;
-  font-family: 'Gowun Dodum', 'Nunito', sans-serif;
+  font-family: 'Pretendard', 'Gowun Dodum', 'Nunito', sans-serif;
   outline: none;
   background: #fff;
   color: var(--text);
@@ -752,7 +789,7 @@ body.home-active .home-view { display: block; }
 }
 .result-stats div { display: flex; flex-direction: column; }
 .result-stats span {
-  font-family: 'Nunito', sans-serif;
+  font-family: 'Pretendard', 'Nunito', sans-serif;
   font-weight: 800;
   font-size: 1.6rem;
   color: var(--lavender-dark);
@@ -767,7 +804,7 @@ body.home-active .home-view { display: block; }
   border-radius: 16px;
   cursor: pointer;
   font-size: 1rem;
-  font-family: 'Gowun Dodum', sans-serif;
+  font-family: 'Pretendard', 'Gowun Dodum', sans-serif;
   box-shadow: 0 4px 0 #a877b8;
 }
 #result-restart:active { transform: translateY(3px); box-shadow: none; }
@@ -780,6 +817,7 @@ footer {
 }
 
 @media (max-width: 480px) {
+  .tile-grid { grid-template-columns: 1fr; }
   .app-header h1 { font-size: 1.5rem; }
   .key { width: 36px; height: 36px; font-size: 0.85rem; border-radius: 9px; }
   .kb-row-home { margin-left: 10px; }

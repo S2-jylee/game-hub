@@ -7,6 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Jua&family=Gowun+Dodum&family=Nunito:wght@400;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css">
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -26,6 +27,7 @@
     <button data-lang="ko" class="active" type="button">한글</button>
     <button data-lang="en" type="button">ENGLISH</button>
   </div>
+  <button class="tool-btn active" id="sound-toggle-btn" type="button">🔊 소리 켬</button>
 </header>
 
 <nav class="mode-tabs" id="mode-tabs">
@@ -115,7 +117,8 @@
   <section id="mode-typing" class="mode-panel">
     <div class="typing-display" id="typing-display"></div>
     <p class="passage-source" id="passage-source"></p>
-    <textarea id="typing-input" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="여기를 클릭하고 입력을 시작하세요"></textarea>
+    <p class="typing-hint" id="typing-hint">⌨️ 키보드로 입력을 시작해보세요!</p>
+    <textarea id="typing-input" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="입력 시작..."></textarea>
     <div class="virtual-keyboard" id="typing-keyboard"></div>
   </section>
 
