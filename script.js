@@ -287,8 +287,9 @@ const DIFFICULTIES = {
   hard: { label: '어려움', lives: 2, baseSpeed: 38, speedPerLevel: 8, baseSpawnDelay: 1900, spawnDelayPerLevel: 170, minSpawnDelay: 900 },
 };
 const GAME_LEVEL_MAX = 5;
-const GAME_WORDS_PER_LEVEL = 5;
-const GAME_SEA_LINE_RATIO = 0.56; // .game-sea 높이(44%)와 맞춘 "수면" 위치
+const GAME_WORDS_PER_LEVEL = 12;
+const BONUS_CHANCE = 0.18; // 내려오는 단어 중 특수 단어가 나올 확률
+const BONUS_TYPES = ['slow', 'freeze', 'clear'];
 
 // ===================== 상태 =====================
 
@@ -325,6 +326,8 @@ const state = {
     lastFrame: 0,
     rafId: null,
     spawnTimeoutId: null,
+    speedMultiplier: 1,
+    speedEffectTimeoutId: null,
   },
 };
 
@@ -782,8 +785,11 @@ function updateGameHud() {
 function stopGameLoops() {
   if (state.game.rafId) cancelAnimationFrame(state.game.rafId);
   if (state.game.spawnTimeoutId) clearTimeout(state.game.spawnTimeoutId);
+  if (state.game.speedEffectTimeoutId) clearTimeout(state.game.speedEffectTimeoutId);
   state.game.rafId = null;
   state.game.spawnTimeoutId = null;
+  state.game.speedEffectTimeoutId = null;
+  state.game.speedMultiplier = 1;
   state.game.active = false;
 }
 
@@ -828,9 +834,12 @@ function spawnWord() {
   const list = available.length ? available : pool;
   const text = list[Math.floor(Math.random() * list.length)];
 
+  const isBonus = Math.random() < BONUS_CHANCE;
+  const bonusType = isBonus ? BONUS_TYPES[Math.floor(Math.random() * BONUS_TYPES.length)] : null;
+
   const wordEl = document.createElement('div');
-  wordEl.className = `falling-word c${Math.floor(Math.random() * 5)}`;
-  wordEl.innerHTML = `<span class="bomb-icon">💣</span>${escapeHtml(text)}`;
+  wordEl.className = isBonus ? 'falling-word bonus' : 'falling-word';
+  wordEl.innerHTML = `<span class="bomb-icon">${isBonus ? '🎁' : '💣'}</span>${escapeHtml(text)}`;
   wordEl.style.top = '-46px';
   el.gameField.appendChild(wordEl);
 
@@ -842,7 +851,7 @@ function spawnWord() {
 
   const cfg = state.game.config;
   const speed = cfg.baseSpeed + (state.game.level - 1) * cfg.speedPerLevel + Math.random() * 8;
-  state.game.words.push({ id: state.game.nextId++, text, el: wordEl, y: -46, speed });
+  state.game.words.push({ id: state.game.nextId++, text, el: wordEl, y: -46, speed, bonusType });
 }
 
 function scheduleNextSpawn() {
@@ -887,16 +896,57 @@ function gameLoop(timestamp) {
   if (!state.game.lastFrame) state.game.lastFrame = timestamp;
   const dt = (timestamp - state.game.lastFrame) / 1000;
   state.game.lastFrame = timestamp;
-  const seaLine = el.gameField.clientHeight * GAME_SEA_LINE_RATIO;
+
+  // 배 이미지가 세로로 시작하는 첫 지점(윗변)에 닿으면 충돌로 처리한다.
+  const fieldRect = el.gameField.getBoundingClientRect();
+  const boatTop = el.gameBoat.getBoundingClientRect().top - fieldRect.top;
 
   for (let i = state.game.words.length - 1; i >= 0; i--) {
     const w = state.game.words[i];
-    w.y += w.speed * dt;
+    w.y += w.speed * dt * state.game.speedMultiplier;
     w.el.style.top = `${w.y}px`;
-    if (w.y + w.el.offsetHeight >= seaLine) missWord(i);
+    if (w.y + w.el.offsetHeight >= boatTop) missWord(i);
   }
 
   state.game.rafId = requestAnimationFrame(gameLoop);
+}
+
+function applySpeedEffect(multiplier, duration) {
+  state.game.speedMultiplier = multiplier;
+  if (state.game.speedEffectTimeoutId) clearTimeout(state.game.speedEffectTimeoutId);
+  state.game.speedEffectTimeoutId = setTimeout(() => {
+    state.game.speedMultiplier = 1;
+    state.game.speedEffectTimeoutId = null;
+  }, duration);
+}
+
+function clearAllWords() {
+  state.game.words.forEach(w => {
+    w.el.classList.add('pop');
+    setTimeout(() => w.el.remove(), 300);
+  });
+  state.game.words = [];
+}
+
+function showBonusToast(text) {
+  const toast = document.createElement('div');
+  toast.className = 'bonus-toast';
+  toast.textContent = text;
+  el.gameField.appendChild(toast);
+  setTimeout(() => toast.remove(), 1200);
+}
+
+function triggerBonusEffect(type) {
+  if (type === 'slow') {
+    applySpeedEffect(0.35, 2000);
+    showBonusToast('🐢 2초간 느려져요!');
+  } else if (type === 'freeze') {
+    applySpeedEffect(0, 2000);
+    showBonusToast('🧊 2초간 멈춰요!');
+  } else if (type === 'clear') {
+    clearAllWords();
+    showBonusToast('✨ 화면 정리!');
+  }
 }
 
 // 입력 중에는 일치하는 폭탄을 하이라이트만 하고, 실제 격침은 Enter를 눌러야 이루어진다.
@@ -914,9 +964,15 @@ function handleGameKeydown(e) {
   const value = el.gameInput.value.trim();
   if (!value) return;
   const idx = state.game.words.findIndex(w => w.text.toLowerCase() === value.toLowerCase());
+
+  // 정답이든 오답이든 Enter를 누르면 입력칸은 항상 비워서 바로 다시 입력할 수 있게 한다.
+  el.gameInput.value = '';
+  handleGameInput();
+
   if (idx !== -1) {
+    const bonusType = state.game.words[idx].bonusType;
     popWord(idx);
-    el.gameInput.value = '';
+    if (bonusType) triggerBonusEffect(bonusType);
   } else {
     el.gameInput.classList.remove('shake');
     void el.gameInput.offsetWidth; // 리플레이를 위한 강제 리플로우
