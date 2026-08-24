@@ -358,6 +358,7 @@ const el = {
   typingDisplay: document.getElementById('typing-display'),
   passageSource: document.getElementById('passage-source'),
   typingInput: document.getElementById('typing-input'),
+  typingKeyboard: document.getElementById('typing-keyboard'),
   resultModal: document.getElementById('result-modal'),
   resultSpeed: document.getElementById('result-speed'),
   resultAccuracy: document.getElementById('result-accuracy'),
@@ -531,7 +532,8 @@ function allowedKeysForStage(stage) {
 
 // 키보드/손가락 가이드는 처음 한 번만 만들고, 이후에는 클래스/텍스트만 갱신한다.
 // (단계를 바꿀 때마다 DOM을 다시 만들면 위치가 미묘하게 흔들려 보일 수 있어서 고정한다)
-const keyElsByCode = {};
+const keyElsByCode = {};        // 자리연습용 키보드
+const typingKeyElsByCode = {};  // 단어/문장/글연습용 키보드
 const fingerEls = {};
 
 // 실제 키보드처럼 위→아래 순서(qwerty/asdf/zxcv)와 계단형 정렬을 위한 시각적 순서
@@ -541,8 +543,8 @@ const VISUAL_ROWS = [
   { row: KEY_ROWS[2], cls: 'kb-row-bottom' },
 ];
 
-function initKeyboard() {
-  el.virtualKeyboard.innerHTML = '';
+function buildKeyboardInto(container, registry) {
+  container.innerHTML = '';
   VISUAL_ROWS.forEach(({ row, cls }) => {
     const rowEl = document.createElement('div');
     rowEl.className = `kb-row ${cls}`;
@@ -551,10 +553,15 @@ function initKeyboard() {
       keyEl.className = 'key';
       keyEl.dataset.code = k.code;
       rowEl.appendChild(keyEl);
-      keyElsByCode[k.code] = keyEl;
+      registry[k.code] = keyEl;
     });
-    el.virtualKeyboard.appendChild(rowEl);
+    container.appendChild(rowEl);
   });
+}
+
+function initKeyboard() {
+  buildKeyboardInto(el.virtualKeyboard, keyElsByCode);
+  buildKeyboardInto(el.typingKeyboard, typingKeyElsByCode);
 }
 
 function initFingerGuide() {
@@ -575,7 +582,9 @@ function initFingerGuide() {
 
 function updateKeyboardLang() {
   KEYMAP.forEach(k => {
-    keyElsByCode[k.code].textContent = state.lang === 'ko' ? k.ko : k.en;
+    const label = state.lang === 'ko' ? k.ko : k.en;
+    if (keyElsByCode[k.code]) keyElsByCode[k.code].textContent = label;
+    if (typingKeyElsByCode[k.code]) typingKeyElsByCode[k.code].textContent = label;
   });
 }
 
@@ -586,10 +595,14 @@ function updateKeyboardStage() {
   });
 }
 
-function highlightTargetKey(code) {
-  Object.values(keyElsByCode).forEach(k => k.classList.remove('target'));
-  const keyEl = keyElsByCode[code];
+function highlightKeyInRegistry(registry, code) {
+  Object.values(registry).forEach(k => k.classList.remove('target'));
+  const keyEl = registry[code];
   if (keyEl) keyEl.classList.add('target');
+}
+
+function highlightTargetKey(code) {
+  highlightKeyInRegistry(keyElsByCode, code);
 }
 
 function highlightFinger(fingerCode) {
@@ -600,12 +613,16 @@ function highlightFinger(fingerCode) {
   el.fingerLabel.textContent = `${info.hand} ${info.name}`;
 }
 
-function flashKey(code, ok) {
-  const keyEl = keyElsByCode[code];
+function flashKeyInRegistry(registry, code, ok) {
+  const keyEl = registry[code];
   if (!keyEl) return;
   const cls = ok ? 'correct-flash' : 'wrong-flash';
   keyEl.classList.add(cls);
   setTimeout(() => keyEl.classList.remove(cls), 220);
+}
+
+function flashKey(code, ok) {
+  flashKeyInRegistry(keyElsByCode, code, ok);
 }
 
 function generatePositionSequence(len = 25) {
@@ -673,6 +690,63 @@ function handlePositionKeydown(e) {
 
 // ===================== 단어/문장/글 공용 엔진 =====================
 
+// 한글 자모 분해 (단어/문장/글연습용 가상 키보드에 "다음 누를 키"를 표시하기 위함.
+// 실제 정오 채점은 텍스트 값 비교로 그대로 처리하고, 이 분해 로직은 키보드 하이라이트에만 쓰인다)
+const HANGUL_CHO = ['ㄱ','ㄲ','ㄴ','ㄷ','ㄸ','ㄹ','ㅁ','ㅂ','ㅃ','ㅅ','ㅆ','ㅇ','ㅈ','ㅉ','ㅊ','ㅋ','ㅌ','ㅍ','ㅎ'];
+const HANGUL_JUNG = ['ㅏ','ㅐ','ㅑ','ㅒ','ㅓ','ㅔ','ㅕ','ㅖ','ㅗ','ㅘ','ㅙ','ㅚ','ㅛ','ㅜ','ㅝ','ㅞ','ㅟ','ㅠ','ㅡ','ㅢ','ㅣ'];
+const HANGUL_JONG = ['', 'ㄱ','ㄲ','ㄳ','ㄴ','ㄵ','ㄶ','ㄷ','ㄹ','ㄺ','ㄻ','ㄼ','ㄽ','ㄾ','ㄿ','ㅀ','ㅁ','ㅂ','ㅄ','ㅅ','ㅆ','ㅇ','ㅈ','ㅊ','ㅋ','ㅌ','ㅍ','ㅎ'];
+// 이중모음/겹받침은 실제로 두 번의 키 입력으로 만들어지므로 구성 자모로 다시 풀어준다
+const HANGUL_COMPOUND_JUNG = { 'ㅘ':['ㅗ','ㅏ'], 'ㅙ':['ㅗ','ㅐ'], 'ㅚ':['ㅗ','ㅣ'], 'ㅝ':['ㅜ','ㅓ'], 'ㅞ':['ㅜ','ㅔ'], 'ㅟ':['ㅜ','ㅣ'], 'ㅢ':['ㅡ','ㅣ'] };
+const HANGUL_COMPOUND_JONG = { 'ㄳ':['ㄱ','ㅅ'], 'ㄵ':['ㄴ','ㅈ'], 'ㄶ':['ㄴ','ㅎ'], 'ㄺ':['ㄹ','ㄱ'], 'ㄻ':['ㄹ','ㅁ'], 'ㄼ':['ㄹ','ㅂ'], 'ㄽ':['ㄹ','ㅅ'], 'ㄾ':['ㄹ','ㅌ'], 'ㄿ':['ㄹ','ㅍ'], 'ㅀ':['ㄹ','ㅎ'], 'ㅄ':['ㅂ','ㅅ'] };
+// 쌍자음/이중모음 중 Shift+기본 키 한 번으로 입력되는 것들 (물리 키는 기본 자모와 동일)
+const HANGUL_SHIFT_TO_BASE = { 'ㄲ':'ㄱ', 'ㄸ':'ㄷ', 'ㅃ':'ㅂ', 'ㅆ':'ㅅ', 'ㅉ':'ㅈ', 'ㅒ':'ㅐ', 'ㅖ':'ㅔ' };
+
+function decomposeKoreanChar(ch) {
+  if (!ch) return [];
+  const code = ch.charCodeAt(0) - 0xAC00;
+  if (code < 0 || code > 11171) return [ch];
+  const cho = HANGUL_CHO[Math.floor(code / 588)];
+  const jung = HANGUL_JUNG[Math.floor((code % 588) / 28)];
+  const jong = HANGUL_JONG[code % 28];
+  const jamos = [cho, ...(HANGUL_COMPOUND_JUNG[jung] || [jung])];
+  if (jong) jamos.push(...(HANGUL_COMPOUND_JONG[jong] || [jong]));
+  return jamos;
+}
+
+function jamoToKeyCode(jamo) {
+  const base = HANGUL_SHIFT_TO_BASE[jamo] || jamo;
+  const key = KEYMAP.find(k => k.ko === base);
+  return key ? key.code : null;
+}
+
+// 지금 입력 중인 한글 음절에서 이미 조합된 자모 (compositionupdate 이벤트로 갱신)
+let typingComposedSoFar = '';
+
+function currentExpectedKeyCode() {
+  const target = state.targetText;
+  const typed = el.typingInput.value;
+  const idx = typed.length;
+  if (idx >= target.length) return null;
+  const targetChar = target[idx];
+  if (targetChar === '\n') return null;
+
+  if (state.lang === 'en') {
+    const key = KEYMAP.find(k => k.en === targetChar.toLowerCase());
+    return key ? key.code : null;
+  }
+
+  const jamos = decomposeKoreanChar(targetChar);
+  const composedJamos = typingComposedSoFar ? decomposeKoreanChar(typingComposedSoFar) : [];
+  if (composedJamos.length >= jamos.length) return null;
+  return jamoToKeyCode(jamos[composedJamos.length]);
+}
+
+function updateTypingKeyboardHighlight() {
+  const code = currentExpectedKeyCode();
+  if (code) highlightKeyInRegistry(typingKeyElsByCode, code);
+  else Object.values(typingKeyElsByCode).forEach(k => k.classList.remove('target'));
+}
+
 function buildTypingTarget() {
   if (state.mode === 'rowword') {
     const words = WORD_LISTS.rowword[state.lang][state.stage];
@@ -704,7 +778,10 @@ function startTypingDrill() {
   state.targetText = target.text;
   el.passageSource.textContent = target.source ? `— ${target.source}` : '';
   el.typingInput.value = '';
+  typingComposedSoFar = '';
+  updateKeyboardLang();
   renderTypingDisplay('');
+  updateTypingKeyboardHighlight();
   el.typingInput.disabled = false;
   el.typingInput.focus();
 }
@@ -761,13 +838,25 @@ function handleTypingInput() {
 
   startTimerIfNeeded();
   renderTypingDisplay(value);
+  typingComposedSoFar = '';
+  updateTypingKeyboardHighlight();
 
   const { correct, incorrect } = evaluateTyped(value);
   state.correctCount = correct;
   state.incorrectCount = incorrect;
   tickStats();
+}
 
-  if (value.length >= target.length && target.length > 0) {
+// 다 입력한 뒤 Enter를 눌러야 결과 화면으로 넘어간다 (그전까지는 이어서 수정 가능)
+function handleTypingKeydown(e) {
+  if (e.key !== 'Enter') return;
+  if (state.mode === 'position' || state.finished || state.isComposing) return;
+  const target = state.targetText;
+  if (target.length > 0 && el.typingInput.value.length >= target.length) {
+    e.preventDefault();
+    // 결과창을 여는 이 Enter가 document의 "결과창이 떠 있으면 재시작" 단축키에도
+    // 그대로 버블링되면 같은 키 입력 한 번에 열리자마자 재시작돼버리므로 막는다.
+    e.stopPropagation();
     state.finished = true;
     el.typingInput.disabled = true;
     showResult();
@@ -1062,10 +1151,31 @@ el.resultRestart.addEventListener('click', () => {
 });
 
 el.typingInput.addEventListener('input', handleTypingInput);
-el.typingInput.addEventListener('compositionstart', () => { state.isComposing = true; });
+el.typingInput.addEventListener('compositionstart', () => { state.isComposing = true; typingComposedSoFar = ''; });
+el.typingInput.addEventListener('compositionupdate', e => {
+  typingComposedSoFar = e.data || '';
+  updateTypingKeyboardHighlight();
+});
 el.typingInput.addEventListener('compositionend', () => {
   state.isComposing = false;
   handleTypingInput();
+});
+el.typingInput.addEventListener('keydown', handleTypingKeydown);
+
+// 물리 키보드로 입력할 때, 눌린 키에 해당하는 가상 키보드 키를 정오 색으로 반짝여준다
+el.typingInput.addEventListener('keydown', e => {
+  if (state.mode === 'position' || state.finished) return;
+  if (['Enter', 'Backspace', 'Shift', 'Control', 'Alt', 'Meta', 'Tab'].includes(e.key)) return;
+
+  const expectedCode = currentExpectedKeyCode();
+  let pressedCode = null;
+  if (state.lang === 'en') {
+    const key = KEYMAP.find(k => k.en === e.key.toLowerCase());
+    pressedCode = key ? key.code : null;
+  } else if (KEYMAP.some(k => k.code === e.code)) {
+    pressedCode = e.code;
+  }
+  if (pressedCode) flashKeyInRegistry(typingKeyElsByCode, pressedCode, pressedCode === expectedCode);
 });
 
 document.addEventListener('keydown', handlePositionKeydown);
