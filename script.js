@@ -446,8 +446,10 @@ class SoundEngine {
     if (!this.ctx || !this.typeClickBuffer) return; // 아직 디코딩 중이면 이번 키는 조용히 넘어간다
     const source = this.ctx.createBufferSource();
     source.buffer = this.typeClickBuffer;
+    // 녹음 원본 자체의 레벨이 낮아서, 다른 합성음(확인/오류음)과 비슷하게 들리도록
+    // 게인을 꽤 크게 올린다 (1.0을 넘겨도 Web Audio는 그냥 증폭해서 재생한다)
     const gain = this.ctx.createGain();
-    gain.gain.value = 0.6;
+    gain.gain.value = 2.6;
     source.connect(gain);
     gain.connect(this.ctx.destination);
     const clipLen = Math.min(0.35, this.typeClickBuffer.duration);
