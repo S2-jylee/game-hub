@@ -214,7 +214,6 @@ body.home-active .home-view { display: block; }
 .tile:hover { transform: translateY(-4px); }
 .tile:active { transform: translateY(2px); }
 .tile-emoji {
-  font-size: 3rem;
   width: 86px;
   height: 86px;
   display: flex;
@@ -240,6 +239,14 @@ body.home-active .home-view { display: block; }
 .tile[data-mode="sentence"] { background: var(--pink); }
 .tile[data-mode="passage"] { background: var(--mint); }
 .tile[data-mode="game"] { background: var(--red); }
+
+/* 아이콘은 이모지 대신 테두리 없는 SVG 라인 아이콘을 쓰고, 각 카드의 진한 색으로 맞춘다 */
+.tile[data-mode="position"] .tile-emoji { color: var(--sky-dark); }
+.tile[data-mode="rowword"] .tile-emoji { color: var(--peach-dark); }
+.tile[data-mode="randomword"] .tile-emoji { color: var(--lavender-dark); }
+.tile[data-mode="sentence"] .tile-emoji { color: var(--pink-dark); }
+.tile[data-mode="passage"] .tile-emoji { color: var(--mint-dark); }
+.tile[data-mode="game"] .tile-emoji { color: var(--red-dark); }
 
 #stats-bar.hide { display: none; }
 #stats-bar {
@@ -440,14 +447,14 @@ body.home-active .home-view { display: block; }
 .prompt-next {
   width: 64px;
   height: 64px;
-  background: var(--lavender);
+  background: #e9e9ee;
   border-radius: 18px;
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 1.7rem;
   font-weight: 700;
-  color: #fff;
+  color: var(--text-soft);
   opacity: 0.9;
   font-family: 'Pretendard', 'Nunito', 'Gowun Dodum', sans-serif;
 }
@@ -461,16 +468,20 @@ body.home-active .home-view { display: block; }
   margin-bottom: 10px;
 }
 
-/* 손가락 가이드: 회색 손 모양(왼손/오른손 각 4개 손가락 + 손바닥), 손톱 포함.
+/* 손가락 가이드: 자판 위에 반투명하게 겹쳐지는 손 오버레이.
+   손(.hand)의 left/top은 JS가 홈로우 키 위치를 측정해서 정해준다 (layoutHandOverlay).
    손끝은 폭의 절반(999px는 자동으로 최대치로 잘림)까지 둥글려 뾰족해 보이지 않게 한다 */
 .finger-guide {
-  display: flex;
-  justify-content: center;
-  align-items: flex-end;
-  gap: 50px;
-  margin-bottom: 20px;
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
 }
 .hand {
+  position: absolute;
+  transform: translate(-50%, -20px);
+}
+.hand-shape {
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -478,82 +489,147 @@ body.home-active .home-view { display: block; }
 .fingers {
   display: flex;
   align-items: flex-end;
-  gap: 7px;
+  gap: 8px;
 }
+/* 손가락은 연한 회색이 반투명하게 얹힌 느낌으로, 자판 색이 은은히 비쳐 보이게 한다 */
 .finger {
   position: relative;
-  width: 34px;
-  background: linear-gradient(180deg, #e8e8ee, #c9c9d3);
-  border: 2px solid #fff;
+  width: 42px;
+  background: rgba(130, 128, 142, 0.28);
+  border: 2px solid rgba(255, 255, 255, 0.85);
   border-radius: 999px 999px 12px 12px;
   transition: all 0.15s;
 }
 .finger .nail {
   position: absolute;
-  top: 7px;
+  top: 8px;
   left: 50%;
   transform: translateX(-50%);
-  width: 15px;
-  height: 11px;
+  width: 18px;
+  height: 13px;
   background: rgba(255, 255, 255, 0.95);
   border-radius: 50% 50% 45% 45%;
 }
-.finger.f-pinky { height: 48px; }
-.finger.f-ring { height: 66px; }
-.finger.f-middle { height: 78px; }
-.finger.f-index { height: 68px; }
+.finger.f-pinky { height: 58px; }
+.finger.f-ring { height: 80px; }
+.finger.f-middle { height: 94px; }
+.finger.f-index { height: 82px; }
+/* 손바닥을 길게 늘려 스페이스바 높이까지 자연스럽게 내려오게 하고,
+   엄지는 그 안쪽 아래 모서리에 비스듬히 붙여서 스페이스바 쪽을 향하게 한다 */
 .palm {
-  width: 128px;
-  height: 40px;
-  margin-top: -6px;
-  background: linear-gradient(180deg, #c9c9d3, #adadb9);
-  border-radius: 22px 22px 34px 34px;
+  width: 172px;
+  height: 98px;
+  margin-top: -8px;
+  background: rgba(130, 128, 142, 0.22);
+  border-radius: 30px 30px 50px 50px;
+}
+.finger.f-thumb {
+  position: absolute;
+  width: 36px;
+  height: 80px;
+  bottom: 18%;
+  z-index: 1;
+}
+.hand-left .finger.f-thumb {
+  right: 6px;
+  transform-origin: bottom center;
+  transform: rotate(46deg);
+}
+.hand-right .finger.f-thumb {
+  left: 6px;
+  transform-origin: bottom center;
+  transform: rotate(-46deg);
 }
 .hand-tag {
-  margin-top: 8px;
-  font-size: 0.8rem;
-  font-weight: 800;
-  color: var(--text-soft);
+  /* 손이 자판 위에 바로 겹쳐지므로, 위쪽의 finger-label 문구로 충분해 라벨은 숨긴다 */
+  display: none;
 }
+/* 지금 눌러야 할 손가락은 원색이 아니라, 진한 회색이 좀 더 뚜렷하게 얹힌 것처럼 표시한다.
+   실제 이동(translate)은 JS(moveActiveFinger)가 목표 키 위치를 측정해 인라인으로 넣어준다 */
 .finger.active {
-  background: linear-gradient(180deg, var(--row-color), var(--row-color-dark));
-  transform: translateY(-9px) scale(1.06);
+  background: rgba(80, 78, 92, 0.5);
   z-index: 1;
 }
 .finger.active .nail {
-  background: #fff;
+  background: rgba(255, 255, 255, 0.9);
 }
 
+/* 자판+손 오버레이를 함께 담는 무대. 손(.finger-guide)은 이 안에서 절대좌표로 얹힌다.
+   overflow-x:auto를 쓰면 overflow-y도 자동으로 클리핑되므로, 손바닥이 길어져도
+   잘리지 않도록 아래쪽에 여유 공간을 넉넉히 둔다 */
+.keyboard-stage {
+  position: relative;
+  width: fit-content;
+  max-width: 100%;
+  margin: 10px auto 20px;
+  padding-bottom: 90px;
+  overflow-x: auto;
+}
 .virtual-keyboard {
+  position: relative;
+  --key-unit: 54px;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: 9px;
+  gap: 6px;
   width: fit-content;
   max-width: 100%;
   margin: 10px auto 20px;
 }
-.kb-row { display: flex; gap: 9px; }
-/* 실제 자판처럼 아래로 갈수록 오른쪽으로 살짝 밀리는 계단형 배치 */
-.kb-row-top { margin-left: 0; }
-.kb-row-home { margin-left: 16px; }
-.kb-row-bottom { margin-left: 46px; }
+.keyboard-stage .virtual-keyboard { margin: 0; }
+.kb-row { display: flex; gap: 6px; }
+/* 방향키: 아랫줄들 폭 계산과 무관하게 오른쪽 아래 빈 자리에 독립된 3x2 격자로 얹는다 */
+.arrow-cluster {
+  --ak: calc(var(--key-unit) * 0.78);
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  display: grid;
+  grid-template-columns: repeat(3, var(--ak));
+  grid-template-rows: repeat(2, var(--ak));
+  gap: 4px;
+}
+.arrow-cluster .key {
+  width: var(--ak);
+  height: var(--ak);
+  border-radius: 8px;
+  font-size: 0.8rem;
+}
 .key {
-  width: 54px;
-  height: 54px;
-  border-radius: 12px;
+  width: calc(var(--key-unit) * var(--kw, 1));
+  height: var(--key-unit);
+  border-radius: 10px;
   display: flex;
   align-items: center;
   justify-content: center;
   font-weight: 700;
-  font-size: 1.15rem;
   transition: all 0.08s ease;
   font-family: 'Pretendard', 'Nunito', 'Gowun Dodum', sans-serif;
+  flex: none;
 }
-/* 자판은 평소엔 옅은 색만 띠고, 눌러야 할 목표 키만 진한 원색으로 뚜렷하게 튀게 한다 */
-.kb-row-top .key { background: var(--peach-pale); color: var(--peach-dark); }
-.kb-row-home .key { background: var(--sky-pale); color: var(--sky-dark); }
-.kb-row-bottom .key { background: var(--mint-pale); color: var(--mint-dark); }
+/* 실제 자판처럼 보이도록 넣은 장식 키(숫자줄/Tab/Caps/Shift 등)는 연습과 무관하니
+   눈에 덜 띄도록 거의 흰색에 가깝게 하고, 배경과 구분되도록 테두리만 살짝 넣는다.
+   스페이스바는 엄지가 얹히는 자리라 다른 장식 키보다 살짝 더 진하게 남겨둔다 */
+.key.deco {
+  background: #fbfbfd;
+  color: var(--text-soft);
+  font-size: 0.68rem;
+  border: 1.5px solid #e5e5ec;
+}
+.key.deco.key-space {
+  background: #e6e7ef;
+  border-color: #d6d7e2;
+}
+/* 방향키 배치를 맞추기 위한 빈 자리 채우기용 — 화살표 키 위에 오도록 자리만 차지한다 */
+.key.key-blank {
+  background: transparent;
+  border-color: transparent;
+}
+.key.letter { font-size: 1.05rem; }
+/* 연습용 글자키는 평소엔 옅은 색만 띠고, 눌러야 할 목표 키만 진한 원색으로 뚜렷하게 튀게 한다 */
+.kb-row-top .key.letter { background: var(--peach-pale); color: var(--peach-dark); }
+.kb-row-home .key.letter { background: var(--sky-pale); color: var(--sky-dark); }
+.kb-row-bottom .key.letter { background: var(--mint-pale); color: var(--mint-dark); }
 .key.dim { opacity: 0.4; }
 .key.target {
   background: var(--pink-dark);
@@ -949,9 +1025,10 @@ footer {
   html { font-size: 16px; }
   .tile-grid { grid-template-columns: 1fr; }
   .app-header h1 { font-size: 1.5rem; }
-  .key { width: 40px; height: 40px; font-size: 0.9rem; border-radius: 10px; }
-  .kb-row-home { margin-left: 11px; }
-  .kb-row-bottom { margin-left: 33px; }
+  .virtual-keyboard { --key-unit: 36px; }
+  .keyboard-stage { padding-bottom: 55px; }
+  .key.letter { font-size: 0.85rem; }
+  .key.deco { font-size: 0.56rem; }
   .game-field { height: 400px; }
   .game-boat { font-size: 2.2rem; }
   .hud-item { font-size: 0.9rem; }
@@ -961,13 +1038,13 @@ footer {
   .typing-display { font-size: 1.2rem; padding: 18px; }
   #stats-bar { gap: 10px; padding: 12px 14px; }
   .stat .value { font-size: 1.1rem; }
-  .finger-guide { gap: 22px; }
-  .finger { width: 24px; border-radius: 999px 999px 8px 8px; }
-  .finger .nail { width: 11px; height: 8px; top: 5px; }
-  .finger.f-pinky { height: 32px; }
-  .finger.f-ring { height: 44px; }
-  .finger.f-middle { height: 52px; }
-  .finger.f-index { height: 46px; }
-  .palm { width: 92px; height: 30px; }
+  .finger { width: 30px; border-radius: 999px 999px 8px 8px; }
+  .finger .nail { width: 13px; height: 10px; top: 6px; }
+  .finger.f-pinky { height: 40px; }
+  .finger.f-ring { height: 54px; }
+  .finger.f-middle { height: 64px; }
+  .finger.f-index { height: 56px; }
+  .finger.f-thumb { width: 28px; height: 44px; }
+  .palm { width: 118px; height: 88px; }
   .stage-select button, .category-select button, .difficulty-select button { font-size: 0.92rem; padding: 9px 14px; }
 }

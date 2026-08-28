@@ -352,6 +352,7 @@ const el = {
   positionCurrent: document.getElementById('position-current'),
   positionNext: document.getElementById('position-next'),
   fingerLabel: document.getElementById('finger-label'),
+  keyboardStage: document.getElementById('keyboard-stage'),
   fingerGuide: document.getElementById('finger-guide'),
   virtualKeyboard: document.getElementById('virtual-keyboard'),
   positionProgressBar: document.getElementById('position-progress-bar'),
@@ -652,27 +653,75 @@ const keyElsByCode = {};        // 자리연습용 키보드
 const typingKeyElsByCode = {};  // 단어/문장/글연습용 키보드
 const fingerEls = {};
 
-// 실제 키보드처럼 위→아래 순서(qwerty/asdf/zxcv)와 계단형 정렬을 위한 시각적 순서
-const VISUAL_ROWS = [
-  { row: KEY_ROWS[1], cls: 'kb-row-top' },
-  { row: KEY_ROWS[0], cls: 'kb-row-home' },
-  { row: KEY_ROWS[2], cls: 'kb-row-bottom' },
+// 실제 키보드처럼 보이도록, 연습에 쓰이지 않는 키(숫자줄/Tab/Caps/Shift/스페이스 등)도
+// 장식용으로 함께 그린다. l()은 연습 대상 글자키(KEYMAP의 code를 그대로 참조해 기존
+// 하이라이트/오답 표시 로직을 그대로 쓴다), d()는 항상 같은 회색인 비활성 장식 키다.
+// w는 기본 키 폭(1칸)의 배수.
+function l(code) { return { type: 'letter', code }; }
+function d(label, w, cls) { return { type: 'deco', label, w: w || 1, cls }; }
+
+const KB_LAYOUT = [
+  { cls: 'kb-row-num', keys: [
+    d('`'), d('1'), d('2'), d('3'), d('4'), d('5'), d('6'), d('7'), d('8'), d('9'), d('0'), d('-'), d('='), d('⌫', 1.4),
+  ] },
+  { cls: 'kb-row-top', keys: [
+    d('Tab', 1.4),
+    l('KeyQ'), l('KeyW'), l('KeyE'), l('KeyR'), l('KeyT'), l('KeyY'), l('KeyU'), l('KeyI'), l('KeyO'), l('KeyP'),
+    d('['), d(']'), d('\\', 1.1),
+  ] },
+  { cls: 'kb-row-home', keys: [
+    d('Caps', 1.7),
+    l('KeyA'), l('KeyS'), l('KeyD'), l('KeyF'), l('KeyG'), l('KeyH'), l('KeyJ'), l('KeyK'), l('KeyL'),
+    d(';'), d("'"), d('Enter', 1.8),
+  ] },
+  { cls: 'kb-row-bottom', keys: [
+    d('Shift', 2.2),
+    l('KeyZ'), l('KeyX'), l('KeyC'), l('KeyV'), l('KeyB'), l('KeyN'), l('KeyM'),
+    d(','), d('.'), d('/'),
+    d('Shift', 1.6),
+  ] },
+  { cls: 'kb-row-space', keys: [
+    d('Ctrl', 1.3), d('Fn', 0.9), d('Win', 1.1), d('Alt', 1.1), d('', 6, 'key-space'), d('Alt', 1.1), d('Ctrl', 1.3),
+  ] },
 ];
 
 function buildKeyboardInto(container, registry) {
   container.innerHTML = '';
-  VISUAL_ROWS.forEach(({ row, cls }) => {
+  KB_LAYOUT.forEach(({ cls, keys }) => {
     const rowEl = document.createElement('div');
     rowEl.className = `kb-row ${cls}`;
-    row.forEach(k => {
+    keys.forEach(k => {
       const keyEl = document.createElement('div');
-      keyEl.className = 'key';
-      keyEl.dataset.code = k.code;
+      if (k.type === 'letter') {
+        keyEl.className = 'key letter';
+        keyEl.dataset.code = k.code;
+        registry[k.code] = keyEl;
+      } else {
+        keyEl.className = k.cls ? `key deco ${k.cls}` : 'key deco';
+        keyEl.textContent = k.label;
+      }
+      if (k.w && k.w !== 1) keyEl.style.setProperty('--kw', k.w);
       rowEl.appendChild(keyEl);
-      registry[k.code] = keyEl;
     });
     container.appendChild(rowEl);
   });
+  buildArrowCluster(container);
+}
+
+// 방향키는 자리연습/자판 아랫줄들의 폭에 맞춰 끼워 넣기보다, 오른쪽 아래 빈 공간에
+// 독립된 3x2 격자로 절대좌표 배치한다 (다른 줄 폭 계산에 영향을 주지 않아 어긋나지 않는다)
+function buildArrowCluster(container) {
+  const cluster = document.createElement('div');
+  cluster.className = 'arrow-cluster';
+  [['', '↑', ''], ['←', '↓', '→']].forEach(row => {
+    row.forEach(label => {
+      const keyEl = document.createElement('div');
+      keyEl.className = label ? 'key deco' : 'key deco key-blank';
+      keyEl.textContent = label;
+      cluster.appendChild(keyEl);
+    });
+  });
+  container.appendChild(cluster);
 }
 
 function initKeyboard() {
@@ -685,6 +734,10 @@ function initKeyboard() {
 function buildHand(codes, tag, cls) {
   const handEl = document.createElement('div');
   handEl.className = `hand ${cls}`;
+
+  // 손가락+손바닥만 따로 묶어서, 엄지의 위치 기준을 손바닥 쪽으로 고정한다
+  const shapeEl = document.createElement('div');
+  shapeEl.className = 'hand-shape';
 
   const fingersEl = document.createElement('div');
   fingersEl.className = 'fingers';
@@ -701,12 +754,23 @@ function buildHand(codes, tag, cls) {
 
   const palmEl = document.createElement('div');
   palmEl.className = 'palm';
+
+  // 엄지는 이 연습에서 어떤 키에도 쓰이지 않아 하이라이트되지 않지만,
+  // 손가락을 4개로만 그리면 실제 손 모양과 달라 보여서 장식용으로 함께 그린다.
+  const thumbEl = document.createElement('div');
+  thumbEl.className = 'finger f-thumb';
+  const thumbNail = document.createElement('span');
+  thumbNail.className = 'nail';
+  thumbEl.appendChild(thumbNail);
+
   const tagEl = document.createElement('span');
   tagEl.className = 'hand-tag';
   tagEl.textContent = tag;
 
-  handEl.appendChild(fingersEl);
-  handEl.appendChild(palmEl);
+  shapeEl.appendChild(fingersEl);
+  shapeEl.appendChild(palmEl);
+  shapeEl.appendChild(thumbEl);
+  handEl.appendChild(shapeEl);
   handEl.appendChild(tagEl);
   return handEl;
 }
@@ -742,12 +806,50 @@ function highlightTargetKey(code) {
   highlightKeyInRegistry(keyElsByCode, code);
 }
 
-function highlightFinger(fingerCode) {
+// 왼손/오른손 기준이 되는 홈로우 키(엄지 자리인 R-pinky는 세미콜론이 없어 L로 대신한다).
+// 이 위치를 손 전체(손가락+손바닥)의 기준점으로 삼아 자판 위에 자연스럽게 얹히게 한다.
+const HAND_HOME_CODES = { 'hand-left': ['KeyA', 'KeyS', 'KeyD', 'KeyF'], 'hand-right': ['KeyJ', 'KeyK', 'KeyL'] };
+
+// 손 전체(왼손/오른손)를 키보드의 홈로우 자리 위에 겹쳐 놓는다.
+// 창 크기가 바뀌어 키 크기가 달라져도 다시 맞출 수 있도록 별도 함수로 둔다.
+function layoutHandOverlay() {
+  if (!el.keyboardStage) return;
+  const stageRect = el.keyboardStage.getBoundingClientRect();
+  if (!stageRect.width) return;
+  Object.entries(HAND_HOME_CODES).forEach(([handCls, codes]) => {
+    const handEl = el.fingerGuide.querySelector(`.${handCls}`);
+    if (!handEl) return;
+    const rects = codes.map(c => keyElsByCode[c]).filter(Boolean).map(k => k.getBoundingClientRect());
+    if (!rects.length) return;
+    const centerX = rects.reduce((sum, r) => sum + r.left + r.width / 2, 0) / rects.length;
+    const centerY = rects.reduce((sum, r) => sum + r.top + r.height / 2, 0) / rects.length;
+    handEl.style.left = `${centerX - stageRect.left}px`;
+    handEl.style.top = `${centerY - stageRect.top}px`;
+  });
+}
+
+// 지금 눌러야 할 손가락 하나만 홈로우 자리에서 목표 키 위로 이동시킨다.
+// 나머지 손가락은 손을 그대로 유지해 실제로 손을 얹어 놓은 것처럼 보이게 한다.
+function moveActiveFinger(fingerCode, targetCode) {
+  Object.values(fingerEls).forEach(f => { f.style.transform = ''; });
+  const fEl = fingerEls[fingerCode];
+  const keyEl = keyElsByCode[targetCode];
+  if (!fEl || !keyEl) return;
+  const fRect = fEl.getBoundingClientRect();
+  const kRect = keyEl.getBoundingClientRect();
+  if (!fRect.width || !kRect.width) return;
+  const dx = (kRect.left + kRect.width / 2) - (fRect.left + fRect.width / 2);
+  const dy = (kRect.top + kRect.height * 0.4) - (fRect.top + fRect.height * 0.3);
+  fEl.style.transform = `translate(${dx}px, ${dy}px) scale(1.15)`;
+}
+
+function highlightFinger(fingerCode, targetCode) {
   Object.values(fingerEls).forEach(f => f.classList.remove('active'));
   const fEl = fingerEls[fingerCode];
   if (fEl) fEl.classList.add('active');
   const info = FINGER_LABELS[fingerCode];
   el.fingerLabel.textContent = `${info.hand} ${info.name}`;
+  moveActiveFinger(fingerCode, targetCode);
 }
 
 function flashKeyInRegistry(registry, code, ok) {
@@ -795,8 +897,9 @@ function renderPositionPrompt() {
   el.positionCurrent.textContent = state.lang === 'ko' ? cur.ko : cur.en;
   el.positionNext.textContent = next ? (state.lang === 'ko' ? next.ko : next.en) : '';
   el.modePosition.dataset.row = cur.row; // 기본/윗/아랫자리 색(파랑/주황/초록)을 현재 자리에 맞춘다
+  layoutHandOverlay();
   highlightTargetKey(cur.code);
-  highlightFinger(cur.finger);
+  highlightFinger(cur.finger, cur.code);
   el.positionProgressBar.style.width = `${(idx / seq.length) * 100}%`;
 }
 
@@ -1350,6 +1453,11 @@ el.typingInput.addEventListener('keydown', e => {
 });
 
 document.addEventListener('keydown', handlePositionKeydown);
+
+// 창 크기가 바뀌면(반응형 구간 전환 포함) 자판 위 손 오버레이 위치를 다시 계산한다
+window.addEventListener('resize', () => {
+  if (state.mode === 'position' && state.view === 'practice') renderPositionPrompt();
+});
 
 // 결과/게임종료 팝업이 떠 있을 때 Enter를 누르면 "한번 더!" 버튼과 동일하게 동작한다.
 document.addEventListener('keydown', e => {
