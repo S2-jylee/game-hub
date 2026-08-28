@@ -76,9 +76,6 @@ header, nav, main, footer {
 }
 
 .app-header h1 {
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
   font-family: 'Jua', 'Gowun Dodum', sans-serif;
   font-size: 2.2rem;
   color: var(--pink-dark);
@@ -86,9 +83,6 @@ header, nav, main, footer {
   cursor: pointer;
   transition: transform 0.15s;
 }
-/* em 단위로 잡아서 글자 크기와 같이 커지고 작아지게 한다 (모바일에서 따로 크기 지정 불필요).
-   글자 높이보다 확실히 크게 보이도록 1.7em으로 키운다 */
-.brand-icon { flex: none; width: 1.7em; height: 1.7em; }
 .app-header h1:hover { transform: scale(1.03); }
 .app-header h1:active { transform: scale(0.98); }
 
@@ -192,6 +186,8 @@ body.home-active .home-view { display: block; }
   margin: 4px 0 22px;
   font-size: 1.05rem;
 }
+/* PC에서는 한 줄로, 모바일에서만 두 줄로 줄바꿈한다 */
+.home-intro-break { display: none; }
 
 .tile-grid {
   display: grid;
@@ -1076,6 +1072,7 @@ footer {
   html { font-size: 16px; }
   .tile-grid { grid-template-columns: 1fr; }
   .app-header h1 { font-size: 1.5rem; }
+  .home-intro-break { display: block; }
   .virtual-keyboard { --key-unit: 36px; }
   .keyboard-stage { padding-bottom: 55px; }
   .key.letter { font-size: 0.85rem; }
