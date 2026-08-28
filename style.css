@@ -216,6 +216,7 @@ body.home-active .home-view { display: block; }
 .tile:hover { transform: translateY(-4px); }
 .tile:active { transform: translateY(2px); }
 .tile-emoji {
+  font-size: 3rem;
   width: 86px;
   height: 86px;
   display: flex;
