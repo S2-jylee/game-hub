@@ -297,7 +297,7 @@ const state = {
   view: 'home', // 'home' | 'practice'
   mode: 'position',
   lang: 'ko',
-  stage: 0,
+  stages: new Set([0]), // 자리 단계는 여러 개를 동시에, 자유 조합으로 선택할 수 있다
   passageCategory: 'essay',
   lastSentence: '',
   lastPassageText: '',
@@ -591,9 +591,18 @@ function setLang(lang) {
   startCurrentMode();
 }
 
-function setStage(stage) {
-  state.stage = stage;
-  [...el.stageSelect.querySelectorAll('button')].forEach(btn => btn.classList.toggle('active', Number(btn.dataset.stage) === stage));
+// 자리 단계 버튼은 체크박스처럼 동작한다: 눌린 단계를 따로따로 켜고 끌 수 있고,
+// 서로 다른 단계를 자유롭게 중복 선택할 수 있다. 최소 1개는 항상 선택되어 있어야 한다.
+function toggleStage(stage) {
+  if (state.stages.has(stage)) {
+    if (state.stages.size === 1) return;
+    state.stages.delete(stage);
+  } else {
+    state.stages.add(stage);
+  }
+  [...el.stageSelect.querySelectorAll('button[data-stage]')].forEach(btn => {
+    btn.classList.toggle('active', state.stages.has(Number(btn.dataset.stage)));
+  });
   hideResult();
   startCurrentMode();
 }
@@ -631,9 +640,9 @@ function startCurrentMode() {
 
 // ===================== 자리연습 (물리 키 코드 기반) =====================
 
-function allowedKeysForStage(stage) {
+function allowedKeysForStages(stages) {
   let keys = [];
-  for (let i = 0; i <= stage; i++) keys = keys.concat(KEY_ROWS[i]);
+  [...stages].sort((a, b) => a - b).forEach(i => { keys = keys.concat(KEY_ROWS[i]); });
   return keys;
 }
 
@@ -671,20 +680,41 @@ function initKeyboard() {
   buildKeyboardInto(el.typingKeyboard, typingKeyElsByCode);
 }
 
-function initFingerGuide() {
-  el.fingerGuide.innerHTML = '';
-  FINGER_ORDER.forEach((code, i) => {
-    if (i === 4) {
-      const gap = document.createElement('div');
-      gap.className = 'hand-gap';
-      el.fingerGuide.appendChild(gap);
-    }
+// 손가락 가이드를 왼손/오른손 두 뭉치로 나누어, 손가락(손톱 포함)+손바닥이 있는
+// 손 모양으로 그린다. FINGER_ORDER는 왼손 새끼~검지, 오른손 검지~새끼 순서이다.
+function buildHand(codes, tag, cls) {
+  const handEl = document.createElement('div');
+  handEl.className = `hand ${cls}`;
+
+  const fingersEl = document.createElement('div');
+  fingersEl.className = 'fingers';
+  codes.forEach(code => {
     const info = FINGER_LABELS[code];
     const fEl = document.createElement('div');
     fEl.className = `finger f-${info.size}`;
-    el.fingerGuide.appendChild(fEl);
+    const nailEl = document.createElement('span');
+    nailEl.className = 'nail';
+    fEl.appendChild(nailEl);
+    fingersEl.appendChild(fEl);
     fingerEls[code] = fEl;
   });
+
+  const palmEl = document.createElement('div');
+  palmEl.className = 'palm';
+  const tagEl = document.createElement('span');
+  tagEl.className = 'hand-tag';
+  tagEl.textContent = tag;
+
+  handEl.appendChild(fingersEl);
+  handEl.appendChild(palmEl);
+  handEl.appendChild(tagEl);
+  return handEl;
+}
+
+function initFingerGuide() {
+  el.fingerGuide.innerHTML = '';
+  el.fingerGuide.appendChild(buildHand(FINGER_ORDER.slice(0, 4), '왼손', 'hand-left'));
+  el.fingerGuide.appendChild(buildHand(FINGER_ORDER.slice(4), '오른손', 'hand-right'));
 }
 
 function updateKeyboardLang() {
@@ -696,7 +726,7 @@ function updateKeyboardLang() {
 }
 
 function updateKeyboardStage() {
-  const allowed = new Set(allowedKeysForStage(state.stage).map(k => k.code));
+  const allowed = new Set(allowedKeysForStages(state.stages).map(k => k.code));
   KEYMAP.forEach(k => {
     keyElsByCode[k.code].classList.toggle('dim', !allowed.has(k.code));
   });
@@ -734,7 +764,7 @@ function flashKey(code, ok) {
 }
 
 function generatePositionSequence(len = 25) {
-  const pool = allowedKeysForStage(state.stage);
+  const pool = allowedKeysForStages(state.stages);
   const seq = [];
   let last = null;
   for (let i = 0; i < len; i++) {
@@ -764,6 +794,7 @@ function renderPositionPrompt() {
   const next = seq[idx + 1];
   el.positionCurrent.textContent = state.lang === 'ko' ? cur.ko : cur.en;
   el.positionNext.textContent = next ? (state.lang === 'ko' ? next.ko : next.en) : '';
+  el.modePosition.dataset.row = cur.row; // 기본/윗/아랫자리 색(파랑/주황/초록)을 현재 자리에 맞춘다
   highlightTargetKey(cur.code);
   highlightFinger(cur.finger);
   el.positionProgressBar.style.width = `${(idx / seq.length) * 100}%`;
@@ -857,7 +888,8 @@ function updateTypingKeyboardHighlight() {
 
 function buildTypingTarget() {
   if (state.mode === 'rowword') {
-    const words = WORD_LISTS.rowword[state.lang][state.stage];
+    const lists = WORD_LISTS.rowword[state.lang];
+    const words = [...state.stages].sort((a, b) => a - b).flatMap(i => lists[i]);
     return { text: pickRandom(words, Math.min(8, words.length)).join(' '), source: '' };
   }
   if (state.mode === 'randomword') {
@@ -1265,7 +1297,7 @@ el.modeTabs.addEventListener('click', e => {
 
 el.stageSelect.addEventListener('click', e => {
   const btn = e.target.closest('button[data-stage]');
-  if (btn) setStage(Number(btn.dataset.stage));
+  if (btn) toggleStage(Number(btn.dataset.stage));
 });
 
 el.difficultySelect.addEventListener('click', e => {
