@@ -395,11 +395,18 @@ class SoundEngine {
   constructor() {
     this.ctx = null;
     this.muted = false;
-    // 정답 타건음은 합성음 대신 실제 기계식 키보드 녹음 파일을 쓴다.
-    // 빠르게 연타해도 소리가 끊기지 않도록, 재생할 때마다 복제해서(cloneNode) 겹쳐 재생한다.
-    this.typeClickAudio = new Audio('sounds/type-click.mp3');
-    this.typeClickAudio.preload = 'auto';
-    this.typeClickAudio.volume = 0.55;
+    // 정답 타건음은 합성음 대신 실제 키보드 녹음 파일을 쓴다.
+    // iOS 사파리는 cloneNode()로 새로 만든 오디오 엘리먼트는 "잠금 해제"가
+    // 적용되지 않아 재생이 안 될 수 있어서, 처음부터 여러 개를 미리 만들어두고
+    // (풀) 첫 제스처에서 전부 한 번씩 재생해 잠금을 풀어둔 뒤 돌려가며 쓴다.
+    this.typeClickPool = [];
+    for (let i = 0; i < 6; i++) {
+      const a = new Audio('sounds/type-click.mp3');
+      a.preload = 'auto';
+      a.volume = 0.55;
+      this.typeClickPool.push(a);
+    }
+    this.typeClickPoolIndex = 0;
   }
   init() {
     if (!this.ctx) {
@@ -425,14 +432,23 @@ class SoundEngine {
     osc.start(now);
     osc.stop(now + 0.03);
   }
-  // 정답 키를 눌렀을 때 나는 소리: 합성음 대신 실제 기계식 키보드 녹음(mp3)을 재생한다.
-  // 빠르게 연타할 때 소리가 끊기지 않도록 재생마다 노드를 복제해 겹쳐 재생한다.
+  // 정답 키를 눌렀을 때 나는 소리: 합성음 대신 실제 키보드 녹음(mp3)을 재생한다.
+  // 이 파일은 20초 가까이 되는 긴 연속 녹음이고, duration 메타데이터도 이 파일에서는
+  // 정확히 안 잡혀서(Infinity로 나옴) 안전하게 매번 파일 맨 앞부터 짧게(0.35초)만
+  // 잘라 재생한다. 풀에서 하나씩 돌려 써서 연타해도 안 끊기고, iOS 잠금 해제도 유지된다.
   playTypeClick() {
     if (this.muted) return;
     try {
-      const node = this.typeClickAudio.cloneNode(true);
-      node.volume = this.typeClickAudio.volume;
+      const pool = this.typeClickPool;
+      const node = pool[this.typeClickPoolIndex];
+      this.typeClickPoolIndex = (this.typeClickPoolIndex + 1) % pool.length;
+      const clipLen = 0.35;
+      node.currentTime = 0;
       node.play().catch(() => {});
+      clearTimeout(node.__stopTimer);
+      node.__stopTimer = setTimeout(() => {
+        try { node.pause(); } catch (e) { /* noop */ }
+      }, clipLen * 1000);
     } catch (e) {
       /* 재생 실패는 조용히 무시 (사운드는 부가 기능이라 타자 흐름을 막지 않는다) */
     }
@@ -497,14 +513,15 @@ const soundEngine = new SoundEngine();
 // 이후 소리가 정상 재생된다 (최초 터치/클릭 1회로 잠금 해제)
 const unlockAudio = () => {
   soundEngine.init();
-  // mp3 재생도 같은 이유로 첫 제스처 안에서 한 번 재생을 "찍어둬야" 이후 자유롭게 재생된다.
-  // (이전엔 볼륨을 0으로 낮췄다가 되돌리는 방식이었는데, 그 사이에 타이핑을 시작하면
-  //  볼륨 0인 상태로 복제되어 계속 무음이 될 수 있어 위험했다. 그냥 실제 볼륨 그대로 짧게
-  //  재생 후 즉시 멈춘다 — 첫 탭에서 아주 살짝 들리는 정도라 문제 없다)
-  soundEngine.typeClickAudio.play().then(() => {
-    soundEngine.typeClickAudio.pause();
-    soundEngine.typeClickAudio.currentTime = 0;
-  }).catch(() => {});
+  // mp3 재생도 같은 이유로 첫 제스처 안에서 한 번씩 재생을 "찍어둬야" 이후 자유롭게 재생된다.
+  // 풀에 있는 엘리먼트를 전부 여기서 한 번씩 재생해야, 나중에 실제로 쓸 때(연타 시
+  // 돌아가며 쓰는 그 엘리먼트들 자체)도 iOS에서 잠금이 풀린 상태로 남아있는다.
+  soundEngine.typeClickPool.forEach(a => {
+    a.play().then(() => {
+      a.pause();
+      a.currentTime = 0;
+    }).catch(() => {});
+  });
   document.removeEventListener('touchstart', unlockAudio);
   document.removeEventListener('click', unlockAudio);
 };
