@@ -395,18 +395,8 @@ class SoundEngine {
   constructor() {
     this.ctx = null;
     this.muted = false;
-    // 정답 타건음은 합성음 대신 실제 키보드 녹음 파일을 쓴다.
-    // iOS 사파리는 cloneNode()로 새로 만든 오디오 엘리먼트는 "잠금 해제"가
-    // 적용되지 않아 재생이 안 될 수 있어서, 처음부터 여러 개를 미리 만들어두고
-    // (풀) 첫 제스처에서 전부 한 번씩 재생해 잠금을 풀어둔 뒤 돌려가며 쓴다.
-    this.typeClickPool = [];
-    for (let i = 0; i < 6; i++) {
-      const a = new Audio('sounds/type-click.mp3');
-      a.preload = 'auto';
-      a.volume = 0.55;
-      this.typeClickPool.push(a);
-    }
-    this.typeClickPoolIndex = 0;
+    this.typeClickBuffer = null;
+    this.typeClickLoadStarted = false;
   }
   init() {
     if (!this.ctx) {
@@ -414,6 +404,20 @@ class SoundEngine {
       if (AudioCtx) this.ctx = new AudioCtx();
     }
     if (this.ctx && this.ctx.state === 'suspended') this.ctx.resume();
+    this.loadTypeClickBuffer();
+  }
+  // 정답 타건음(mp3)을 AudioBuffer로 한 번만 디코딩해둔다. HTMLAudioElement(<audio>)를
+  // 매번 새로 만들거나 돌려쓰는 방식은 iOS 사파리에서 "이 엘리먼트는 사용자 제스처 안에서
+  // 재생된 적이 없다"며 조용히 재생을 막는 경우가 있어서, 아예 AudioContext(이미 첫 터치에서
+  // 잠금 해제됨) 하나로 통일해 그 문제를 원천적으로 피한다.
+  loadTypeClickBuffer() {
+    if (this.typeClickLoadStarted || !this.ctx) return;
+    this.typeClickLoadStarted = true;
+    fetch('sounds/type-click.mp3')
+      .then(res => res.arrayBuffer())
+      .then(data => this.ctx.decodeAudioData(data))
+      .then(buffer => { this.typeClickBuffer = buffer; })
+      .catch(() => { this.typeClickLoadStarted = false; });
   }
   playClick() {
     if (this.muted) return;
@@ -432,26 +436,22 @@ class SoundEngine {
     osc.start(now);
     osc.stop(now + 0.03);
   }
-  // 정답 키를 눌렀을 때 나는 소리: 합성음 대신 실제 키보드 녹음(mp3)을 재생한다.
-  // 이 파일은 20초 가까이 되는 긴 연속 녹음이고, duration 메타데이터도 이 파일에서는
-  // 정확히 안 잡혀서(Infinity로 나옴) 안전하게 매번 파일 맨 앞부터 짧게(0.35초)만
-  // 잘라 재생한다. 풀에서 하나씩 돌려 써서 연타해도 안 끊기고, iOS 잠금 해제도 유지된다.
+  // 정답 키를 눌렀을 때 나는 소리: 합성음 대신 실제 키보드 녹음(mp3)을 AudioBuffer로
+  // 재생한다. 원본 파일이 20초 가까운 긴 연속 녹음이라, 매번 맨 앞부분 0.35초만 잘라 튼다.
+  // AudioContext 기반이라 <audio> 엘리먼트를 여러 개 겹쳐 재생할 때 생기는 모바일 잠금
+  // 문제 없이, 연타해도 자연스럽게 겹쳐서 재생된다.
   playTypeClick() {
     if (this.muted) return;
-    try {
-      const pool = this.typeClickPool;
-      const node = pool[this.typeClickPoolIndex];
-      this.typeClickPoolIndex = (this.typeClickPoolIndex + 1) % pool.length;
-      const clipLen = 0.35;
-      node.currentTime = 0;
-      node.play().catch(() => {});
-      clearTimeout(node.__stopTimer);
-      node.__stopTimer = setTimeout(() => {
-        try { node.pause(); } catch (e) { /* noop */ }
-      }, clipLen * 1000);
-    } catch (e) {
-      /* 재생 실패는 조용히 무시 (사운드는 부가 기능이라 타자 흐름을 막지 않는다) */
-    }
+    this.init();
+    if (!this.ctx || !this.typeClickBuffer) return; // 아직 디코딩 중이면 이번 키는 조용히 넘어간다
+    const source = this.ctx.createBufferSource();
+    source.buffer = this.typeClickBuffer;
+    const gain = this.ctx.createGain();
+    gain.gain.value = 0.6;
+    source.connect(gain);
+    gain.connect(this.ctx.destination);
+    const clipLen = Math.min(0.35, this.typeClickBuffer.duration);
+    source.start(this.ctx.currentTime, 0, clipLen);
   }
   playCorrect() {
     if (this.muted) return;
@@ -510,18 +510,10 @@ class SoundEngine {
 const soundEngine = new SoundEngine();
 
 // iOS Safari는 사용자 제스처 안에서 한 번은 AudioContext를 직접 생성/재개해야
-// 이후 소리가 정상 재생된다 (최초 터치/클릭 1회로 잠금 해제)
+// 이후 소리가 정상 재생된다 (최초 터치/클릭 1회로 잠금 해제).
+// init()이 resume()과 함께 mp3 디코딩도 같이 시작해준다.
 const unlockAudio = () => {
   soundEngine.init();
-  // mp3 재생도 같은 이유로 첫 제스처 안에서 한 번씩 재생을 "찍어둬야" 이후 자유롭게 재생된다.
-  // 풀에 있는 엘리먼트를 전부 여기서 한 번씩 재생해야, 나중에 실제로 쓸 때(연타 시
-  // 돌아가며 쓰는 그 엘리먼트들 자체)도 iOS에서 잠금이 풀린 상태로 남아있는다.
-  soundEngine.typeClickPool.forEach(a => {
-    a.play().then(() => {
-      a.pause();
-      a.currentTime = 0;
-    }).catch(() => {});
-  });
   document.removeEventListener('touchstart', unlockAudio);
   document.removeEventListener('click', unlockAudio);
 };
