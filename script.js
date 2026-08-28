@@ -282,12 +282,13 @@ const PASSAGES = {
 
 // 난이도별 설정 (레벨 1일 때 기준값 + 레벨업마다 가산/감산되는 값)
 const DIFFICULTIES = {
-  easy: { label: '쉬움', lives: 4, baseSpeed: 20, speedPerLevel: 4, baseSpawnDelay: 2800, spawnDelayPerLevel: 120, minSpawnDelay: 1600 },
+  // 1-1(쉬움 1단계)은 독수리타법으로 천천히 치는 어르신도 여유있게 잡을 수 있도록 아주 느리게
+  easy: { label: '쉬움', lives: 4, baseSpeed: 9, speedPerLevel: 2, baseSpawnDelay: 4200, spawnDelayPerLevel: 80, minSpawnDelay: 2200 },
   normal: { label: '보통', lives: 3, baseSpeed: 28, speedPerLevel: 6, baseSpawnDelay: 2300, spawnDelayPerLevel: 150, minSpawnDelay: 1200 },
   hard: { label: '어려움', lives: 2, baseSpeed: 38, speedPerLevel: 8, baseSpawnDelay: 1900, spawnDelayPerLevel: 170, minSpawnDelay: 900 },
 };
 const GAME_LEVEL_MAX = 5;
-const GAME_WORDS_PER_LEVEL = 12;
+const GAME_WORDS_PER_LEVEL = 24; // 36개는 너무 길다고 해서 2/3로 줄임
 const BONUS_CHANCE = 0.18; // 내려오는 단어 중 특수 단어가 나올 확률
 const BONUS_TYPES = ['slow', 'freeze', 'clear'];
 
@@ -381,6 +382,10 @@ const el = {
   gameFinalWords: document.getElementById('game-final-words'),
   gameFinalLevel: document.getElementById('game-final-level'),
   gameRestartBtn: document.getElementById('game-restart-btn'),
+  gameKeyboard: document.getElementById('game-keyboard'),
+  levelUpModal: document.getElementById('level-up-modal'),
+  levelUpLabel: document.getElementById('level-up-label'),
+  levelUpContinueBtn: document.getElementById('level-up-continue-btn'),
 };
 
 // ===================== 사운드 =====================
@@ -390,6 +395,11 @@ class SoundEngine {
   constructor() {
     this.ctx = null;
     this.muted = false;
+    // 정답 타건음은 합성음 대신 실제 기계식 키보드 녹음 파일을 쓴다.
+    // 빠르게 연타해도 소리가 끊기지 않도록, 재생할 때마다 복제해서(cloneNode) 겹쳐 재생한다.
+    this.typeClickAudio = new Audio('sounds/type-click.mp3');
+    this.typeClickAudio.preload = 'auto';
+    this.typeClickAudio.volume = 0.55;
   }
   init() {
     if (!this.ctx) {
@@ -414,6 +424,18 @@ class SoundEngine {
     gain.connect(this.ctx.destination);
     osc.start(now);
     osc.stop(now + 0.03);
+  }
+  // 정답 키를 눌렀을 때 나는 소리: 합성음 대신 실제 기계식 키보드 녹음(mp3)을 재생한다.
+  // 빠르게 연타할 때 소리가 끊기지 않도록 재생마다 노드를 복제해 겹쳐 재생한다.
+  playTypeClick() {
+    if (this.muted) return;
+    try {
+      const node = this.typeClickAudio.cloneNode(true);
+      node.volume = this.typeClickAudio.volume;
+      node.play().catch(() => {});
+    } catch (e) {
+      /* 재생 실패는 조용히 무시 (사운드는 부가 기능이라 타자 흐름을 막지 않는다) */
+    }
   }
   playCorrect() {
     if (this.muted) return;
@@ -475,6 +497,14 @@ const soundEngine = new SoundEngine();
 // 이후 소리가 정상 재생된다 (최초 터치/클릭 1회로 잠금 해제)
 const unlockAudio = () => {
   soundEngine.init();
+  // mp3 재생도 같은 이유로 첫 제스처 안에서 한 번 재생을 "찍어둬야" 이후 자유롭게 재생된다.
+  // (이전엔 볼륨을 0으로 낮췄다가 되돌리는 방식이었는데, 그 사이에 타이핑을 시작하면
+  //  볼륨 0인 상태로 복제되어 계속 무음이 될 수 있어 위험했다. 그냥 실제 볼륨 그대로 짧게
+  //  재생 후 즉시 멈춘다 — 첫 탭에서 아주 살짝 들리는 정도라 문제 없다)
+  soundEngine.typeClickAudio.play().then(() => {
+    soundEngine.typeClickAudio.pause();
+    soundEngine.typeClickAudio.currentTime = 0;
+  }).catch(() => {});
   document.removeEventListener('touchstart', unlockAudio);
   document.removeEventListener('click', unlockAudio);
 };
@@ -651,6 +681,7 @@ function allowedKeysForStages(stages) {
 // (단계를 바꿀 때마다 DOM을 다시 만들면 위치가 미묘하게 흔들려 보일 수 있어서 고정한다)
 const keyElsByCode = {};        // 자리연습용 키보드
 const typingKeyElsByCode = {};  // 단어/문장/글연습용 키보드
+const gameKeyElsByCode = {};    // 타자게임용 키보드
 const fingerEls = {};
 
 // 실제 키보드처럼 보이도록, 연습에 쓰이지 않는 키(숫자줄/Tab/Caps/Shift/스페이스 등)도
@@ -667,7 +698,7 @@ const KB_LAYOUT = [
   { cls: 'kb-row-top', keys: [
     d('Tab', 1.4),
     l('KeyQ'), l('KeyW'), l('KeyE'), l('KeyR'), l('KeyT'), l('KeyY'), l('KeyU'), l('KeyI'), l('KeyO'), l('KeyP'),
-    d('['), d(']'), d('\\', 1.1),
+    d('['), d(']'), d('\\', 1),
   ] },
   { cls: 'kb-row-home', keys: [
     d('Caps', 1.7),
@@ -678,10 +709,11 @@ const KB_LAYOUT = [
     d('Shift', 2.2),
     l('KeyZ'), l('KeyX'), l('KeyC'), l('KeyV'), l('KeyB'), l('KeyN'), l('KeyM'),
     d(','), d('.'), d('/'),
-    d('Shift', 1.6),
+    d('Shift', 2.4),
   ] },
   { cls: 'kb-row-space', keys: [
-    d('Ctrl', 1.3), d('Fn', 0.9), d('Win', 1.1), d('Alt', 1.1), d('', 6, 'key-space'), d('Alt', 1.1), d('Ctrl', 1.3),
+    // Ctrl/Alt는 좌우 모두 왼쪽 Ctrl(1.3) 크기로 맞춘다
+    d('Ctrl', 1.3), d('Fn', 0.9), d('Win', 1.1), d('Alt', 1.3), d('', 6, 'key-space'), d('Alt', 1.3), d('Ctrl', 1.3),
   ] },
 ];
 
@@ -727,6 +759,7 @@ function buildArrowCluster(container) {
 function initKeyboard() {
   buildKeyboardInto(el.virtualKeyboard, keyElsByCode);
   buildKeyboardInto(el.typingKeyboard, typingKeyElsByCode);
+  buildKeyboardInto(el.gameKeyboard, gameKeyElsByCode);
 }
 
 // 손가락 가이드를 왼손/오른손 두 뭉치로 나누어, 손가락(손톱 포함)+손바닥이 있는
@@ -786,14 +819,28 @@ function updateKeyboardLang() {
     const label = state.lang === 'ko' ? k.ko : k.en;
     if (keyElsByCode[k.code]) keyElsByCode[k.code].textContent = label;
     if (typingKeyElsByCode[k.code]) typingKeyElsByCode[k.code].textContent = label;
+    if (gameKeyElsByCode[k.code]) gameKeyElsByCode[k.code].textContent = label;
+  });
+}
+
+// 선택된 자리 단계에 없는 자모는 흐리게 표시한다. active=false면 전부 정상 색으로 되돌린다
+// (자리별 단어연습이 아닌 다른 화면은 자리 단계 자체가 없으니 항상 전체 색으로 보여준다).
+function applyStageDim(registry, active) {
+  const allowed = active ? new Set(allowedKeysForStages(state.stages).map(k => k.code)) : null;
+  KEYMAP.forEach(k => {
+    const keyEl = registry[k.code];
+    if (!keyEl) return;
+    keyEl.classList.toggle('dim', active ? !allowed.has(k.code) : false);
   });
 }
 
 function updateKeyboardStage() {
-  const allowed = new Set(allowedKeysForStages(state.stages).map(k => k.code));
-  KEYMAP.forEach(k => {
-    keyElsByCode[k.code].classList.toggle('dim', !allowed.has(k.code));
-  });
+  applyStageDim(keyElsByCode, true);
+}
+
+// 자리별 단어연습에서만 자리 단계 선택이 자판 색에 반영되고, 나머지 연습은 항상 전체 색이다
+function updateTypingKeyboardStage() {
+  applyStageDim(typingKeyElsByCode, state.mode === 'rowword');
 }
 
 function highlightKeyInRegistry(registry, code) {
@@ -853,7 +900,7 @@ function highlightFinger(fingerCode, targetCode) {
 }
 
 function flashKeyInRegistry(registry, code, ok) {
-  ok ? soundEngine.playCorrect() : soundEngine.playWrong();
+  ok ? soundEngine.playTypeClick() : soundEngine.playWrong();
   const keyEl = registry[code];
   if (!keyEl) return;
   const cls = ok ? 'correct-flash' : 'wrong-flash';
@@ -897,6 +944,7 @@ function renderPositionPrompt() {
   el.positionCurrent.textContent = state.lang === 'ko' ? cur.ko : cur.en;
   el.positionNext.textContent = next ? (state.lang === 'ko' ? next.ko : next.en) : '';
   el.modePosition.dataset.row = cur.row; // 기본/윗/아랫자리 색(파랑/주황/초록)을 현재 자리에 맞춘다
+  el.virtualKeyboard.dataset.row = cur.row; // 자판의 목표 키 강조색도 같은 자리 색으로
   layoutHandOverlay();
   highlightTargetKey(cur.code);
   highlightFinger(cur.finger, cur.code);
@@ -967,7 +1015,11 @@ let typingComposedSoFar = '';
 function currentExpectedKeyCode() {
   const target = state.targetText;
   const typed = el.typingInput.value;
-  const idx = typed.length;
+  // 한글은 자모가 조합되는 동안(예: "오"를 만들려고 ㅇ까지만 친 상태) value의 마지막 글자가
+  // 아직 완성되지 않은 채로 이미 한 글자로 잡혀서, idx를 typed.length로만 계산하면
+  // "다음 글자"로 착각해 버린다. 조합 중일 때는 그 글자를 아직 "완성 전"으로 보고
+  // 한 칸 당겨서(typed.length - 1) 지금 조합 중인 글자를 계속 target으로 본다.
+  const idx = Math.max(0, typed.length - (state.isComposing ? 1 : 0));
   if (idx >= target.length) return null;
   const targetChar = target[idx];
   if (targetChar === '\n') return null;
@@ -985,8 +1037,13 @@ function currentExpectedKeyCode() {
 
 function updateTypingKeyboardHighlight() {
   const code = currentExpectedKeyCode();
-  if (code) highlightKeyInRegistry(typingKeyElsByCode, code);
-  else Object.values(typingKeyElsByCode).forEach(k => k.classList.remove('target'));
+  if (code) {
+    const info = KEYMAP.find(k => k.code === code);
+    if (info) el.typingKeyboard.dataset.row = info.row; // 목표 키가 속한 자리 색으로 강조
+    highlightKeyInRegistry(typingKeyElsByCode, code);
+  } else {
+    Object.values(typingKeyElsByCode).forEach(k => k.classList.remove('target'));
+  }
 }
 
 function buildTypingTarget() {
@@ -1023,6 +1080,7 @@ function startTypingDrill() {
   el.typingInput.value = '';
   typingComposedSoFar = '';
   updateKeyboardLang();
+  updateTypingKeyboardStage();
   renderTypingDisplay('');
   updateTypingKeyboardHighlight();
   updateTypingHint('');
@@ -1138,7 +1196,7 @@ function handleTypingKeydown(e) {
 function updateGameHud() {
   el.gameLives.textContent = state.game.lives;
   el.gameScore.textContent = state.game.score;
-  el.gameLevel.textContent = state.game.level;
+  el.gameLevel.textContent = gameLevelLabel();
 }
 
 function stopGameLoops() {
@@ -1167,6 +1225,7 @@ function setDifficulty(key) {
   // 진행 중인 게임의 목숨/점수에는 영향 없이, 다음 판부터 적용된다.
   if (!state.game.active) {
     el.gameLives.textContent = DIFFICULTIES[key].lives;
+    el.gameLevel.textContent = gameLevelLabel();
   }
 }
 
@@ -1179,11 +1238,46 @@ function resetGamePanel() {
   state.game.wordsCleared = 0;
   state.game.nextId = 1;
   state.game.lastFrame = 0;
+  updateKeyboardLang();
   updateGameHud();
+  updateGameKeyboardHighlight();
   el.gameStartOverlay.style.display = 'flex';
   el.gameInput.disabled = true;
   el.gameInput.value = '';
   hideGameOver();
+  el.levelUpModal.classList.remove('show');
+}
+
+// 지금 잡아야 할(배에 가장 가까운, 입력한 접두어와 일치하는) 단어를 찾아 다음 글자를 강조한다.
+// 자모 단위까지는 추적하지 않고 완성된 글자 단위로 다음 글자의 첫 자모만 강조한다
+// (게임 입력창은 완성된 접두어 일치로만 판정하므로 이 정도로도 충분한 힌트가 된다).
+function updateGameKeyboardHighlight() {
+  const typed = el.gameInput.value.trim().toLowerCase();
+  let candidates = state.game.words;
+  if (typed) candidates = candidates.filter(w => w.text.toLowerCase().startsWith(typed));
+  if (!candidates.length) {
+    Object.values(gameKeyElsByCode).forEach(k => k.classList.remove('target'));
+    return;
+  }
+  const target = candidates.reduce((a, b) => (a.y > b.y ? a : b));
+  const nextChar = target.text[typed.length];
+  let code = null;
+  if (nextChar) {
+    if (state.lang === 'en') {
+      const key = KEYMAP.find(k => k.en === nextChar.toLowerCase());
+      code = key ? key.code : null;
+    } else {
+      const jamos = decomposeKoreanChar(nextChar);
+      code = jamos.length ? jamoToKeyCode(jamos[0]) : null;
+    }
+  }
+  if (code) {
+    const info = KEYMAP.find(k => k.code === code);
+    if (info) el.gameKeyboard.dataset.row = info.row;
+    highlightKeyInRegistry(gameKeyElsByCode, code);
+  } else {
+    Object.values(gameKeyElsByCode).forEach(k => k.classList.remove('target'));
+  }
 }
 
 function spawnWord() {
@@ -1211,6 +1305,7 @@ function spawnWord() {
   const cfg = state.game.config;
   const speed = cfg.baseSpeed + (state.game.level - 1) * cfg.speedPerLevel + Math.random() * 8;
   state.game.words.push({ id: state.game.nextId++, text, el: wordEl, y: -46, speed, bonusType });
+  updateGameKeyboardHighlight();
 }
 
 function scheduleNextSpawn() {
@@ -1232,8 +1327,11 @@ function popWord(index) {
   state.game.words.splice(index, 1);
   state.game.score += w.text.length * 10;
   state.game.wordsCleared++;
+  const prevLevel = state.game.level;
   state.game.level = Math.min(GAME_LEVEL_MAX, Math.floor(state.game.wordsCleared / GAME_WORDS_PER_LEVEL) + 1);
   updateGameHud();
+  updateGameKeyboardHighlight();
+  if (state.game.level > prevLevel) showLevelUp();
 }
 
 function missWord(index) {
@@ -1245,11 +1343,43 @@ function missWord(index) {
   state.game.words.splice(index, 1);
   state.game.lives--;
   updateGameHud();
+  updateGameKeyboardHighlight();
   el.gameField.classList.add('hit-flash');
   el.gameBoat.classList.add('hit');
   setTimeout(() => el.gameField.classList.remove('hit-flash'), 250);
   setTimeout(() => el.gameBoat.classList.remove('hit'), 400);
   if (state.game.lives <= 0) endGame();
+}
+
+// 난이도(쉬움/보통/어려움)별로 각각 5단계씩 있다는 걸 "1-3" 같은 표기로 보여준다.
+// 맨 처음 고르는 건 지금처럼 난이도 3가지뿐이고, 그 안에서 5단계씩 진행된다.
+const DIFFICULTY_TIER = { easy: 1, normal: 2, hard: 3 };
+function gameLevelLabel() {
+  const tier = DIFFICULTY_TIER[state.game.difficulty] || 1;
+  return `${tier}-${state.game.level}`;
+}
+
+// 스폰/이동만 멈추고(목숨·점수 등은 그대로) 레벨업 안내를 보여준다. stopGameLoops와 달리
+// state.game.active는 그대로 true로 둬서 "일시정지"임을 구분한다.
+function showLevelUp() {
+  if (state.game.rafId) cancelAnimationFrame(state.game.rafId);
+  if (state.game.spawnTimeoutId) clearTimeout(state.game.spawnTimeoutId);
+  state.game.rafId = null;
+  state.game.spawnTimeoutId = null;
+  el.gameInput.disabled = true;
+  el.levelUpLabel.textContent = gameLevelLabel();
+  el.levelUpModal.classList.add('show');
+  soundEngine.playFanfare();
+}
+
+function resumeAfterLevelUp() {
+  el.levelUpModal.classList.remove('show');
+  if (!state.game.active) return; // 레벨업 팝업이 떠 있는 동안 게임이 끝났다면 재개하지 않는다
+  el.gameInput.disabled = false;
+  el.gameInput.focus();
+  state.game.lastFrame = 0; // 멈춰있던 시간만큼 dt가 튀지 않도록 초기화
+  scheduleNextSpawn();
+  state.game.rafId = requestAnimationFrame(gameLoop);
 }
 
 function gameLoop(timestamp) {
@@ -1258,15 +1388,14 @@ function gameLoop(timestamp) {
   const dt = (timestamp - state.game.lastFrame) / 1000;
   state.game.lastFrame = timestamp;
 
-  // 배 이미지가 세로로 시작하는 첫 지점(윗변)에 닿으면 충돌로 처리한다.
-  const fieldRect = el.gameField.getBoundingClientRect();
-  const boatTop = el.gameBoat.getBoundingClientRect().top - fieldRect.top;
+  // 배에 닿는 순간이 아니라, 게임판 맨 아래(바닥)까지 떨어져야 놓친 것으로 처리한다.
+  const fieldHeight = el.gameField.clientHeight;
 
   for (let i = state.game.words.length - 1; i >= 0; i--) {
     const w = state.game.words[i];
     w.y += w.speed * dt * state.game.speedMultiplier;
     w.el.style.top = `${w.y}px`;
-    if (w.y + w.el.offsetHeight >= boatTop) missWord(i);
+    if (w.y + w.el.offsetHeight >= fieldHeight) missWord(i);
   }
 
   state.game.rafId = requestAnimationFrame(gameLoop);
@@ -1316,11 +1445,16 @@ function handleGameInput() {
   state.game.words.forEach(w => {
     w.el.classList.toggle('targeted', value.length > 0 && w.text.toLowerCase().startsWith(value.toLowerCase()));
   });
+  updateGameKeyboardHighlight();
 }
 
 function handleGameKeydown(e) {
   if (e.key !== 'Enter') return;
   e.preventDefault();
+  // 이 Enter가 document로 버블링되면, popWord()가 방금 띄운 레벨업 팝업을
+  // "팝업이 떠 있으면 Enter로 닫기" 단축키가 같은 키 입력 한 번에 즉시 닫아버린다
+  // (result-modal 때와 같은 문제). 게임 입력의 Enter는 여기서 처리를 끝내므로 막아준다.
+  e.stopPropagation();
   if (!state.game.active) return;
   const value = el.gameInput.value.trim();
   if (!value) return;
@@ -1356,10 +1490,12 @@ function startGame() {
   state.game.active = true;
   updateGameHud();
   hideGameOver();
+  el.levelUpModal.classList.remove('show');
   el.gameStartOverlay.style.display = 'none';
   el.gameInput.disabled = false;
   el.gameInput.value = '';
   el.gameInput.focus();
+  updateGameKeyboardHighlight();
   scheduleNextSpawn();
   state.game.rafId = requestAnimationFrame(gameLoop);
 }
@@ -1367,9 +1503,10 @@ function startGame() {
 function endGame() {
   stopGameLoops();
   el.gameInput.disabled = true;
+  el.levelUpModal.classList.remove('show');
   el.gameFinalScore.textContent = state.game.score;
   el.gameFinalWords.textContent = state.game.wordsCleared;
-  el.gameFinalLevel.textContent = state.game.level;
+  el.gameFinalLevel.textContent = gameLevelLabel();
   el.gameOverModal.classList.add('show');
 }
 
@@ -1468,6 +1605,9 @@ document.addEventListener('keydown', e => {
   } else if (el.gameOverModal.classList.contains('show')) {
     e.preventDefault();
     el.gameRestartBtn.click();
+  } else if (el.levelUpModal.classList.contains('show')) {
+    e.preventDefault();
+    el.levelUpContinueBtn.click();
   }
 });
 
@@ -1480,6 +1620,7 @@ el.gameRestartBtn.addEventListener('click', () => {
 });
 el.gameInput.addEventListener('input', handleGameInput);
 el.gameInput.addEventListener('keydown', handleGameKeydown);
+el.levelUpContinueBtn.addEventListener('click', resumeAfterLevelUp);
 
 // ===================== 초기화 =====================
 
