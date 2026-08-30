@@ -80,24 +80,22 @@
     <div class="stat"><span class="label">속도</span><span id="stat-speed" class="value">0</span><span class="unit">타/분</span></div>
     <div class="stat"><span class="label">정확도</span><span id="stat-accuracy" class="value">100</span><span class="unit">%</span></div>
     <div class="stat"><span class="label">시간</span><span id="stat-time" class="value">0</span><span class="unit">초</span></div>
+    <span class="stat-divider" id="stats-divider">|</span>
+    <div class="stage-select" id="stage-select">
+      <span class="stage-label">자리 단계</span>
+      <button data-stage="0" class="active" type="button">기본자리</button>
+      <button data-stage="1" type="button">윗자리</button>
+      <button data-stage="2" type="button">아랫자리</button>
+    </div>
+    <div class="category-select" id="category-select">
+      <span class="stage-label">글 종류</span>
+      <button data-category="novel" class="active" type="button">📚 소설</button>
+      <button data-category="proverbs" type="button">🧧 속담</button>
+      <button data-category="folktale" type="button">🏮 전래동화</button>
+      <button data-category="poem" type="button">🌱 동시</button>
+    </div>
     <button id="restart-btn" type="button">🔄 새로하기</button>
   </section>
-
-  <div class="stage-select" id="stage-select">
-    <span class="stage-label">자리 단계</span>
-    <button data-stage="0" class="active" type="button">기본자리</button>
-    <button data-stage="1" type="button">윗자리</button>
-    <button data-stage="2" type="button">아랫자리</button>
-    <span class="stage-hint">✓ 여러 개를 한번에 골라도 돼요!</span>
-  </div>
-
-  <div class="category-select" id="category-select">
-    <span class="stage-label">글 종류</span>
-    <button data-category="essay" class="active" type="button">📰 에세이</button>
-    <button data-category="novel" type="button">📚 소설</button>
-    <button data-category="lyrics" type="button">🎵 노래가사</button>
-    <button data-category="script" type="button">🎬 드라마 대본</button>
-  </div>
 
   <!-- 자리연습 -->
   <section id="mode-position" class="mode-panel active">
@@ -120,8 +118,8 @@
   <section id="mode-typing" class="mode-panel">
     <div class="typing-display" id="typing-display"></div>
     <p class="passage-source" id="passage-source"></p>
-    <p class="typing-hint" id="typing-hint">⌨️ 키보드로 입력을 시작해보세요!</p>
-    <textarea id="typing-input" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="입력 시작..."></textarea>
+    <textarea class="typing-preview" id="typing-preview" readonly aria-label="지금까지 입력한 내용"></textarea>
+    <p class="typing-hint" id="typing-hint"></p>
     <div class="keyboard-stage">
       <div class="virtual-keyboard" id="typing-keyboard"></div>
     </div>
@@ -131,8 +129,8 @@
   <section id="mode-game" class="mode-panel">
     <div class="difficulty-select" id="difficulty-select">
       <span class="stage-label">난이도</span>
-      <button data-difficulty="easy" type="button">쉬움</button>
-      <button data-difficulty="normal" class="active" type="button">보통</button>
+      <button data-difficulty="easy" class="active" type="button">쉬움</button>
+      <button data-difficulty="normal" type="button">보통</button>
       <button data-difficulty="hard" type="button">어려움</button>
     </div>
     <div class="game-hud">
@@ -142,7 +140,6 @@
     </div>
     <div class="game-field" id="game-field">
       <div class="game-sea">
-        <div class="wave-layer"></div>
         <div class="game-boat" id="game-boat">⛵</div>
       </div>
       <div class="game-start-overlay" id="game-start-overlay">

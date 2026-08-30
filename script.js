@@ -105,40 +105,15 @@ const SENTENCES = {
 };
 
 // 글연습 항목
-// - essay: 이 프로젝트를 위해 새로 쓴 창작 예문 (source 없음)
-// - novel/lyrics/script: 저작권이 만료된 실제 고전 작품 발췌 (퍼블릭 도메인, 위키문헌/구텐베르크 프로젝트 원문 대조)
+// - novel: 저작권이 만료된 실제 고전 작품 발췌 (퍼블릭 도메인, 위키문헌/구텐베르크 프로젝트 원문 대조)
 //   한자 병기나 옛 표기 일부는 타이핑 연습에 맞게 현대 한글 표기로만 남겼습니다.
+// - proverbs/folktale/poem: 이 프로젝트를 위해 새로 쓴 글이거나(속담 뜻풀이, 동화, 동시 일부),
+//   저작권이 만료된 실제 작품(윤동주 「서시」 등, 퍼블릭 도메인)입니다.
 function passage(text, source) {
   return { text, source };
 }
 
 const PASSAGES = {
-  essay: {
-    ko: [
-      passage('타자 연습은 꾸준함이 가장 중요합니다. 처음에는 손가락이 어색하고 속도도 느리게 느껴지겠지만, 매일 조금씩 연습하다 보면 어느새 손가락이 자판 위를 자연스럽게 움직이게 됩니다. 정확하게 치는 습관을 먼저 기르고, 그다음에 속도를 높여 나가는 것이 좋은 방법입니다. 오늘도 즐거운 마음으로 연습을 시작해 볼까요? 하루 10분씩이라도 매일 반복하면, 한 달 후에는 몰라보게 달라진 손가락을 만나게 될 거예요.', ''),
-      passage('봄이 되면 온 세상이 초록빛으로 물들기 시작합니다. 겨우내 움츠렸던 나뭇가지에서는 여린 새싹이 돋아나고, 길가에는 이름 모를 꽃들이 하나둘 피어납니다. 사람들은 두꺼운 외투를 벗고 가벼운 옷차림으로 거리를 걷습니다. 따뜻한 햇살 아래에서 산책을 하다 보면 저절로 콧노래가 나옵니다. 겨울 동안 쌓였던 먼지를 씻어내듯, 봄비가 한 차례 지나가고 나면 거리는 한층 더 싱그러운 초록으로 물듭니다.', ''),
-      passage('고양이는 하루의 대부분을 잠으로 보내는 동물입니다. 햇살이 잘 드는 창가나 포근한 담요 위에서 몸을 동그랗게 말고 낮잠을 즐깁니다. 하지만 눈을 뜨는 순간에는 놀라운 순발력을 보여주기도 합니다. 작은 소리에도 귀를 쫑긋 세우고, 움직이는 물체를 향해 재빠르게 몸을 날립니다. 이런 반전 매력 때문에 사람들은 고양이를 오랫동안 사랑해 왔습니다.', ''),
-      passage('새벽 공기는 유난히 맑고 차갑습니다. 아직 잠들어 있는 도시 위로 첫 버스가 지나가고, 가로등은 하나둘 꺼지기 시작합니다. 이 고요한 시간을 좋아하는 사람들은 이른 아침의 산책이나 조깅으로 하루를 엽니다. 부지런한 하루의 시작은 언제나 작은 뿌듯함을 안겨줍니다.', ''),
-      passage('도서관의 냄새를 좋아하는 사람들이 있습니다. 오래된 종이와 잉크가 뒤섞인 그 특유의 냄새는 어쩐지 마음을 차분하게 가라앉혀 줍니다. 책장 사이를 걷다 보면 낯선 제목의 책 한 권이 눈에 들어오고, 그렇게 우연한 만남에서 좋은 책을 발견하기도 합니다.', ''),
-      passage('여행의 즐거움은 목적지에만 있지 않습니다. 낯선 기차역에서 시간표를 확인하는 순간, 창밖으로 스쳐 지나가는 풍경, 처음 먹어보는 지역 음식까지, 그 모든 과정이 여행의 일부입니다. 계획대로 되지 않는 순간조차 나중엔 좋은 추억이 됩니다.', ''),
-      passage('손편지를 쓰는 사람이 점점 줄어들고 있습니다. 그러나 정성껏 눌러쓴 글씨와 종이의 질감은 메시지 앱이 흉내 낼 수 없는 온기를 담고 있습니다. 가끔은 느리더라도 마음이 전해지는 방법을 택하는 것도 좋은 일입니다.', ''),
-      passage('비 오는 날 창문에 맺힌 물방울을 가만히 바라본 적이 있나요? 물방울이 천천히 흘러내리며 서로 만나고 갈라지는 모습은 마치 작은 강물 같습니다. 별것 아닌 풍경이지만, 가만히 들여다보면 시간 가는 줄 모르게 됩니다.', ''),
-      passage('요리를 배우는 과정은 실패의 연속입니다. 소금을 너무 많이 넣기도 하고, 불 조절에 실패해 태우기도 합니다. 하지만 몇 번의 시행착오 끝에 완성한 한 그릇의 요리는 그 어떤 것보다 뿌듯한 성취감을 안겨줍니다.', ''),
-      passage('밤하늘의 별을 보려면 무엇보다 어둠에 익숙해질 시간이 필요합니다. 처음에는 아무것도 보이지 않다가, 몇 분이 지나면 하나둘 별이 눈에 들어오기 시작합니다. 인내심을 가지고 기다리는 법을 별빛에게서 배우게 됩니다.', ''),
-    ],
-    en: [
-      passage("Typing practice is all about consistency. At first, your fingers may feel clumsy and your speed may feel painfully slow, but with a little practice every day, your fingers will soon move naturally across the keyboard. It is best to build accurate habits first, and then gradually increase your speed. Why not start today's practice with a cheerful heart? Even just ten minutes a day, repeated consistently, can make a noticeable difference within a single month.", ''),
-      passage('When spring arrives, the whole world slowly turns green again. Tiny buds sprout from branches that shivered through the winter, and unnamed flowers begin to bloom along the streets one by one. People shed their heavy coats for lighter clothes and stroll through town. Walking beneath the warm sunshine, you might find yourself humming a little tune. Just as spring rain washes away the dust of winter, the streets grow even greener and fresher after each shower.', ''),
-      passage('Cats spend most of their day sleeping. They curl up into a cozy circle on a sunlit windowsill or a soft blanket, enjoying a long nap. Yet the moment they open their eyes, they can show surprising bursts of energy. Their ears perk up at the smallest sound, and they can pounce swiftly toward anything that moves. It is this delightful contrast that has made cats such beloved companions for so long.', ''),
-      passage("The early morning air feels especially clear and cool. The first bus of the day passes through a city still half asleep, and the streetlights begin to switch off one by one. People who love this quiet hour often start their day with a walk or a jog. Beginning the day early always brings a small sense of pride.", ''),
-      passage('Some people simply love the smell of a library. The distinct scent of old paper mixed with ink has a way of calming the mind. Wandering between the shelves, an unfamiliar title might catch your eye, and that is often how the best books are discovered.', ''),
-      passage("The joy of travel is not only found at the destination. Checking a timetable at an unfamiliar train station, watching scenery rush past the window, tasting a local dish for the first time - all of these moments are part of the journey. Even the times things don't go as planned become good memories later.", ''),
-      passage('Fewer and fewer people write letters by hand these days. Yet careful handwriting and the texture of paper carry a warmth that no messaging app can imitate. Sometimes it is worth choosing the slower way, if it means the feeling comes through more clearly.', ''),
-      passage('Have you ever quietly watched raindrops gather on a window? As they slide down slowly, meeting and splitting apart, they look like tiny rivers. It is such a small thing to watch, yet time seems to pass without notice.', ''),
-      passage('Learning to cook is a series of small failures. Sometimes there is too much salt, sometimes the heat is wrong and something burns. But after a few rounds of trial and error, a single finished dish can bring more satisfaction than almost anything else.', ''),
-      passage('Seeing stars in the night sky first requires time for your eyes to adjust to the dark. At first nothing seems visible, but after a few minutes, stars begin to appear one by one. Patience is a lesson the night sky teaches quietly.', ''),
-    ],
-  },
   novel: {
     ko: [
       passage(
@@ -204,80 +179,72 @@ const PASSAGES = {
       ),
     ],
   },
-  lyrics: {
+  proverbs: {
+    // 속담 원문과 그 뜻을 한 화면 안에 두 줄로 이어 붙여서, 뜻까지 통째로 타이핑하게 한다.
     ko: [
-      passage('밤하늘 저 별빛보다\n더 반짝이는 건 너의 눈\n손끝이 스칠 때마다\n심장이 쿵 하고 뛰어\n\n말하지 않아도 알잖아\n이 떨림이 뭔지\n오늘 밤은 너와 나\n이 순간이 전부야', '연습용 창작 가사'),
-      passage('높이 더 높이 날아올라\n두려움 따위는 버려둬\n내가 나일 수 있는 이유\n그게 바로 너니까\n\n빛나는 무대 위에서\n주인공은 바로 나\n흔들리지 않을게\n끝까지 가볼게', '연습용 창작 가사'),
-      passage('괜찮아 울어도 괜찮아\n오늘 하루쯤은\n내일 다시 웃을 거니까\n걱정하지 마\n\n네가 있어 다행이야\n이 밤이 지나가도\n우리 함께라면\n뭐든 할 수 있어', '연습용 창작 가사'),
-      passage('여름밤 바람을 타고\n우리 둘이 걸어가\n네온사인 반짝이는 거리\n노래를 부르며\n\n지금 이 순간 기억해줘\n영원할 것처럼\n너와 나 이 밤을\n영원히 간직할게', '연습용 창작 가사'),
-      passage('심장이 뛰는 소리\n너에게 들릴까\n조심스럽게 다가가\n손을 내밀어봐\n\n달빛 아래 춤을 춰\n둘만의 세상에서\n오늘 밤이 지나도\n잊지 않을 거야', '연습용 창작 가사'),
-      passage('다시 일어설 거야\n넘어져도 괜찮아\n이 길 끝에 뭐가 있을지\n아무도 모르니까\n\n두 손을 꼭 잡고서\n앞으로 걸어가자\n우리가 만든 이 노래\n끝까지 불러보자', '연습용 창작 가사'),
-      passage('스쳐 지나간 인연도\n소중한 이유가 있어\n그때는 몰랐던 감정\n이제는 알 것 같아\n\n너를 만나고 나서야\n나는 조금 더 자랐어\n고마워 그 시절의 나에게\n이제는 웃으며 안녕', '연습용 창작 가사'),
-      passage('새벽을 달리는 우리\n지친 하루는 잊어\n창문을 열어젖히면\n펼쳐지는 별빛\n\n꿈이라고 해도 좋아\n이 순간이 진짜라면\n너와 함께라면\n어디든 갈 수 있어', '연습용 창작 가사'),
-      passage('말 없이 건넨 그 손길\n따뜻했던 그 온기\n잊지 못해 자꾸만\n생각이 나\n\n다시 만나는 날엔\n웃으며 인사할게\n그리웠다는 말 대신\n안아줄게', '연습용 창작 가사'),
-      passage('빛나는 너의 미소가\n오늘 하루를 살게 해\n지친 나를 일으켜주는\n단 하나의 이유\n\n함께라면 두렵지 않아\n어떤 어둠도 괜찮아\n너와 나 우리라는 이름으로\n끝까지 걸어갈게', '연습용 창작 가사'),
+      passage('가는 말이 고와야 오는 말이 곱다.\n내가 남에게 말을 곱게 해야 남도 나에게 좋게 말한다는 뜻이에요.', '한국 속담'),
+      passage('백지장도 맞들면 낫다.\n아무리 쉬운 일이라도 여럿이 힘을 합치면 훨씬 쉬워진다는 뜻이에요.', '한국 속담'),
+      passage('호랑이도 제 말 하면 온다.\n누군가에 대해 이야기하고 있는데 마침 그 사람이 나타났을 때 쓰는 말이에요.', '한국 속담'),
+      passage('발 없는 말이 천 리 간다.\n말은 발이 없어도 순식간에 멀리 퍼져 나가니, 말을 늘 조심해야 한다는 뜻이에요.', '한국 속담'),
+      passage('티끌 모아 태산.\n아무리 작은 것도 꾸준히 모으면 나중에는 큰 것이 된다는 뜻이에요.', '한국 속담'),
+      passage('소 잃고 외양간 고친다.\n일이 이미 잘못된 뒤에야 손을 쓰면 아무 소용이 없다는 뜻이에요.', '한국 속담'),
+      passage('우물 안 개구리.\n넓은 세상을 알지 못하고, 자기가 아는 것이 전부인 줄 아는 사람을 이르는 말이에요.', '한국 속담'),
+      passage('낮말은 새가 듣고 밤말은 쥐가 듣는다.\n아무리 조심스럽게 한 말이라도 결국 남의 귀에 들어갈 수 있으니, 말을 항상 조심해야 한다는 뜻이에요.', '한국 속담'),
+      passage('천 리 길도 한 걸음부터.\n아무리 큰 일이라도 작은 것부터 차근차근 시작해야 이룰 수 있다는 뜻이에요.', '한국 속담'),
+      passage('고생 끝에 낙이 온다.\n힘든 일을 참고 견디다 보면 결국에는 좋은 일이 생긴다는 뜻이에요.', '한국 속담'),
     ],
     en: [
-      passage("Under the city lights tonight\nyour eyes shine brighter than the stars\nEvery time our fingers touch\nmy heart forgets how to slow down\n\nYou don't have to say a word\nI already know it's real\nTonight it's just you and me\nthis moment is everything", 'Original practice lyrics'),
-      passage("Fly a little higher now\nleave your fears down on the ground\nThe reason I can be myself\nis simply because of you\n\nUnder the spotlight, on this stage\nI'm the main character tonight\nI won't let myself shake\nI'll go all the way", 'Original practice lyrics'),
-      passage("It's okay to cry tonight\njust for today, let it out\nTomorrow you'll be smiling again\nso don't you worry now\n\nI'm glad that you are here\neven when this night fades away\nas long as we're together\nwe can make it through anything", 'Original practice lyrics'),
-      passage("Riding on a summer breeze\nwe're walking side by side\nUnder neon lights that glow\nwe're singing to the night\n\nRemember this right now\nlike it's going to last forever\nYou and me, this very night\nI'll keep it close forever", 'Original practice lyrics'),
-      passage("Can you hear my heartbeat now\nbeating faster just for you\nI'm taking one step closer\nreaching out my hand to you\n\nDancing underneath the moon\nin a world made just for two\nEven when tonight is over\nI won't forget this feeling", 'Original practice lyrics'),
-      passage("I'm gonna stand back up again\nit's alright if I fall down\nNobody knows what's waiting\nat the end of this long road\n\nSo hold my hand a little tighter\nlet's keep walking straight ahead\nThis song that we made together\nlet's sing it till the very end", 'Original practice lyrics'),
-      passage("Even the people who passed by\nhad a reason to be there\nFeelings I never understood\nnow I finally see them clear\n\nIt was meeting you that helped me\ngrow a little more each day\nThank you to my younger self\nnow I can smile and say goodbye", 'Original practice lyrics'),
-      passage("Driving through the break of dawn\nleaving all this day behind\nRoll the window down a little\nand the starlight fills the sky\n\nCall it a dream if you want\nas long as this moment is real\nAs long as I'm here with you\nwe could go anywhere at all", 'Original practice lyrics'),
-      passage("That quiet touch you gave me\nstill feels warm inside my hand\nI can't stop thinking about it\nit keeps replaying in my mind\n\nWhen we finally meet again\nI'll greet you with a smile\nInstead of saying that I missed you\nI'll just hold you tight", 'Original practice lyrics'),
-      passage("Your shining smile tonight\nis the reason I get through today\nThe only reason that I'm standing\nwhen I'm ready to give up\n\nI'm not afraid of anything\nas long as we're together\nUnder the name of us\nI'll keep walking till the end", 'Original practice lyrics'),
+      passage('Actions speak louder than words.\nWhat people actually do matters more than what they merely say.', 'English proverb'),
+      passage('The early bird catches the worm.\nThose who start early or act quickly have the best chance of success.', 'English proverb'),
+      passage("Don't judge a book by its cover.\nYou shouldn't decide what something is like based only on how it looks.", 'English proverb'),
+      passage('Practice makes perfect.\nThe more you practice something, the better you become at it.', 'English proverb'),
+      passage('A picture is worth a thousand words.\nAn image can express an idea more powerfully than a long explanation.', 'English proverb'),
+      passage('When it rains, it pours.\nDifficult things often seem to happen all at once instead of one at a time.', 'English proverb'),
+      passage('Every cloud has a silver lining.\nEven a difficult or sad situation usually has some positive side to it.', 'English proverb'),
+      passage("Better late than never.\nIt's better to do something late than to never do it at all.", 'English proverb'),
+      passage('The pen is mightier than the sword.\nWords and ideas can change the world more powerfully than violence can.', 'English proverb'),
+      passage("Where there's a will, there's a way.\nIf you're determined enough, you'll find a way to achieve what you want.", 'English proverb'),
     ],
   },
-  script: {
+  folktale: {
     ko: [
-      passage(
-        '김첨지: (아내의 머리를 흔들며) 이 년아, 말을 해, 말을! 입이 붙었어, 이 오라질 년!\n아내: (대답이 없다)\n김첨지: (다시 흔들며) 으응, 이것 봐, 아무 말이 없네.\n아내: (대답이 없다)\n김첨지: (목소리가 떨리며) 이년아, 죽었단 말이냐, 왜 말이 없어.\n아내: (대답이 없다)\n김첨지: (울먹이며) 으응, 또 대답이 없네, 정말 죽었나버이.\n김첨지: (얼굴을 마주 비비며) 이 눈깔! 이 눈깔! 왜 나를 바라보지 못하고 천정만 보느냐, 응.\n김첨지: (미친 듯이 중얼거리며) 설렁탕을 사다놓았는데 왜 먹지를 못하니, 왜 먹지를 못하니... 괴상하게도 오늘은! 운수가 좋더니만...',
-        '현진건, 「운수 좋은 날」(1924) 결말부 · 퍼블릭 도메인'
-      ),
-      passage(
-        '학생: (다급하게 뛰어나오며) 남대문 정거장까지 얼마요?\n김첨지: (잠깐 주저하며) 남대문 정거장까지 말씀입니까.\n학생: (초조한 듯) 그래 남대문 정거장까지 얼마란 말이요?\n김첨지: (불쑥) 일 원 오십 전만 줍시요.\n학생: (고개를 기웃하며) 일 원 오십 전은 너무 과한데.\n김첨지: (빙글빙글 웃으며) 아니올시다. 잇수로 치면 여기서 거기가 시오 리가 넘는답니다. 또 이런 진날은 좀 더 주셔야지요.\n학생: (총총히 짐을 챙기며) 그러면 달라는 대로 줄 터이니 빨리 가요.',
-        '현진건, 「운수 좋은 날」(1924) 중 · 퍼블릭 도메인'
-      ),
-      passage(
-        'P: (비굴한 미소를 지으며) 글쎄올시다, 그러시다면 지금 당장 어떻게 해주십사고 무리하게 조를 수야 있겠습니까마는... 그러면 이 담에 결원이 있다든지 하면 그때는 꼭...\nK사장: (하품 섞인 목소리로) 결원이 그렇게 나나 어데... 그러고 간혹가다가 결원이 난다더래도 유력한 후보자가 몇십 명씩 밀려 있어서...\nK사장: (혀를 차며) 거 참 큰일들 났어. 저렇게 좋은 청년들이 일거리가 없어서 저렇게들 애를 쓰니.\nP: (말 중동을 갈라 반문하며) 농촌으로 돌아가서 무얼 합니까?',
-        '채만식, 「레디메이드 인생」(1934) 중 · 퍼블릭 도메인'
-      ),
-      passage('민준: (반갑게 손을 흔들며) 오랜만이야.\n서연: (웃으며) 그러게, 정말 오랜만이네.\n민준: (다가서며) 잘 지냈어?\n서연: (어깨를 으쓱하며) 그럭저럭. 너는?\n민준: (미소 지으며) 나도 그럭저럭 지냈어.', ''),
-      passage('지훈: (자신 있게) 이번 일은 내가 맡을게.\n하은: (걱정스러운 표정으로) 혼자서 괜찮겠어?\n지훈: (손을 내저으며) 걱정하지 마, 잘 해낼 수 있어.\n하은: (한숨을 쉬며) 그래, 믿을게. 대신 무리하지는 마.', ''),
-      passage('수아: (하늘을 올려다보며) 오늘따라 하늘이 예쁘다.\n도윤: (고개를 끄덕이며) 그러게, 노을이 진짜 곱네.\n수아: (미소 지으며) 이런 날은 그냥 걷고 싶어져.\n도윤: (손을 내밀며) 그럼 우리, 조금만 더 걸을까?', ''),
-      passage('재민: (놀란 눈으로) 이거 진짜 네가 만든 거야?\n소율: (뿌듯하게) 응, 밤새 연습했어.\n재민: (엄지를 치켜세우며) 대박, 완전 잘하는데?\n소율: (수줍게 웃으며) 그렇게 말해주니 고맙다.', ''),
-      passage('현우: (급하게 다가오며) 오늘 회의 어떻게 됐어?\n지아: (안도하며) 생각보다 잘 끝났어.\n현우: (가슴을 쓸어내리며) 다행이다, 걱정 많이 했는데.\n지아: (웃으며) 네 덕분에 준비 잘 됐어, 고마워.', ''),
-      passage('은서: (달력을 보며) 우리 언제 또 만날까?\n태윤: (잠시 생각하다) 다음 주말 어때?\n은서: (밝게 웃으며) 좋아, 그때 보자.\n태윤: (손을 흔들며) 그래, 연락할게.', ''),
-      passage('유진: (지도를 들여다보며) 이 길이 맞나?\n서준: (고개를 갸웃하며) 지도상으로는 맞는데... 좀 이상하다.\n유진: (앞을 가리키며) 일단 조금만 더 가보자.\n서준: (따라가며) 그래, 그러자.', ''),
+      passage('옛날 어느 마을에 흥부와 놀부라는 형제가 살았습니다. 욕심 많은 형 놀부는 부모님이 물려주신 재산을 혼자 다 차지하고, 마음씨 착한 동생 흥부를 집에서 내쫓았습니다. 흥부는 가난했지만 다리 다친 제비를 정성껏 치료해 주었고, 이듬해 제비가 물어다 준 박씨를 심었더니 커다란 박 속에서 금은보화가 쏟아져 나왔습니다.', '전래동화 「흥부와 놀부」'),
+      passage('콩쥐는 어릴 때 어머니를 여의고 계모와 함께 살게 되었습니다. 계모는 자기 딸 팥쥐만 예뻐하고 콩쥐에게는 힘든 일만 시켰습니다. 어느 날 잔치에 가고 싶었던 콩쥐에게 두꺼비와 참새들이 나타나 항아리에 물을 채우고 곡식 껍질을 까는 것을 도와주었습니다.', '전래동화 「콩쥐팥쥐」'),
+      passage('가난한 남매가 산 너머 사는 어머니를 기다리던 어느 날, 호랑이가 어머니로 변장하고 찾아왔습니다. 오누이는 재빨리 눈치를 채고 우물가 나무 위로 도망쳤습니다. 하늘에서 내려온 동아줄을 타고 올라간 오누이는 각각 해와 달이 되었다고 합니다.', '전래동화 「해와 달이 된 오누이」'),
+      passage('가난한 나무꾼이 산속에서 사냥꾼에게 쫓기는 사슴을 구해 주었습니다. 사슴은 은혜를 갚기 위해 나무꾼에게 하늘에서 내려온 선녀들이 목욕하는 연못을 알려주었습니다. 나무꾼은 선녀의 날개옷을 숨겨 함께 살게 되었지만, 훗날 선녀는 아이들과 함께 다시 하늘로 올라갔습니다.', '전래동화 「선녀와 나무꾼」'),
+      passage('가난한 총각이 밭을 갈다가 우렁이 한 마리를 주워 집으로 가져왔습니다. 그날부터 총각이 밭에 나가 있는 사이, 우렁이 속에서 아리따운 색시가 나와 맛있는 밥상을 차려 놓곤 했습니다. 총각은 색시의 정체를 알아내고는 함께 살게 되었습니다.', '전래동화 「우렁각시」'),
+      passage('옛날 어느 겨울밤, 호랑이 한 마리가 마을에 내려와 소를 잡아먹으려 했습니다. 그런데 마침 아기가 울음을 그치지 않자 어머니가 밖에 있는 호랑이보다 무섭다는 곶감을 아기에게 주자 울음이 뚝 그쳤습니다. 이를 들은 호랑이는 자기보다 무서운 곶감이 있다는 말에 놀라 도망쳐 버렸습니다.', '전래동화 「호랑이와 곶감」'),
+      passage('옛날 어느 임금님에게는 아무도 모르는 비밀이 있었습니다. 임금님의 귀가 당나귀처럼 길다는 것이었습니다. 이 사실을 알게 된 이발사는 답답한 마음을 참지 못하고 대나무 숲에 들어가 소리쳤습니다. "임금님 귀는 당나귀 귀!" 그 뒤로 바람이 불 때마다 대나무 숲에서 그 소리가 들려왔다고 합니다.', '전래동화 「임금님 귀는 당나귀 귀」'),
+      passage('옛날 어느 마을에 몹시 인색한 부자가 살았습니다. 그는 밥을 먹을 때마다 굴비를 천장에 매달아 놓고 한 번 쳐다볼 때마다 밥 한 술을 떠먹었습니다. 아들이 굴비를 두 번 쳐다보자 그는 크게 화를 내며 짜다고 나무랐다고 합니다. 이 이야기에서 몹시 인색한 사람을 자린고비라고 부르게 되었습니다.', '전래동화 「자린고비」'),
     ],
     en: [
-      passage(
-        "ROMEO: (gazing upward) But soft, what light through yonder window breaks? It is the east, and Juliet is the sun! Arise fair sun and kill the envious moon, who is already sick and pale with grief.\nJULIET: (sighing) Ay me.\nROMEO: (whispering) She speaks. O speak again, bright angel, for thou art as glorious to this night, being o'er my head, as is a winged messenger of heaven.\nJULIET: O Romeo, Romeo, wherefore art thou Romeo? Deny thy father and refuse thy name. Or if thou wilt not, be but sworn my love, and I'll no longer be a Capulet.\nROMEO: (aside) Shall I hear more, or shall I speak at this?",
-        'William Shakespeare, Romeo and Juliet (1597), Act 2 Scene 2 · Public Domain'
-      ),
-      passage(
-        "JULIET: (impatiently) Now, good sweet Nurse, O Lord, why look'st thou sad? Though news be sad, yet tell them merrily; if good, thou sham'st the music of sweet news by playing it to me with so sour a face.\nNURSE: (catching her breath) I am aweary, give me leave awhile; fie, how my bones ache! What a jaunt have I had!\nJULIET: (pleading) I would thou hadst my bones, and I thy news. Nay come, I pray thee speak; good, good Nurse, speak.\nNURSE: (still out of breath) Jesu, what haste? Can you not stay a while? Do you not see that I am out of breath?",
-        'William Shakespeare, Romeo and Juliet (1597), Act 2 Scene 5 · Public Domain'
-      ),
-      passage(
-        "BEATRICE: (mockingly) I wonder that you will still be talking, Signior Benedick: nobody marks you.\nBENEDICK: (grinning) What! my dear Lady Disdain, are you yet living?\nBEATRICE: (sharply) Is it possible Disdain should die while she hath such meet food to feed it as Signior Benedick? Courtesy itself must convert to disdain if you come in her presence.\nBENEDICK: (unbothered) Then is courtesy a turncoat. But it is certain I am loved of all ladies, only you excepted.",
-        'William Shakespeare, Much Ado About Nothing (1599), Act 1 Scene 1 · Public Domain'
-      ),
-      passage("MINJUN: (waving happily) It's been a while.\nSEOYEON: (smiling) Yeah, it really has.\nMINJUN: (stepping closer) How have you been?\nSEOYEON: (shrugging) So-so. And you?\nMINJUN: (grinning) Same here, I guess.", ''),
-      passage("JIHOON: (confidently) I'll take care of this one.\nHAEUN: (worried) Are you sure you can handle it alone?\nJIHOON: (waving it off) Don't worry, I can pull it off.\nHAEUN: (sighing) Okay, I trust you. Just don't push yourself too hard.", ''),
-      passage("SUA: (looking up at the sky) The sky looks so pretty today.\nDOYUN: (nodding) Yeah, the sunset is really lovely.\nSUA: (smiling) Days like this make me want to just walk.\nDOYUN: (holding out a hand) Then, shall we walk a little longer?", ''),
-      passage("OLIVIA: (surprised) Did you really make this yourself?\nNOAH: (proudly) Yeah, I practiced all night.\nOLIVIA: (giving a thumbs up) Wow, that's really impressive.\nNOAH: (blushing a little) Thanks, that means a lot.", ''),
-      passage("ETHAN: (rushing in) How did the meeting go today?\nMIA: (relieved) Better than I expected.\nETHAN: (sighing with relief) I'm relieved, I was worried.\nMIA: (smiling) Thanks to you, we were well prepared.", ''),
-      passage("GRACE: (checking the calendar) When should we meet again?\nLUCAS: (thinking for a moment) How about next weekend?\nGRACE: (brightly) Sounds good, see you then.\nLUCAS: (waving) Great, I'll text you.", ''),
-      passage("ZOE: (studying the map) Is this the right way?\nJACK: (tilting his head) According to the map, yes, but something feels off.\nZOE: (pointing ahead) Let's just go a little further.\nJACK: (following) Alright, let's do that.", ''),
+      passage('Once upon a time, a kind young girl lived with her cruel stepmother and two stepsisters who forced her to do all the housework. They called her Cinderella because she was always covered in ashes from the fireplace. One night, a fairy godmother appeared and helped her attend the royal ball, where she danced with the prince until the clock struck midnight.', 'Folktale, "Cinderella"'),
+      passage('A little girl in a red hooded cloak was sent by her mother to bring food to her sick grandmother who lived deep in the forest. On the way, she met a sly wolf who asked where she was going. The wolf rushed ahead, disguised himself as her grandmother, and waited for the girl to arrive at the cottage.', 'Folktale, "Little Red Riding Hood"'),
+      passage('Three little pigs each built a house to protect themselves from a hungry wolf. The first pig built his house of straw, and the second built his of sticks, but both houses were blown down easily. The third pig worked hard to build his house of bricks, and when the wolf huffed and puffed, the sturdy house would not fall.', 'Folktale, "The Three Little Pigs"'),
+      passage('A speedy hare once mocked a slow tortoise for being so sluggish, so the tortoise challenged him to a race. Confident of victory, the hare ran ahead and then stopped to take a long nap in the shade. While he slept, the tortoise kept walking slowly and steadily, eventually crossing the finish line first.', "Aesop's Fable, \"The Tortoise and the Hare\""),
+      passage('Among a family of ducklings, one little bird looked different from all the rest and was teased for being big and gray. Feeling lonely and unwanted, he wandered away and spent a difficult winter alone. In the spring, he was amazed to discover his reflection in the water and realized he had grown into a beautiful swan.', 'Folktale, "The Ugly Duckling"'),
+      passage('A curious girl named Goldilocks wandered into a cottage in the woods that belonged to a family of three bears. She tasted their porridge, sat in their chairs, and finally fell asleep in the smallest bed. When the bears returned home, they were surprised to find someone had been in their house.', 'Folktale, "Goldilocks and the Three Bears"'),
+      passage('A young shepherd boy grew bored watching his sheep and decided to shout that a wolf was attacking, just to see the villagers come running. He laughed as they rushed to help and found nothing wrong. When a real wolf appeared days later, no one believed his cries for help anymore.', "Aesop's Fable, \"The Boy Who Cried Wolf\""),
+      passage('A hungry fox spotted a bunch of ripe grapes hanging from a high vine and tried again and again to reach them. No matter how high he jumped, the grapes stayed just out of reach. Finally, he gave up and walked away, muttering that the grapes were probably sour anyway.', "Aesop's Fable, \"The Fox and the Grapes\""),
     ],
   },
-
-  // --- 아래는 K-pop 가사를 직접 추가하고 싶을 때 쓰는 자리입니다 ---
-  // passage('가사 1행\\n가사 2행\\n\\n(빈 줄로 문단/절 구분)', '아티스트 - 곡명') 형식으로
-  // lyrics.ko 또는 lyrics.en 배열 안에 원하는 만큼 추가하면 됩니다.
+  poem: {
+    ko: [
+      passage('죽는 날까지 하늘을 우러러\n한 점 부끄럼이 없기를,\n잎새에 이는 바람에도\n나는 괴로워했다.\n별을 노래하는 마음으로\n모든 죽어가는 것을 사랑해야지\n그리고 나한테 주어진 길을\n걸어가야겠다.\n\n오늘 밤에도 별이 바람에 스치운다.', '윤동주, 「서시」(1941) · 퍼블릭 도메인'),
+      passage('봄비가 사뿐사뿐\n내려앉아요\n새싹들은 기지개를\n활짝 켜지요\n\n토닥토닥 두드리는\n작은 빗소리\n온 세상이 초록으로\n물이 들어요', '연습용 창작 동시 「봄비」'),
+      passage('살금살금 고양이가\n지나갑니다\n소리 없이 사뿐사뿐\n걸어갑니다\n\n동그란 두 눈으로\n나를 보다가\n어느새 담장 위로\n사라집니다', '연습용 창작 동시 「고양이」'),
+      passage('높고 높은 가을 하늘\n구름 두둥실\n잠자리도 신이 나서\n빙글빙글\n\n파란 도화지 위에\n그림 그리듯\n하늘은 오늘도\n예쁘게 웃어요', '연습용 창작 동시 「가을 하늘」'),
+      passage('손을 잡고 걸어가면\n마음도 따뜻해\n웃음소리 나눠 가지면\n하루가 즐거워\n\n비 오는 날에도\n우산 하나 나눠 쓰고\n너와 나는 언제나\n좋은 친구', '연습용 창작 동시 「친구」'),
+      passage('하얀 눈을 굴려굴려\n동글동글 눈사람\n까만 단추 눈을 달고\n방긋 웃는 얼굴\n\n햇살 나면 사라질까\n조마조마하지만\n오늘 하루 우리는\n좋은 친구가 되었어요', '연습용 창작 동시 「눈사람」'),
+    ],
+    en: [
+      passage('The rain is raining all around,\nIt falls on field and tree,\nIt rains on the umbrellas here,\nAnd on the ships at sea.', 'Robert Louis Stevenson, "Rain" (1885) · Public Domain'),
+      passage("Softly falls the spring rain down,\nDancing on the sleepy town,\nLittle seeds begin to wake,\nGreen leaves for the sunshine's sake.", 'Original practice poem, "Spring Rain"'),
+      passage('Quiet paws on a quiet floor,\nSlipping past the kitchen door,\nRound green eyes that watch and blink,\nWhat could my small cat be thinking?', 'Original practice poem, "My Cat"'),
+      passage('Up so high the autumn sky,\nClouds like cotton drifting by,\nDragonflies spin, loop, and turn,\nLeaves of gold and orange burn.', 'Original practice poem, "Autumn Sky"'),
+      passage('Roll the snow round and round,\nMake a snowman on the ground,\nButtons black for happy eyes,\nWaving to the winter skies.', 'Original practice poem, "Snowman"'),
+    ],
+  },
 };
 
 // 난이도별 설정 (레벨 1일 때 기준값 + 레벨업마다 가산/감산되는 값)
@@ -299,10 +266,13 @@ const state = {
   mode: 'position',
   lang: 'ko',
   stages: new Set([0]), // 자리 단계는 여러 개를 동시에, 자유 조합으로 선택할 수 있다
-  passageCategory: 'essay',
+  passageCategory: 'novel',
   lastSentence: '',
   lastPassageText: '',
   targetText: '',
+  targetJamoSeq: [], // 목표 텍스트를 자모(키 입력) 단위로 분해한 시퀀스
+  charJamoRange: [], // 글자별로 그 자모들이 targetJamoSeq에서 차지하는 [시작,끝] 인덱스
+  typedIndex: 0, // 지금까지 맞게 입력한 자모 개수
   startTime: null,
   correctCount: 0,
   incorrectCount: 0,
@@ -312,12 +282,11 @@ const state = {
   posIndex: 0,
   // interval
   timerId: null,
-  isComposing: false,
   // 타자게임
   game: {
     active: false,
-    difficulty: 'normal',
-    config: DIFFICULTIES.normal,
+    difficulty: 'easy',
+    config: DIFFICULTIES.easy,
     words: [],
     score: 0,
     lives: 3,
@@ -341,6 +310,7 @@ const el = {
   langToggle: document.getElementById('lang-toggle'),
   modeTabs: document.getElementById('mode-tabs'),
   statsBar: document.getElementById('stats-bar'),
+  statsDivider: document.getElementById('stats-divider'),
   statSpeed: document.getElementById('stat-speed'),
   statAccuracy: document.getElementById('stat-accuracy'),
   statTime: document.getElementById('stat-time'),
@@ -359,8 +329,8 @@ const el = {
   positionProgressBar: document.getElementById('position-progress-bar'),
   typingDisplay: document.getElementById('typing-display'),
   passageSource: document.getElementById('passage-source'),
+  typingPreview: document.getElementById('typing-preview'),
   typingHint: document.getElementById('typing-hint'),
-  typingInput: document.getElementById('typing-input'),
   typingKeyboard: document.getElementById('typing-keyboard'),
   soundToggleBtn: document.getElementById('sound-toggle-btn'),
   resultModal: document.getElementById('result-modal'),
@@ -437,7 +407,7 @@ class SoundEngine {
     osc.stop(now + 0.03);
   }
   // 정답 키를 눌렀을 때 나는 소리: 합성음 대신 실제 키보드 녹음(mp3)을 AudioBuffer로
-  // 재생한다. 원본 파일이 20초 가까운 긴 연속 녹음이라, 매번 맨 앞부분 0.35초만 잘라 튼다.
+  // 재생한다. 원본 파일이 긴 연속 녹음이라, 매번 짧게 잘라 튼다.
   // AudioContext 기반이라 <audio> 엘리먼트를 여러 개 겹쳐 재생할 때 생기는 모바일 잠금
   // 문제 없이, 연타해도 자연스럽게 겹쳐서 재생된다.
   playTypeClick() {
@@ -449,11 +419,15 @@ class SoundEngine {
     // 녹음 원본 자체의 레벨이 낮아서, 다른 합성음(확인/오류음)과 비슷하게 들리도록
     // 게인을 꽤 크게 올린다 (1.0을 넘겨도 Web Audio는 그냥 증폭해서 재생한다)
     const gain = this.ctx.createGain();
-    gain.gain.value = 2.6;
+    gain.gain.value = 1.4; // 2.6 → 2.47 → 2.22 → 2.0 → 1.4 (5%, 10%, 10%, 30% 순차적으로 낮춤)
     source.connect(gain);
     gain.connect(this.ctx.destination);
-    const clipLen = Math.min(0.35, this.typeClickBuffer.duration);
-    source.start(this.ctx.currentTime, 0, clipLen);
+    // 이 녹음은 0초가 아니라 약 0.2초 지점에서 실제 "딸깍" 소리가 시작된다.
+    // 앞부분 무음까지 그대로 재생하면 키를 누른 순간과 소리 사이에 반박자 정도
+    // 밀리는 느낌이 나서, 소리가 실제로 시작하는 지점부터 잘라 튼다.
+    const clipStart = Math.min(0.19, this.typeClickBuffer.duration);
+    const clipLen = Math.min(0.35, this.typeClickBuffer.duration - clipStart);
+    source.start(this.ctx.currentTime, clipStart, clipLen);
   }
   playCorrect() {
     if (this.muted) return;
@@ -521,6 +495,11 @@ const unlockAudio = () => {
 };
 document.addEventListener('touchstart', unlockAudio, { once: true });
 document.addEventListener('click', unlockAudio, { once: true });
+
+// 첫 클릭/터치를 기다리지 않고 곧바로 mp3 디코딩을 미리 시작해둔다. AudioContext 생성과
+// decodeAudioData는 사용자 제스처 없이도 항상 허용되고(실제 소리 재생만 제스처가 필요),
+// 이렇게 미리 받아두면 화면에 들어가자마자 타이핑을 시작해도 첫 글자부터 소리가 난다.
+soundEngine.init();
 
 function toggleSound() {
   soundEngine.muted = !soundEngine.muted;
@@ -613,8 +592,10 @@ function setMode(mode) {
   [...el.modeTabs.children].forEach(btn => btn.classList.toggle('active', btn.dataset.mode === mode));
 
   const needsStage = mode === 'position' || mode === 'rowword';
+  const needsCategory = mode === 'passage';
   el.stageSelect.classList.toggle('show', needsStage);
-  el.categorySelect.classList.toggle('show', mode === 'passage');
+  el.categorySelect.classList.toggle('show', needsCategory);
+  el.statsDivider.classList.toggle('show', needsStage || needsCategory);
   el.difficultySelect.classList.toggle('show', mode === 'game');
   el.statsBar.classList.toggle('hide', mode === 'game');
 
@@ -724,7 +705,7 @@ const KB_LAYOUT = [
   ] },
   { cls: 'kb-row-space', keys: [
     // Ctrl/Alt는 좌우 모두 왼쪽 Ctrl(1.3) 크기로 맞춘다
-    d('Ctrl', 1.3), d('Fn', 0.9), d('Win', 1.1), d('Alt', 1.3), d('', 6, 'key-space'), d('Alt', 1.3), d('Ctrl', 1.3),
+    d('Ctrl', 1.3), d('Fn', 0.9), d('Win', 1.1), d('Alt', 1.3), d('SPACE BAR', 6, 'key-space'), d('Alt', 1.3), d('Ctrl', 1.3),
   ] },
 ];
 
@@ -1020,30 +1001,31 @@ function jamoToKeyCode(jamo) {
   return key ? key.code : null;
 }
 
-// 지금 입력 중인 한글 음절에서 이미 조합된 자모 (compositionupdate 이벤트로 갱신)
-let typingComposedSoFar = '';
+// 목표 텍스트 전체를 "실제로 눌러야 하는 자모(키 입력 단위)" 시퀀스로 미리 분해해두고,
+// 자리연습처럼 물리 키를 하나씩 받아 순서대로 정오를 판정한다(네이티브 한글 IME에 기대지
+// 않는다). 글자별로 그 자모들이 시퀀스에서 차지하는 [시작,끝] 인덱스도 같이 구해서
+// renderTypingDisplay()에서 글자 단위 색칠에 쓴다.
+function buildJamoSequence(text) {
+  const seq = [];
+  const charRange = [];
+  for (let i = 0; i < text.length; i++) {
+    const ch = text[i];
+    const jamos = ch === '\n' ? [ch] : decomposeKoreanChar(ch);
+    const start = seq.length;
+    seq.push(...jamos);
+    charRange.push({ start, end: seq.length - 1 });
+  }
+  return { seq, charRange };
+}
 
 function currentExpectedKeyCode() {
-  const target = state.targetText;
-  const typed = el.typingInput.value;
-  // 한글은 자모가 조합되는 동안(예: "오"를 만들려고 ㅇ까지만 친 상태) value의 마지막 글자가
-  // 아직 완성되지 않은 채로 이미 한 글자로 잡혀서, idx를 typed.length로만 계산하면
-  // "다음 글자"로 착각해 버린다. 조합 중일 때는 그 글자를 아직 "완성 전"으로 보고
-  // 한 칸 당겨서(typed.length - 1) 지금 조합 중인 글자를 계속 target으로 본다.
-  const idx = Math.max(0, typed.length - (state.isComposing ? 1 : 0));
-  if (idx >= target.length) return null;
-  const targetChar = target[idx];
-  if (targetChar === '\n') return null;
-
+  const jamo = state.targetJamoSeq[state.typedIndex];
+  if (!jamo || jamo === '\n') return null;
   if (state.lang === 'en') {
-    const key = KEYMAP.find(k => k.en === targetChar.toLowerCase());
+    const key = KEYMAP.find(k => k.en === jamo.toLowerCase());
     return key ? key.code : null;
   }
-
-  const jamos = decomposeKoreanChar(targetChar);
-  const composedJamos = typingComposedSoFar ? decomposeKoreanChar(typingComposedSoFar) : [];
-  if (composedJamos.length >= jamos.length) return null;
-  return jamoToKeyCode(jamos[composedJamos.length]);
+  return jamoToKeyCode(jamo);
 }
 
 function updateTypingKeyboardHighlight() {
@@ -1088,44 +1070,59 @@ function startTypingDrill() {
   const target = buildTypingTarget();
   state.targetText = target.text;
   el.passageSource.textContent = target.source ? `— ${target.source}` : '';
-  el.typingInput.value = '';
-  typingComposedSoFar = '';
+
+  const built = buildJamoSequence(target.text);
+  state.targetJamoSeq = built.seq;
+  state.charJamoRange = built.charRange;
+  state.typedIndex = 0;
+
   updateKeyboardLang();
   updateTypingKeyboardStage();
-  renderTypingDisplay('');
+  renderTypingDisplay();
   updateTypingKeyboardHighlight();
-  updateTypingHint('');
-  el.typingInput.disabled = false;
-  el.typingInput.focus();
+  updateTypingHint();
+  el.typingPreview.value = '';
+  el.typingPreview.focus();
 }
 
 // 입력 상태에 따라 안내 문구를 바꾼다: 오타가 나면 빨갛게, 다 쓰면 Enter를 안내한다
-function updateTypingHint(value) {
+function updateTypingHint(hadTypo) {
   const target = state.targetText;
   el.typingHint.classList.remove('bad', 'good');
-  if (!target) {
+  if (!target || state.typedIndex === 0) {
     el.typingHint.textContent = '';
     return;
   }
-  if (value.length > 0 && value[value.length - 1] !== target[value.length - 1]) {
-    el.typingHint.textContent = '❌ 오타예요! 다시 확인해보세요';
+  if (hadTypo) {
+    el.typingHint.textContent = '❌ 오타예요! 다시 입력해보세요';
     el.typingHint.classList.add('bad');
     return;
   }
-  if (value.length >= target.length) {
+  if (state.typedIndex >= state.targetJamoSeq.length) {
     el.typingHint.textContent = '✅ 다 썼어요! Enter를 눌러 결과를 확인하세요';
     el.typingHint.classList.add('good');
-    return;
-  }
-  if (value.length === 0) {
-    el.typingHint.textContent = '⌨️ 키보드로 입력을 시작해보세요!';
     return;
   }
   el.typingHint.textContent = '👍 잘하고 있어요! 이대로 계속 쳐보세요';
 }
 
-function renderTypingDisplay(typed) {
+// 지금까지 "정확히" 완성한 글자들만 이어붙인 문자열 (오타는 애초에 진행이 막혀 있어서
+// typedIndex 이전 구간은 항상 target의 정확한 접두어와 같다). 여러 줄(예: 속담+뜻)은
+// 한 줄짜리 입력칸에 자연스럽게 보이도록 줄바꿈을 공백으로 바꿔서 보여준다.
+function currentTypedText() {
   const target = state.targetText;
+  const ranges = state.charJamoRange;
+  let count = 0;
+  for (let i = 0; i < target.length; i++) {
+    if (ranges[i] && state.typedIndex > ranges[i].end) count = i + 1;
+    else break;
+  }
+  return target.slice(0, count);
+}
+
+function renderTypingDisplay() {
+  const target = state.targetText;
+  const ranges = state.charJamoRange;
   let html = '';
   for (let i = 0; i < target.length; i++) {
     if (target[i] === '\n') {
@@ -1133,73 +1130,128 @@ function renderTypingDisplay(typed) {
       continue;
     }
     const ch = escapeHtml(target[i]);
+    const range = ranges[i];
     let cls = 'pending';
-    if (i < typed.length) {
-      cls = typed[i] === target[i] ? 'correct' : 'incorrect';
-    } else if (i === typed.length) {
-      cls = 'current';
+    if (range) {
+      if (state.typedIndex > range.end) cls = 'correct';
+      else if (state.typedIndex >= range.start) cls = 'current';
     }
     html += `<span class="${cls}">${ch}</span>`;
   }
   el.typingDisplay.innerHTML = html;
   const currentSpan = el.typingDisplay.querySelector('.current');
-  if (currentSpan) currentSpan.scrollIntoView({ block: 'nearest' });
+  // 다 치고 나서야 스크롤되는 게 아니라, 다음에 칠 글자가 항상 화면 안에 미리 보이도록
+  // (예측하며 칠 수 있게) 매번 지금 위치를 화면 가운데 쪽으로 당겨온다.
+  if (currentSpan) currentSpan.scrollIntoView({ block: 'center' });
+
+  el.typingPreview.value = currentTypedText();
+  el.typingPreview.scrollTop = el.typingPreview.scrollHeight; // 긴 글에서도 방금 친 부분이 보이게
 }
 
-function evaluateTyped(typed) {
-  const target = state.targetText;
-  let correct = 0;
-  let incorrect = 0;
-  const len = Math.min(typed.length, target.length);
-  for (let i = 0; i < len; i++) {
-    if (typed[i] === target[i]) correct++;
-    else incorrect++;
+function shakeTypingDisplay() {
+  el.typingDisplay.classList.remove('shake');
+  void el.typingDisplay.offsetWidth; // 리플레이를 위한 강제 리플로우
+  el.typingDisplay.classList.add('shake');
+  setTimeout(() => el.typingDisplay.classList.remove('shake'), 300);
+}
+
+// 지금 기대하는 자모(jamo)를 물리 키 e가 실제로 만들어내는지 판정한다.
+// 한글 자모(ㄱ~ㅣ 호환 자모 범위)는 2벌식 물리 키 위치로, 그 외(영문/공백/문장부호)는
+// 실제 입력 문자로 그대로 비교한다.
+function keyMatchesJamo(e, jamo) {
+  const code = jamo.charCodeAt(0);
+  const isHangulJamo = code >= 0x3131 && code <= 0x3163;
+  if (isHangulJamo) {
+    const base = HANGUL_SHIFT_TO_BASE[jamo] || jamo;
+    const key = KEYMAP.find(k => k.ko === base);
+    return !!key && e.code === key.code;
   }
-  return { correct, incorrect };
+  return e.key === jamo;
 }
 
-function handleTypingInput() {
-  if (state.mode === 'position' || state.finished) return;
-  if (state.isComposing) {
-    renderTypingDisplay(el.typingInput.value);
+const TYPING_MODES = ['rowword', 'randomword', 'sentence', 'passage'];
+
+// 자리연습처럼 document 전체에서 물리 키를 직접 받아 처리한다. 별도의 입력 상자(input/
+// textarea) 없이도, 참고 화면처럼 화면 아무 데나 있는 상태로 바로 타이핑할 수 있다.
+function handleTypingModeKeydown(e) {
+  if (!TYPING_MODES.includes(state.mode) || state.view !== 'practice' || state.finished) return;
+
+  if (e.key === 'Enter') {
+    e.preventDefault();
+
+    // 속담처럼 목표 텍스트 중간에 실제 줄바꿈이 있는 경우, 그 자리에서는 Enter가
+    // "제출"이 아니라 그 줄바꿈 자체를 입력하는 정상적인 한 글자로 처리돼야 한다.
+    if (state.targetJamoSeq[state.typedIndex] === '\n') {
+      soundEngine.playTypeClick();
+      state.typedIndex++;
+      state.correctCount = state.typedIndex;
+      renderTypingDisplay();
+      updateTypingKeyboardHighlight();
+      updateTypingHint();
+      tickStats();
+      return;
+    }
+
+    if (state.targetJamoSeq.length === 0 || state.typedIndex < state.targetJamoSeq.length) return;
+    // 이 핸들러 자체가 document에 바로 붙어있어서, 같은 document에 등록된 "결과창이
+    // 떠 있으면 Enter로 재시작" 단축키와 같은 노드(target)의 형제 리스너다. stopPropagation()은
+    // 조상으로의 전파만 막을 뿐 같은 노드의 다른 리스너 실행은 막지 못하므로,
+    // stopImmediatePropagation()으로 그 형제 리스너 자체가 아예 실행되지 않게 막는다.
+    e.stopImmediatePropagation();
+
+    state.finished = true;
+    showResult();
     return;
   }
 
-  let value = el.typingInput.value.replace(/\r\n/g, '\n');
-  const target = state.targetText;
-  if (value.length > target.length) {
-    value = value.slice(0, target.length);
-  }
-  if (value !== el.typingInput.value) {
-    el.typingInput.value = value;
-  }
-
-  startTimerIfNeeded();
-  renderTypingDisplay(value);
-  typingComposedSoFar = '';
-  updateTypingKeyboardHighlight();
-  updateTypingHint(value);
-
-  const { correct, incorrect } = evaluateTyped(value);
-  state.correctCount = correct;
-  state.incorrectCount = incorrect;
-  tickStats();
-}
-
-// 다 입력한 뒤 Enter를 눌러야 결과 화면으로 넘어간다 (그전까지는 이어서 수정 가능)
-function handleTypingKeydown(e) {
-  if (e.key !== 'Enter') return;
-  if (state.mode === 'position' || state.finished || state.isComposing) return;
-  const target = state.targetText;
-  if (target.length > 0 && el.typingInput.value.length >= target.length) {
+  if (e.key === 'Backspace') {
     e.preventDefault();
-    // 결과창을 여는 이 Enter가 document의 "결과창이 떠 있으면 재시작" 단축키에도
-    // 그대로 버블링되면 같은 키 입력 한 번에 열리자마자 재시작돼버리므로 막는다.
-    e.stopPropagation();
-    state.finished = true;
-    el.typingInput.disabled = true;
-    showResult();
+    if (state.typedIndex > 0) {
+      soundEngine.playClick();
+      state.typedIndex--;
+      renderTypingDisplay();
+      updateTypingKeyboardHighlight();
+      updateTypingHint();
+    }
+    return;
   }
+
+  if (e.ctrlKey || e.metaKey || e.altKey) return; // 단축키는 건드리지 않는다
+  if (e.key.length !== 1) return; // 화살표, F5 등 특수 키는 무시
+
+  const expectedJamo = state.targetJamoSeq[state.typedIndex];
+  if (!expectedJamo) return; // 이미 다 침 (Enter만 기다리는 중)
+
+  e.preventDefault();
+  startTimerIfNeeded();
+
+  const matched = keyMatchesJamo(e, expectedJamo);
+  let pressedCode = null;
+  if (state.lang === 'en') {
+    const key = KEYMAP.find(k => k.en === e.key.toLowerCase());
+    pressedCode = key ? key.code : null;
+  } else if (KEYMAP.some(k => k.code === e.code)) {
+    pressedCode = e.code;
+  }
+  if (pressedCode) {
+    flashKeyInRegistry(typingKeyElsByCode, pressedCode, matched);
+  } else {
+    // 문장부호/공백처럼 우리 가상 키보드에 없는 키는 반짝임 없이 소리만 준다
+    matched ? soundEngine.playCorrect() : soundEngine.playWrong();
+  }
+
+  if (matched) {
+    state.typedIndex++;
+    state.correctCount = state.typedIndex;
+    updateTypingHint(false);
+  } else {
+    state.incorrectCount++;
+    shakeTypingDisplay();
+    updateTypingHint(true);
+  }
+  renderTypingDisplay();
+  updateTypingKeyboardHighlight();
+  tickStats();
 }
 
 // ===================== 타자게임: 떨어지는 단어 잡기 =====================
@@ -1377,6 +1429,7 @@ function showLevelUp() {
   if (state.game.spawnTimeoutId) clearTimeout(state.game.spawnTimeoutId);
   state.game.rafId = null;
   state.game.spawnTimeoutId = null;
+  clearGameField(); // 다음 스테이지로 넘어갈 때 화면에 남아있던 폭탄은 모두 리셋한다
   el.gameInput.disabled = true;
   el.levelUpLabel.textContent = gameLevelLabel();
   el.levelUpModal.classList.add('show');
@@ -1439,11 +1492,11 @@ function showBonusToast(text) {
 
 function triggerBonusEffect(type) {
   if (type === 'slow') {
-    applySpeedEffect(0.35, 2000);
-    showBonusToast('🐢 2초간 느려져요!');
+    applySpeedEffect(0.35, 4000);
+    showBonusToast('🐢 4초간 느려져요!');
   } else if (type === 'freeze') {
-    applySpeedEffect(0, 2000);
-    showBonusToast('🧊 2초간 멈춰요!');
+    applySpeedEffect(0, 4000);
+    showBonusToast('🧊 4초간 멈춰요!');
   } else if (type === 'clear') {
     clearAllWords();
     showBonusToast('✨ 화면 정리!');
@@ -1451,6 +1504,8 @@ function triggerBonusEffect(type) {
 }
 
 // 입력 중에는 일치하는 폭탄을 하이라이트만 하고, 실제 격침은 Enter를 눌러야 이루어진다.
+// 타이핑 소리는 (정오답 판정과 무관하게) 물리 키를 누르는 순간 바로 재생한다 — 아래
+// keydown 리스너 쪽에서 처리하고, 여기서는 화면 표시만 갱신한다.
 function handleGameInput() {
   const value = el.gameInput.value.trim();
   state.game.words.forEach(w => {
@@ -1566,41 +1621,19 @@ el.restartBtn.addEventListener('click', () => {
   startCurrentMode();
 });
 
+// 화면 어디를 클릭하든 입력 미리보기 칸에 포커스가 돌아오게 해서, 마우스로 굳이
+// 그 칸을 다시 클릭하지 않아도 바로 이어서 타이핑할 수 있게 한다.
+el.modeTyping.addEventListener('click', () => {
+  el.typingPreview.focus();
+});
+
 el.resultRestart.addEventListener('click', () => {
   hideResult();
   startCurrentMode();
 });
 
-el.typingInput.addEventListener('input', handleTypingInput);
-el.typingInput.addEventListener('compositionstart', () => { state.isComposing = true; typingComposedSoFar = ''; });
-el.typingInput.addEventListener('compositionupdate', e => {
-  typingComposedSoFar = e.data || '';
-  updateTypingKeyboardHighlight();
-});
-el.typingInput.addEventListener('compositionend', () => {
-  state.isComposing = false;
-  handleTypingInput();
-});
-el.typingInput.addEventListener('keydown', handleTypingKeydown);
-
-// 물리 키보드로 입력할 때, 눌린 키에 해당하는 가상 키보드 키를 정오 색으로 반짝여준다
-el.typingInput.addEventListener('keydown', e => {
-  if (state.mode === 'position' || state.finished) return;
-  if (e.key === 'Backspace') { soundEngine.playClick(); return; }
-  if (['Enter', 'Shift', 'Control', 'Alt', 'Meta', 'Tab'].includes(e.key)) return;
-
-  const expectedCode = currentExpectedKeyCode();
-  let pressedCode = null;
-  if (state.lang === 'en') {
-    const key = KEYMAP.find(k => k.en === e.key.toLowerCase());
-    pressedCode = key ? key.code : null;
-  } else if (KEYMAP.some(k => k.code === e.code)) {
-    pressedCode = e.code;
-  }
-  if (pressedCode) flashKeyInRegistry(typingKeyElsByCode, pressedCode, pressedCode === expectedCode);
-});
-
 document.addEventListener('keydown', handlePositionKeydown);
+document.addEventListener('keydown', handleTypingModeKeydown);
 
 // 창 크기가 바뀌면(반응형 구간 전환 포함) 자판 위 손 오버레이 위치를 다시 계산한다
 window.addEventListener('resize', () => {
@@ -1631,6 +1664,16 @@ el.gameRestartBtn.addEventListener('click', () => {
 });
 el.gameInput.addEventListener('input', handleGameInput);
 el.gameInput.addEventListener('keydown', handleGameKeydown);
+// 키를 하나 누를 때마다(자모/글자 단위) 바로 타이핑 소리를 낸다. 정오답 판정과는 무관한
+// "치고 있다"는 느낌만 주는 소리이고, 실제 정오답 소리는 Enter로 단어를 확정할 때
+// popWord()/오답 흔들림 쪽에서 원래대로 따로 재생된다.
+el.gameInput.addEventListener('keydown', e => {
+  if (e.key === 'Backspace') { soundEngine.playClick(); return; }
+  if (['Enter', 'Shift', 'Control', 'Alt', 'Meta', 'Tab', 'CapsLock'].includes(e.key)) return;
+  if (e.ctrlKey || e.metaKey || e.altKey) return;
+  if (e.key.length !== 1) return; // 화살표 등 특수 키 제외
+  soundEngine.playTypeClick();
+});
 el.levelUpContinueBtn.addEventListener('click', resumeAfterLevelUp);
 
 // ===================== 초기화 =====================

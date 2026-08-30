@@ -26,6 +26,11 @@
 
 * { box-sizing: border-box; }
 
+/* 탭/카드 버튼은 눌린(active) 상태를 색으로 이미 보여주기 때문에, 클릭 후 남는 브라우저
+   기본 포커스 테두리는 필요 없다. 실제 키보드 Tab 이동 시(:focus-visible)에는 그대로 남겨서
+   접근성은 지킨다. */
+button:focus:not(:focus-visible) { outline: none; }
+
 html { font-size: 18px; }
 
 html, body {
@@ -287,6 +292,15 @@ body.home-active .home-view { display: block; }
 #stat-accuracy { color: var(--mint-dark); }
 #stat-time { color: var(--lavender-dark); }
 
+/* 통계 셀과 자리단계/글종류 선택 버튼을 시각적으로 구분해주는 구분선 */
+.stat-divider {
+  display: none;
+  color: #e0d5f5;
+  font-size: 1.4rem;
+  font-weight: 300;
+}
+.stat-divider.show { display: inline-flex; }
+
 #restart-btn {
   margin-left: auto;
   border: none;
@@ -307,32 +321,27 @@ body.home-active .home-view { display: block; }
 .stage-select {
   display: none;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
   flex-wrap: wrap;
-  background: #fff;
-  border: 2px solid #f3eefa;
-  border-radius: 20px;
-  padding: 12px 18px;
-  margin-bottom: 16px;
 }
 .stage-select.show { display: flex; }
 .stage-label {
-  font-size: 0.9rem;
+  font-size: 0.85rem;
   color: var(--text-soft);
-  margin-right: 4px;
+  margin-right: 2px;
   font-weight: 700;
 }
 .stage-select button {
   display: inline-flex;
   align-items: center;
-  gap: 9px;
+  gap: 7px;
   border: none;
   background: var(--chip);
   color: #fff;
-  padding: 11px 18px;
-  border-radius: 16px;
+  padding: 8px 14px;
+  border-radius: 14px;
   font-weight: 800;
-  font-size: 1.05rem;
+  font-size: 0.92rem;
   cursor: pointer;
   font-family: 'Pretendard', 'Gowun Dodum', sans-serif;
   transition: all 0.15s;
@@ -342,11 +351,11 @@ body.home-active .home-view { display: block; }
 .stage-select button[data-stage="2"] { --chip: var(--mint); --chip-dark: var(--mint-dark); }
 .stage-select button::before {
   content: '';
-  width: 20px;
-  height: 20px;
+  width: 16px;
+  height: 16px;
   flex: none;
-  border-radius: 6px;
-  border: 3px solid rgba(255, 255, 255, 0.85);
+  border-radius: 5px;
+  border: 2px solid rgba(255, 255, 255, 0.85);
   background: rgba(255, 255, 255, 0.25);
   transition: all 0.15s;
 }
@@ -362,45 +371,34 @@ body.home-active .home-view { display: block; }
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 14px;
+  font-size: 11px;
   line-height: 1;
-}
-.stage-hint {
-  width: 100%;
-  font-size: 0.8rem;
-  color: var(--text-soft);
-  margin: 2px 0 0;
 }
 
 /* 글 종류 선택: 옵션마다 다른 원색 */
 .category-select {
   display: none;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
   flex-wrap: wrap;
-  background: #fff;
-  border: 2px solid #f3eefa;
-  border-radius: 20px;
-  padding: 12px 18px;
-  margin-bottom: 16px;
 }
 .category-select.show { display: flex; }
 .category-select button {
   border: none;
   background: var(--chip);
   color: #fff;
-  padding: 11px 18px;
-  border-radius: 16px;
+  padding: 8px 14px;
+  border-radius: 14px;
   font-weight: 800;
-  font-size: 1.05rem;
+  font-size: 0.92rem;
   cursor: pointer;
   font-family: 'Pretendard', 'Gowun Dodum', sans-serif;
   transition: all 0.15s;
 }
-.category-select button[data-category="essay"] { --chip: var(--sky); --chip-dark: var(--sky-dark); }
 .category-select button[data-category="novel"] { --chip: var(--lavender); --chip-dark: var(--lavender-dark); }
-.category-select button[data-category="lyrics"] { --chip: var(--pink); --chip-dark: var(--pink-dark); }
-.category-select button[data-category="script"] { --chip: var(--peach); --chip-dark: var(--peach-dark); }
+.category-select button[data-category="proverbs"] { --chip: var(--peach); --chip-dark: var(--peach-dark); }
+.category-select button[data-category="folktale"] { --chip: var(--sky); --chip-dark: var(--sky-dark); }
+.category-select button[data-category="poem"] { --chip: var(--mint); --chip-dark: var(--mint-dark); }
 .category-select button.active {
   background: var(--chip-dark);
   outline: 3px solid rgba(255, 255, 255, 0.8);
@@ -510,7 +508,7 @@ body.home-active .home-view { display: block; }
   transform: translateX(-50%);
   width: 18px;
   height: 13px;
-  background: rgba(255, 255, 255, 0.95);
+  background: rgba(255, 255, 255, 0.4);
   border-radius: 50% 50% 45% 45%;
 }
 .finger.f-pinky { height: 58px; }
@@ -554,7 +552,7 @@ body.home-active .home-view { display: block; }
   z-index: 1;
 }
 .finger.active .nail {
-  background: rgba(255, 255, 255, 0.9);
+  background: rgba(255, 255, 255, 0.4);
 }
 
 /* 자판(+ 자리연습에서는 손 오버레이까지)을 담는 무대. 폭이 넘치면 이 박스만 가로 스크롤된다 */
@@ -735,6 +733,31 @@ body.home-active .home-view { display: block; }
   min-height: 1em;
 }
 
+/* 지금까지 입력한 내용을 보여주는 작은 입력칸. 읽기 전용(readonly)이라 실제 타이핑은
+   여전히 document 전체에서 물리 키로 직접 받아 처리하고(한글 조합 로직 그대로 유지),
+   이 칸은 그 진행 상황을 아이들이 눈으로 확인할 수 있게 보여주기만 한다. 세로 공간을
+   많이 차지하지 않도록 한 줄짜리로, 글씨도 작게 만든다. */
+.typing-preview {
+  display: block;
+  width: 100%;
+  min-height: 1.9em;
+  max-height: 4.6em; /* 대략 두 줄 정도까지만 보여주고, 그 이상은 내부 스크롤로 처리 */
+  resize: none;
+  overflow-y: auto;
+  border: 2px solid var(--lavender);
+  border-radius: 12px;
+  padding: 6px 12px;
+  font-size: 0.85rem;
+  line-height: 1.5;
+  font-family: 'Pretendard', 'Gowun Dodum', 'Nunito', sans-serif;
+  outline: none;
+  background: #fff;
+  color: var(--text-soft);
+  margin-bottom: 8px;
+  cursor: default;
+}
+.typing-preview:focus { border-color: var(--pink-dark); }
+
 .typing-hint {
   text-align: center;
   font-weight: 700;
@@ -751,21 +774,12 @@ body.home-active .home-view { display: block; }
   color: var(--mint-dark);
 }
 
-#typing-input {
-  width: 100%;
-  min-height: 78px;
-  resize: none;
-  border: 4px solid var(--sky);
-  border-radius: 20px;
-  padding: 18px 20px;
-  font-size: 1.3rem;
-  font-family: 'Pretendard', 'Gowun Dodum', 'Nunito', sans-serif;
-  outline: none;
-  background: #fff;
-  color: var(--text);
-  transition: border-color 0.2s;
+/* 자리연습처럼 별도 입력칸 없이 화면 아무 곳이든 바로 물리 키보드로 입력한다.
+   오타를 치면 typing-display 카드 자체가 흔들리며 빨갛게 표시된다. */
+.typing-display.shake {
+  animation: inputShake 0.3s;
+  border-color: var(--incorrect);
 }
-#typing-input:focus { border-color: var(--pink-dark); }
 
 /* 타자게임 */
 .difficulty-select {
@@ -842,18 +856,6 @@ body.home-active .home-view { display: block; }
   height: 44%;
   overflow: hidden;
   pointer-events: none;
-}
-.wave-layer {
-  position: absolute;
-  left: -20%; right: -20%; top: 0;
-  height: 100%;
-  background:
-    repeating-linear-gradient(115deg, rgba(255,255,255,0.28) 0 12px, transparent 12px 30px);
-  animation: waveShift 7s linear infinite;
-}
-@keyframes waveShift {
-  from { transform: translateX(0); }
-  to { transform: translateX(-120px); }
 }
 .game-boat {
   position: absolute;
@@ -971,6 +973,7 @@ body.home-active .home-view { display: block; }
   padding: 16px 20px;
   font-size: 1.3rem;
   font-family: 'Pretendard', 'Gowun Dodum', 'Nunito', sans-serif;
+  text-align: center;
   outline: none;
   background: #fff;
   color: var(--text);
