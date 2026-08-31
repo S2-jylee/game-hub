@@ -64,13 +64,6 @@
   var guestMode = false;
   var guestStars = {};
 
-  // Only a signed-in (named) profile has an identity worth ranking - a
-  // guest's plays stay off the shared leaderboard, though guests can still
-  // view it.
-  function rankingPlayerName() {
-    return (!guestMode && currentUser) ? currentUser : null;
-  }
-
   function loadProfiles() {
     try { return JSON.parse(localStorage.getItem(PROFILES_KEY)) || {}; } catch (e) { return {}; }
   }
@@ -148,6 +141,33 @@
     }
     return map[levelId];
   }
+
+  // ---- Local ranking (this device only) ----------------------------------
+  // Records live inside each profile's own entry, so the board only ever
+  // shows names/times that were set by playing on this PC/browser - nothing
+  // is shared with other devices.
+  function recordTime(levelId, elapsed) {
+    if (guestMode || !currentUser) return;
+    var profiles = loadProfiles();
+    var profile = profiles[currentUser] = profiles[currentUser] || { stars: {} };
+    profile.times = profile.times || {};
+    var prev = profile.times[levelId];
+    if (prev == null || elapsed < prev) {
+      profile.times[levelId] = elapsed;
+      saveProfiles(profiles);
+    }
+  }
+  function localRanking(levelId, limit) {
+    var profiles = loadProfiles();
+    var rows = [];
+    Object.keys(profiles).forEach(function (name) {
+      var t = profiles[name] && profiles[name].times && profiles[name].times[levelId];
+      if (t != null) rows.push({ player_name: name, elapsed_seconds: t });
+    });
+    rows.sort(function (a, b) { return a.elapsed_seconds - b.elapsed_seconds; });
+    return rows.slice(0, limit || 5);
+  }
+
   function starsGlyph(n, total) {
     var s = "";
     for (var i = 1; i <= total; i++) s += (i <= n ? "★" : "☆");
@@ -738,12 +758,8 @@
       gain: result.scoreGain, stars: result.stars, percent: result.finalPercent
     });
     recordStars(currentLevel().id, result.stars);
+    recordTime(currentLevel().id, result.elapsed);
     updateHud();
-
-    var playerName = rankingPlayerName();
-    if (playerName && window.Leaderboard) {
-      window.Leaderboard.submitScore(currentLevel().id, playerName, result.elapsed, result.stars, result.finalPercent);
-    }
 
     completionStarsEl.innerHTML = starsHtml(result.stars, 5);
     completionPercentEl.textContent = result.finalPercent + "% 완성";
@@ -765,42 +781,31 @@
     var level = TD.LEVELS[levelIndex];
     rankingStageLabel.textContent = (levelIndex + 1) + "단계 · " + level.name;
     rankingList.innerHTML = "";
-    rankingModal.classList.remove("empty");
-    rankingModal.classList.add("show", "loading");
+    rankingModal.classList.add("show");
 
-    if (!window.Leaderboard) {
-      rankingModal.classList.remove("loading");
-      rankingModal.classList.add("empty");
-      return;
-    }
-    window.Leaderboard.topScores(level.id, 5).then(function (rows) {
-      rankingModal.classList.remove("loading");
-      if (!rows.length) {
-        rankingModal.classList.add("empty");
-        return;
-      }
-      var medals = ["🥇", "🥈", "🥉"];
-      rows.forEach(function (row, i) {
-        var li = document.createElement("li");
-        li.className = "ranking-row";
-        if (!guestMode && currentUser && row.player_name === currentUser) li.classList.add("me");
-        var rank = document.createElement("span");
-        rank.className = "ranking-rank";
-        rank.textContent = medals[i] || (i + 1) + "위";
-        var name = document.createElement("span");
-        name.className = "ranking-name";
-        name.textContent = row.player_name;
-        var time = document.createElement("span");
-        time.className = "ranking-time";
-        time.textContent = formatTime(row.elapsed_seconds);
-        li.appendChild(rank); li.appendChild(name); li.appendChild(time);
-        rankingList.appendChild(li);
-      });
+    var rows = localRanking(level.id, 5);
+    rankingModal.classList.toggle("empty", rows.length === 0);
+    var medals = ["🥇", "🥈", "🥉"];
+    rows.forEach(function (row, i) {
+      var li = document.createElement("li");
+      li.className = "ranking-row";
+      if (!guestMode && currentUser && row.player_name === currentUser) li.classList.add("me");
+      var rank = document.createElement("span");
+      rank.className = "ranking-rank";
+      rank.textContent = medals[i] || (i + 1) + "위";
+      var name = document.createElement("span");
+      name.className = "ranking-name";
+      name.textContent = row.player_name;
+      var time = document.createElement("span");
+      time.className = "ranking-time";
+      time.textContent = formatTime(row.elapsed_seconds);
+      li.appendChild(rank); li.appendChild(name); li.appendChild(time);
+      rankingList.appendChild(li);
     });
   }
 
   function closeRanking() {
-    rankingModal.classList.remove("show", "loading", "empty");
+    rankingModal.classList.remove("show", "empty");
   }
 
   function goToNextLevelOrResult() {

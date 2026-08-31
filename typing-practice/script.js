@@ -366,8 +366,33 @@ const el = {
 
 // ===================== 랭킹 (이름 & 리더보드) =====================
 // 비밀번호 없이 이름만 저장하는 가벼운 방식이라, 다른 사람이 같은 이름을 쓰면
-// 랭킹을 덮어쓸 수 있다는 점은 감안한 절충안이다.
+// 랭킹을 덮어쓸 수 있다는 점은 감안한 절충안이다. 기록은 이 브라우저의
+// localStorage에만 남아서, 다른 PC에서 세운 기록과는 섞이지 않는다.
 const PLAYER_NAME_KEY = 'typing_player_name';
+const SCORES_KEY = 'typing_scores_v1';
+
+function loadScoresStore() {
+  try { return JSON.parse(localStorage.getItem(SCORES_KEY)) || {}; } catch (e) { return {}; }
+}
+function saveScoresStore(store) {
+  try { localStorage.setItem(SCORES_KEY, JSON.stringify(store)); } catch (e) { /* storage unavailable, ignore */ }
+}
+function recordLocalScore(stageKey, playerName, elapsed) {
+  if (!playerName) return;
+  const store = loadScoresStore();
+  store[stageKey] = store[stageKey] || {};
+  const prev = store[stageKey][playerName];
+  if (prev == null || elapsed < prev) {
+    store[stageKey][playerName] = elapsed;
+    saveScoresStore(store);
+  }
+}
+function localRanking(stageKey, limit) {
+  const stageMap = loadScoresStore()[stageKey] || {};
+  const rows = Object.keys(stageMap).map(name => ({ player_name: name, elapsed_seconds: stageMap[name] }));
+  rows.sort((a, b) => a.elapsed_seconds - b.elapsed_seconds);
+  return rows.slice(0, limit || 5);
+}
 
 function loadPlayerName() {
   try { return localStorage.getItem(PLAYER_NAME_KEY) || ''; } catch (e) { return ''; }
@@ -649,12 +674,8 @@ function showResult() {
 
   const stageKey = currentStageKey();
   const playerName = loadPlayerName();
-  if (playerName && window.Leaderboard) {
-    window.Leaderboard.submitScore(stageKey, playerName, elapsed, null, Math.round(accuracy));
-  }
-  if (window.Leaderboard) {
-    window.Leaderboard.topScores(stageKey, 5).then(renderRanking);
-  }
+  if (playerName) recordLocalScore(stageKey, playerName, elapsed);
+  renderRanking(localRanking(stageKey, 5));
 }
 
 function hideResult() {

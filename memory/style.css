@@ -439,11 +439,6 @@ h1 { font-family: "Jua", "Gowun Dodum", sans-serif; font-size: 2.6rem; margin: 6
 .ranking-time { flex: none; color: var(--text-soft); font-variant-numeric: tabular-nums; font-size: 0.9rem; }
 .ranking-empty { color: var(--text-soft); font-size: 0.9rem; margin: 10px 0; display: none; }
 .ranking-modal.empty #ranking-empty { display: block; }
-.ranking-modal.loading #ranking-loading { display: block; }
-#ranking-loading { display: none; }
-.ranking-modal:not(.loading) #ranking-loading { display: none; }
-.ranking-modal.loading .ranking-list,
-.ranking-modal.loading #ranking-empty { display: none; }
 
 .completion-emoji { font-size: 3rem; }
 .completion-title { font-family: "Jua", "Gowun Dodum", sans-serif; font-size: 1.6rem; margin-top: 4px; color: var(--pink-dark); }
