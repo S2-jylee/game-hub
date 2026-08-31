@@ -30,6 +30,7 @@ html, body {
   height: 100%;
   overflow: hidden;
   font-family: "Pretendard", "Gowun Dodum", "Nunito", "Malgun Gothic", sans-serif;
+  word-break: keep-all;
   background: #fffdf6;
   color: var(--text-dark);
   -webkit-user-select: none;
