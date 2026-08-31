@@ -134,9 +134,20 @@
           <div id="completion-score" class="completion-scoregain">+0점</div>
           <div class="completion-buttons">
             <button id="btn-completion-next" class="btn btn-primary btn-huge">다음 모양</button>
+            <button id="btn-completion-rank" class="btn btn-ghost">🏆 이 모양 랭킹</button>
             <button id="btn-completion-list" class="btn btn-ghost">레벨 선택</button>
           </div>
         </div>
+      </div>
+    </div>
+
+    <div id="ranking-modal" class="ranking-modal">
+      <div class="ranking-card">
+        <div class="ranking-title">🏆 랭킹 <span id="ranking-stage-label" class="diff-tag"></span></div>
+        <ol id="ranking-list" class="ranking-list"></ol>
+        <div id="ranking-empty" class="ranking-empty">아직 기록이 없어요. 첫 번째 주인공이 되어보세요!</div>
+        <div id="ranking-loading" class="ranking-empty">불러오는 중...</div>
+        <button id="btn-ranking-close" class="btn btn-primary">닫기</button>
       </div>
     </div>
   </div>
@@ -163,6 +174,8 @@
   </div>
 </section>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="leaderboard.js"></script>
 <script src="tangram-data.js"></script>
 <script src="game.js"></script>
 </body>

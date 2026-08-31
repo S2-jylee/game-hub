@@ -41,6 +41,10 @@
   var completionPercentEl = document.getElementById("completion-percent");
   var completionScoreEl = document.getElementById("completion-score");
 
+  var rankingModal = document.getElementById("ranking-modal");
+  var rankingStageLabel = document.getElementById("ranking-stage-label");
+  var rankingList = document.getElementById("ranking-list");
+
   function showScreen(name) {
     Object.keys(screens).forEach(function (k) {
       screens[k].classList.toggle("active", k === name);
@@ -59,6 +63,13 @@
   var currentUser = null;
   var guestMode = false;
   var guestStars = {};
+
+  // Only a signed-in (named) profile has an identity worth ranking - a
+  // guest's plays stay off the shared leaderboard, though guests can still
+  // view it.
+  function rankingPlayerName() {
+    return (!guestMode && currentUser) ? currentUser : null;
+  }
 
   function loadProfiles() {
     try { return JSON.parse(localStorage.getItem(PROFILES_KEY)) || {}; } catch (e) { return {}; }
@@ -729,6 +740,11 @@
     recordStars(currentLevel().id, result.stars);
     updateHud();
 
+    var playerName = rankingPlayerName();
+    if (playerName && window.Leaderboard) {
+      window.Leaderboard.submitScore(currentLevel().id, playerName, result.elapsed, result.stars, result.finalPercent);
+    }
+
     completionStarsEl.innerHTML = starsHtml(result.stars, 5);
     completionPercentEl.textContent = result.finalPercent + "% 완성";
     completionScoreEl.textContent = "+" + result.scoreGain + "점";
@@ -738,6 +754,53 @@
 
   function closeRetryModal() {
     completionModal.classList.remove("show", "show-retry");
+  }
+
+  // ---- Ranking modal ----------------------------------------------------
+  function formatTime(sec) {
+    return sec.toFixed(1) + "초";
+  }
+
+  function openRanking(levelIndex) {
+    var level = TD.LEVELS[levelIndex];
+    rankingStageLabel.textContent = (levelIndex + 1) + "단계 · " + level.name;
+    rankingList.innerHTML = "";
+    rankingModal.classList.remove("empty");
+    rankingModal.classList.add("show", "loading");
+
+    if (!window.Leaderboard) {
+      rankingModal.classList.remove("loading");
+      rankingModal.classList.add("empty");
+      return;
+    }
+    window.Leaderboard.topScores(level.id, 5).then(function (rows) {
+      rankingModal.classList.remove("loading");
+      if (!rows.length) {
+        rankingModal.classList.add("empty");
+        return;
+      }
+      var medals = ["🥇", "🥈", "🥉"];
+      rows.forEach(function (row, i) {
+        var li = document.createElement("li");
+        li.className = "ranking-row";
+        if (!guestMode && currentUser && row.player_name === currentUser) li.classList.add("me");
+        var rank = document.createElement("span");
+        rank.className = "ranking-rank";
+        rank.textContent = medals[i] || (i + 1) + "위";
+        var name = document.createElement("span");
+        name.className = "ranking-name";
+        name.textContent = row.player_name;
+        var time = document.createElement("span");
+        time.className = "ranking-time";
+        time.textContent = formatTime(row.elapsed_seconds);
+        li.appendChild(rank); li.appendChild(name); li.appendChild(time);
+        rankingList.appendChild(li);
+      });
+    });
+  }
+
+  function closeRanking() {
+    rankingModal.classList.remove("show", "loading", "empty");
   }
 
   function goToNextLevelOrResult() {
@@ -780,8 +843,17 @@
         starsEl.textContent = starsGlyph(st, 5);
         btn.classList.add("has-stars");
       }
+      var trophy = document.createElement("span");
+      trophy.className = "lvl-trophy";
+      trophy.textContent = "🏆";
+      trophy.title = "랭킹 보기";
+      trophy.addEventListener("click", function (evt) {
+        evt.stopPropagation();
+        openRanking(i);
+      });
       btn.appendChild(num);
       btn.appendChild(starsEl);
+      btn.appendChild(trophy);
       btn.addEventListener("click", function () {
         state.totalScore = 0;
         state.results = [];
@@ -852,6 +924,10 @@
     completionModal.classList.remove("show", "show-success");
     goToLevelSelect();
   });
+  document.getElementById("btn-completion-rank").addEventListener("click", function () {
+    openRanking(state.levelIndex);
+  });
+  document.getElementById("btn-ranking-close").addEventListener("click", closeRanking);
 
   buildLevelGrid();
   showScreen("title");
