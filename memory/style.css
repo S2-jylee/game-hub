@@ -98,11 +98,22 @@ html, body {
   position: relative;
 }
 .title-shapes { position: relative; height: 90px; margin-bottom: -10px; }
-.ts { position: absolute; display: block; border-radius: 6px; opacity: 0.95; animation: floaty 3.2s ease-in-out infinite; }
-.ts1 { width: 60px; height: 60px; background: var(--pink); left: calc(50% - 130px); top: 10px; transform: rotate(15deg); animation-delay: 0s; }
-.ts2 { width: 50px; height: 50px; background: var(--yellow); left: calc(50% - 40px); top: -6px; transform: rotate(-10deg); animation-delay: 0.4s; }
-.ts3 { width: 55px; height: 55px; background: var(--sky); left: calc(50% + 40px); top: 14px; border-radius: 50%; animation-delay: 0.8s; }
-.ts4 { width: 45px; height: 45px; background: var(--mint); left: calc(50% + 110px); top: -2px; transform: rotate(35deg); animation-delay: 1.2s; }
+.ts {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 14px;
+  background: #fff;
+  box-shadow: 0 6px 14px rgba(36,27,58,0.14);
+  opacity: 0.95;
+  font-size: 1.7rem;
+  animation: floaty 3.2s ease-in-out infinite;
+}
+.ts1 { width: 60px; height: 60px; border: 3px solid var(--pink); left: calc(50% - 130px); top: 10px; transform: rotate(8deg); animation-delay: 0s; }
+.ts2 { width: 50px; height: 50px; border: 3px solid var(--yellow-dark); left: calc(50% - 40px); top: -6px; transform: rotate(-6deg); animation-delay: 0.4s; }
+.ts3 { width: 55px; height: 55px; border: 3px solid var(--sky); left: calc(50% + 40px); top: 14px; border-radius: 50%; animation-delay: 0.8s; }
+.ts4 { width: 45px; height: 45px; border: 3px solid var(--mint); left: calc(50% + 110px); top: -2px; transform: rotate(10deg); animation-delay: 1.2s; }
 @keyframes floaty { 0%, 100% { transform: translateY(0) rotate(var(--r,0)); } 50% { transform: translateY(-12px); } }
 
 h1 { font-family: "Jua", "Gowun Dodum", sans-serif; font-size: 2.6rem; margin: 6px 0 4px; color: var(--pink-dark); }
