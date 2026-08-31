@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>탱그램 칠교놀이</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Jua&family=Gowun+Dodum&family=Nunito:wght@400;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- 타이틀 화면 -->
+<section id="screen-title" class="screen active">
+  <div class="title-card">
+    <div class="title-shapes" aria-hidden="true">
+      <span class="ts ts1"></span>
+      <span class="ts ts2"></span>
+      <span class="ts ts3"></span>
+      <span class="ts ts4"></span>
+    </div>
+    <h1>탱그램 칠교놀이</h1>
+    <p class="subtitle">모양을 빨리 맞추고 점수를 모아요!</p>
+    <button id="btn-start" class="btn btn-primary btn-huge">시작하기</button>
+    <button id="btn-howto" class="btn btn-ghost">놀이 방법</button>
+  </div>
+</section>
+
+<!-- 사용자 선택 화면 -->
+<section id="screen-user" class="screen">
+  <div class="card">
+    <h2>누구인가요?</h2>
+    <div id="user-list" class="user-list"></div>
+    <div class="user-new-row">
+      <input id="user-name-input" class="user-name-input" type="text" maxlength="10" placeholder="새 이름을 입력하세요">
+      <button id="btn-user-new-start" class="btn btn-primary btn-small">시작</button>
+    </div>
+    <button id="btn-user-guest" class="btn btn-ghost">게스트로 시작</button>
+    <button id="btn-user-back" class="btn btn-ghost">처음으로</button>
+  </div>
+</section>
+
+<!-- 방법 안내 화면 -->
+<section id="screen-howto" class="screen">
+  <div class="card">
+    <h2>놀이 방법</h2>
+    <ul class="howto-list">
+      <li><span class="ico">✋</span> 조각을 <b>손가락으로 끌어서</b> 회색 모양 위에 놓아요.</li>
+      <li><span class="ico">🔄</span> 조각을 <b>톡 누르거나 손잡이를 돌려서</b> 방향을 바꿔요. 버튼으로도 돌릴 수 있어요.</li>
+      <li><span class="ico">✅</span> 다 놓았다고 생각되면 <b>완료</b> 버튼을 눌러요.</li>
+      <li><span class="ico">⭐</span> 얼마나 딱 맞았는지, 얼마나 빨랐는지에 따라 별을 최대 5개까지 받아요!</li>
+    </ul>
+    <button id="btn-howto-back" class="btn btn-primary btn-huge">알겠어요!</button>
+  </div>
+</section>
+
+<!-- 난이도 선택 화면 -->
+<section id="screen-difficulty" class="screen">
+  <div class="card">
+    <h2>난이도를 골라주세요 <span class="current-user-badge diff-tag"></span></h2>
+    <div class="difficulty-options">
+      <button class="diff-btn" data-diff="easy">
+        <div class="diff-emoji">🙂</div>
+        <div class="diff-name">쉬움</div>
+        <div class="diff-desc">점선 안내선이 보여요</div>
+      </button>
+      <button class="diff-btn" data-diff="hard">
+        <div class="diff-emoji">🔥</div>
+        <div class="diff-name">어려움</div>
+        <div class="diff-desc">까만 실루엣만 보여요</div>
+      </button>
+    </div>
+    <button id="btn-diff-back" class="btn btn-ghost">처음으로</button>
+  </div>
+</section>
+
+<!-- 레벨 선택 화면 -->
+<section id="screen-levelselect" class="screen">
+  <div class="card card-wide">
+    <h2>모양 고르기 <span id="levelselect-diff-label" class="diff-tag"></span> <span class="current-user-badge diff-tag"></span></h2>
+    <div id="level-grid" class="level-grid"></div>
+    <div class="result-buttons">
+      <button id="btn-levelselect-diff" class="btn btn-ghost">난이도 다시 고르기</button>
+      <button id="btn-levelselect-title" class="btn btn-ghost">처음으로</button>
+    </div>
+  </div>
+</section>
+
+<!-- 게임 화면 -->
+<section id="screen-game" class="screen">
+  <header class="hud">
+    <div class="hud-item hud-stage">
+      <span class="hud-label">스테이지</span>
+      <span id="hud-stage-val" class="hud-value">1 / 100</span>
+    </div>
+    <div class="hud-item hud-name">
+      <span id="hud-level-name" class="hud-value hud-emoji">모양 1</span>
+    </div>
+    <div class="hud-item hud-timer">
+      <span class="hud-label">시간</span>
+      <span id="hud-timer-val" class="hud-value">0.0초</span>
+    </div>
+    <div class="hud-item hud-score">
+      <span class="hud-label">점수</span>
+      <span id="hud-score-val" class="hud-value">0</span>
+    </div>
+    <button id="btn-quit" class="btn btn-ghost btn-small">← 나가기</button>
+  </header>
+
+  <div class="stage-progress-bar"><div id="stage-progress-fill" class="stage-progress-fill"></div></div>
+
+  <div id="board-wrap" class="board-wrap">
+    <svg id="board" viewBox="0 0 900 600" preserveAspectRatio="xMidYMid meet">
+      <g id="layer-target"></g>
+      <g id="layer-pieces"></g>
+      <g id="layer-toolbar"></g>
+    </svg>
+
+    <div id="completion-modal" class="completion-modal">
+      <div class="completion-card">
+        <div id="completion-retry" class="completion-variant">
+          <div class="completion-emoji">🤔</div>
+          <div class="completion-title">다시 해보세요!</div>
+          <div class="completion-sub">아직 많이 어긋난 조각이 있어요.</div>
+          <button id="btn-completion-retry-ok" class="btn btn-primary btn-huge">다시 맞춰볼게요</button>
+        </div>
+        <div id="completion-success" class="completion-variant">
+          <div class="completion-emoji">🎉</div>
+          <div class="completion-title">훌륭해요!</div>
+          <div id="completion-stars" class="completion-stars"></div>
+          <div id="completion-percent" class="completion-percent">0% 완성</div>
+          <div id="completion-score" class="completion-scoregain">+0점</div>
+          <div class="completion-buttons">
+            <button id="btn-completion-next" class="btn btn-primary btn-huge">다음 모양</button>
+            <button id="btn-completion-list" class="btn btn-ghost">레벨 선택</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="toolbar">
+    <button id="btn-rotate-left" class="btn btn-round" title="왼쪽으로 회전">↺</button>
+    <button id="btn-rotate-right" class="btn btn-round" title="오른쪽으로 회전">↻</button>
+    <button id="btn-flip" class="btn btn-round" title="뒤집기">⇋</button>
+    <button id="btn-complete" class="btn btn-primary btn-complete">완료</button>
+  </div>
+</section>
+
+<!-- 결과 화면 -->
+<section id="screen-result" class="screen">
+  <div class="card">
+    <div class="result-emoji">🏆</div>
+    <h2>다 완성했어요!</h2>
+    <div class="result-score">총 점수 <span id="result-total-score">0</span>점</div>
+    <table class="result-table" id="result-table"></table>
+    <div class="result-buttons">
+      <button id="btn-retry" class="btn btn-primary btn-huge">모양 더 고르기</button>
+      <button id="btn-to-title" class="btn btn-ghost">처음으로</button>
+    </div>
+  </div>
+</section>
+
+<script src="tangram-data.js"></script>
+<script src="game.js"></script>
+</body>
+</html>
