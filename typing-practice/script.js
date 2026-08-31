@@ -338,6 +338,12 @@ const el = {
   resultAccuracy: document.getElementById('result-accuracy'),
   resultTime: document.getElementById('result-time'),
   resultRestart: document.getElementById('result-restart'),
+  rankingList: document.getElementById('ranking-list'),
+  playerNameBtn: document.getElementById('player-name-btn'),
+  nameModal: document.getElementById('name-modal'),
+  nameInput: document.getElementById('name-input'),
+  nameSaveBtn: document.getElementById('name-save-btn'),
+  nameCancelBtn: document.getElementById('name-cancel-btn'),
   difficultySelect: document.getElementById('difficulty-select'),
   gameBoat: document.getElementById('game-boat'),
   gameLives: document.getElementById('game-lives'),
@@ -357,6 +363,68 @@ const el = {
   levelUpLabel: document.getElementById('level-up-label'),
   levelUpContinueBtn: document.getElementById('level-up-continue-btn'),
 };
+
+// ===================== 랭킹 (이름 & 리더보드) =====================
+// 비밀번호 없이 이름만 저장하는 가벼운 방식이라, 다른 사람이 같은 이름을 쓰면
+// 랭킹을 덮어쓸 수 있다는 점은 감안한 절충안이다.
+const PLAYER_NAME_KEY = 'typing_player_name';
+
+function loadPlayerName() {
+  try { return localStorage.getItem(PLAYER_NAME_KEY) || ''; } catch (e) { return ''; }
+}
+function savePlayerName(name) {
+  try { localStorage.setItem(PLAYER_NAME_KEY, name); } catch (e) { /* storage unavailable, ignore */ }
+}
+function updatePlayerNameBtn() {
+  const name = loadPlayerName();
+  el.playerNameBtn.textContent = name ? `🙂 ${name}` : '🙂 이름 설정';
+}
+function openNameModal() {
+  el.nameInput.value = loadPlayerName();
+  el.nameModal.classList.add('show');
+  el.nameInput.focus();
+}
+function closeNameModal() {
+  el.nameModal.classList.remove('show');
+}
+function submitPlayerName() {
+  const name = el.nameInput.value.trim().slice(0, 10);
+  if (!name) return;
+  savePlayerName(name);
+  updatePlayerNameBtn();
+  closeNameModal();
+}
+
+// 모드마다 "스테이지"의 뜻이 달라서, 서로 다른 연습 내용의 기록이 섞이지
+// 않도록 모드+선택 조합으로 순위표 키를 만든다.
+function currentStageKey() {
+  if (state.mode === 'rowword') {
+    return `rowword-${state.lang}-${[...state.stages].sort().join('_')}`;
+  }
+  if (state.mode === 'passage') {
+    return `passage-${state.lang}-${state.passageCategory}`;
+  }
+  return `${state.mode}-${state.lang}`;
+}
+
+function renderRanking(rows) {
+  el.rankingList.innerHTML = '';
+  const section = el.rankingList.closest('.ranking-section');
+  section.classList.toggle('empty', rows.length === 0);
+  const playerName = loadPlayerName();
+  const medals = ['🥇', '🥈', '🥉'];
+  rows.forEach((row, i) => {
+    const li = document.createElement('li');
+    li.className = 'ranking-row';
+    if (playerName && row.player_name === playerName) li.classList.add('me');
+    li.innerHTML =
+      `<span class="ranking-rank">${medals[i] || `${i + 1}위`}</span>` +
+      `<span class="ranking-name"></span>` +
+      `<span class="ranking-time">${row.elapsed_seconds.toFixed(1)}초</span>`;
+    li.querySelector('.ranking-name').textContent = row.player_name;
+    el.rankingList.appendChild(li);
+  });
+}
 
 // ===================== 사운드 =====================
 // Web Audio API로 직접 합성한 효과음 (iOS/Safari에서도 별도 파일 없이 재생 가능)
@@ -578,6 +646,15 @@ function showResult() {
   el.resultTime.textContent = Math.round(elapsed);
   el.resultModal.classList.add('show');
   soundEngine.playFanfare();
+
+  const stageKey = currentStageKey();
+  const playerName = loadPlayerName();
+  if (playerName && window.Leaderboard) {
+    window.Leaderboard.submitScore(stageKey, playerName, elapsed, null, Math.round(accuracy));
+  }
+  if (window.Leaderboard) {
+    window.Leaderboard.topScores(stageKey, 5).then(renderRanking);
+  }
 }
 
 function hideResult() {
@@ -1676,9 +1753,17 @@ el.gameInput.addEventListener('keydown', e => {
 });
 el.levelUpContinueBtn.addEventListener('click', resumeAfterLevelUp);
 
+el.playerNameBtn.addEventListener('click', openNameModal);
+el.nameSaveBtn.addEventListener('click', submitPlayerName);
+el.nameCancelBtn.addEventListener('click', closeNameModal);
+el.nameInput.addEventListener('keydown', e => {
+  if (e.key === 'Enter') submitPlayerName();
+});
+
 // ===================== 초기화 =====================
 
 initKeyboard();
 initFingerGuide();
+updatePlayerNameBtn();
 setMode('position');
 showHome();
