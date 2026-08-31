@@ -1,0 +1,1102 @@
+:root {
+  --card: #ffffff;
+  --pink: #ff4fa3;
+  --pink-dark: #d81b7a;
+  --lavender: #a259ff;
+  --lavender-dark: #7c2ce0;
+  --mint: #22c55e;
+  --mint-dark: #0e9b45;
+  --peach: #ff9500;
+  --peach-dark: #e67300;
+  --sky: #2e9bff;
+  --sky-dark: #0b7fe0;
+  --yellow: #ffd400;
+  --yellow-dark: #e6be00;
+  --red: #ff3b3b;
+  --red-dark: #e62222;
+  --text: #241b3a;
+  --text-soft: #6b5f86;
+  --incorrect: #ff3b3b;
+  --incorrect-light: #ffd6d6;
+  /* 자판 기본(눌리지 않은) 색: 목표 키의 진한 원색과 뚜렷이 구분되도록 옅게 둔다 */
+  --sky-pale: #cfe9ff;
+  --peach-pale: #ffe1b3;
+  --mint-pale: #c9f3d8;
+}
+
+* { box-sizing: border-box; }
+
+/* 탭/카드 버튼은 눌린(active) 상태를 색으로 이미 보여주기 때문에, 클릭 후 남는 브라우저
+   기본 포커스 테두리는 필요 없다. 실제 키보드 Tab 이동 시(:focus-visible)에는 그대로 남겨서
+   접근성은 지킨다. */
+button:focus:not(:focus-visible) { outline: none; }
+
+html { font-size: 18px; }
+
+html, body {
+  margin: 0;
+  min-height: 100%;
+  background: #fffdf6;
+  color: var(--text);
+  font-family: 'Pretendard', 'Gowun Dodum', 'Nunito', sans-serif;
+  overflow-x: hidden;
+}
+
+/* floating background decorations */
+.bg-decor {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  overflow: hidden;
+}
+.bg-decor span {
+  position: absolute;
+  left: var(--x);
+  top: 100%;
+  font-size: 1.8rem;
+  opacity: 0.55;
+  animation: floaty var(--dur) linear infinite;
+  animation-delay: var(--d);
+}
+@keyframes floaty {
+  0% { transform: translateY(0) rotate(0deg); opacity: 0; }
+  10% { opacity: 0.55; }
+  90% { opacity: 0.55; }
+  100% { transform: translateY(-115vh) rotate(25deg); opacity: 0; }
+}
+
+header, nav, main, footer {
+  position: relative;
+  z-index: 1;
+}
+
+.app-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  flex-wrap: wrap;
+  padding: 32px 16px 12px;
+}
+
+.app-header h1 {
+  font-family: 'Jua', 'Gowun Dodum', sans-serif;
+  font-size: 2.2rem;
+  color: var(--pink-dark);
+  margin: 0;
+  cursor: pointer;
+  transition: transform 0.15s;
+}
+.app-header h1:hover { transform: scale(1.03); }
+.app-header h1:active { transform: scale(0.98); }
+
+.lang-toggle {
+  display: inline-flex;
+  background: #fff;
+  border: 2px solid #f0e9fb;
+  border-radius: 999px;
+  padding: 5px;
+}
+.lang-toggle button {
+  border: none;
+  background: transparent;
+  padding: 12px 22px;
+  border-radius: 999px;
+  font-family: 'Pretendard', 'Nunito', 'Gowun Dodum', sans-serif;
+  font-weight: 800;
+  font-size: 1.05rem;
+  color: var(--text-soft);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.lang-toggle button.active {
+  background: linear-gradient(135deg, var(--pink-dark), var(--lavender-dark));
+  color: #fff;
+}
+
+.tool-btn {
+  border: 2px solid #f0e9fb;
+  background: #fff;
+  padding: 13px 20px;
+  border-radius: 999px;
+  font-family: 'Pretendard', 'Gowun Dodum', sans-serif;
+  font-weight: 800;
+  font-size: 1rem;
+  color: var(--text-soft);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.tool-btn.active {
+  border-color: transparent;
+  background: linear-gradient(135deg, var(--mint-dark), var(--sky-dark));
+  color: #fff;
+}
+
+.mode-tabs {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding: 8px 16px 20px;
+}
+/* 탭은 항상 자기 색을 띠고 있고, 선택된 탭만 진하게 눌려 보인다 (크레용을 늘어놓은 느낌) */
+.tab {
+  border: none;
+  color: #fff;
+  padding: 14px 24px;
+  border-radius: 20px;
+  font-family: 'Pretendard', 'Gowun Dodum', sans-serif;
+  font-size: 1.12rem;
+  font-weight: 800;
+  cursor: pointer;
+  opacity: 0.72;
+  transition: transform 0.15s, opacity 0.15s;
+}
+.tab-emoji { margin-right: 6px; }
+.tab:hover { transform: translateY(-2px); opacity: 0.9; }
+.tab.active {
+  opacity: 1;
+  transform: translateY(2px);
+}
+.tab[data-mode="position"] { background: var(--sky); }
+.tab[data-mode="rowword"] { background: var(--peach); }
+.tab[data-mode="randomword"] { background: var(--lavender); }
+.tab[data-mode="sentence"] { background: var(--pink); }
+.tab[data-mode="passage"] { background: var(--mint); }
+.tab[data-mode="game"] { background: var(--red); }
+
+main {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 0 16px 40px;
+}
+
+/* 홈 화면일 때는 연습 화면 관련 요소를 모두 숨긴다 */
+body.home-active #mode-tabs,
+body.home-active #stats-bar,
+body.home-active #stage-select,
+body.home-active #category-select,
+body.home-active #difficulty-select,
+body.home-active .mode-panel {
+  display: none !important;
+}
+.home-view { display: none; }
+body.home-active .home-view { display: block; }
+
+.home-intro {
+  text-align: center;
+  color: var(--text-soft);
+  font-weight: 700;
+  margin: 4px 0 22px;
+  font-size: 1.05rem;
+}
+/* PC에서는 한 줄로, 모바일에서만 두 줄로 줄바꿈한다 */
+.home-intro-break { display: none; }
+
+.tile-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+}
+@media (max-width: 700px) {
+  .tile-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+/* 홈 카드는 크레용 상자처럼 카드 전체가 원색으로 채워진다 */
+.tile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 10px;
+  border: none;
+  border-radius: 28px;
+  padding: 34px 20px;
+  cursor: pointer;
+  transition: transform 0.15s;
+  font-family: 'Pretendard', 'Gowun Dodum', sans-serif;
+  color: #fff;
+}
+.tile:hover { transform: translateY(-4px); }
+.tile:active { transform: translateY(2px); }
+.tile-emoji {
+  font-size: 3rem;
+  width: 86px;
+  height: 86px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.92);
+  margin-bottom: 4px;
+}
+.tile-title {
+  font-size: 1.3rem;
+  font-weight: 800;
+  color: #fff;
+}
+.tile-desc {
+  font-size: 0.95rem;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.tile[data-mode="position"] { background: var(--sky); }
+.tile[data-mode="rowword"] { background: var(--peach); }
+.tile[data-mode="randomword"] { background: var(--lavender); }
+.tile[data-mode="sentence"] { background: var(--pink); }
+.tile[data-mode="passage"] { background: var(--mint); }
+.tile[data-mode="game"] { background: var(--red); }
+
+/* 아이콘은 이모지 대신 테두리 없는 SVG 라인 아이콘을 쓰고, 각 카드의 진한 색으로 맞춘다 */
+.tile[data-mode="position"] .tile-emoji { color: var(--sky-dark); }
+.tile[data-mode="rowword"] .tile-emoji { color: var(--peach-dark); }
+.tile[data-mode="randomword"] .tile-emoji { color: var(--lavender-dark); }
+.tile[data-mode="sentence"] .tile-emoji { color: var(--pink-dark); }
+.tile[data-mode="passage"] .tile-emoji { color: var(--mint-dark); }
+.tile[data-mode="game"] .tile-emoji { color: var(--red-dark); }
+
+#stats-bar.hide { display: none; }
+#stats-bar {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  background: #fff;
+  border: 2px solid #f3eefa;
+  border-radius: 22px;
+  padding: 14px 20px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+.stat {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+}
+.stat .label {
+  font-size: 0.85rem;
+  color: var(--text-soft);
+}
+.stat .value {
+  font-family: 'Pretendard', 'Nunito', sans-serif;
+  font-weight: 800;
+  font-size: 1.4rem;
+  color: var(--pink-dark);
+}
+.stat .unit {
+  font-size: 0.8rem;
+  color: var(--text-soft);
+}
+/* 통계 숫자마다 다른 색을 줘서 한눈에 구분되게 한다 */
+#stat-speed { color: var(--sky-dark); }
+#stat-accuracy { color: var(--mint-dark); }
+#stat-time { color: var(--lavender-dark); }
+
+/* 통계 셀과 자리단계/글종류 선택 버튼을 시각적으로 구분해주는 구분선 */
+.stat-divider {
+  display: none;
+  color: #e0d5f5;
+  font-size: 1.4rem;
+  font-weight: 300;
+}
+.stat-divider.show { display: inline-flex; }
+
+#restart-btn {
+  margin-left: auto;
+  border: none;
+  background: var(--mint-dark);
+  color: #fff;
+  font-weight: 800;
+  font-size: 1rem;
+  padding: 13px 20px;
+  border-radius: 16px;
+  cursor: pointer;
+  font-family: 'Pretendard', 'Gowun Dodum', sans-serif;
+  transition: transform 0.1s;
+}
+#restart-btn:active { transform: translateY(2px); }
+
+/* 자리 단계: 체크박스처럼 여러 개를 동시에, 자유롭게 선택할 수 있는 토글 칩.
+   기본자리=파랑/윗자리=주황/아랫자리=초록으로, 아래 자판 색과 짝을 맞췄다 */
+.stage-select {
+  display: none;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.stage-select.show { display: flex; }
+.stage-label {
+  font-size: 0.85rem;
+  color: var(--text-soft);
+  margin-right: 2px;
+  font-weight: 700;
+}
+.stage-select button {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  border: none;
+  background: var(--chip);
+  color: #fff;
+  padding: 8px 14px;
+  border-radius: 14px;
+  font-weight: 800;
+  font-size: 0.92rem;
+  cursor: pointer;
+  font-family: 'Pretendard', 'Gowun Dodum', sans-serif;
+  transition: all 0.15s;
+}
+.stage-select button[data-stage="0"] { --chip: var(--sky); --chip-dark: var(--sky-dark); }
+.stage-select button[data-stage="1"] { --chip: var(--peach); --chip-dark: var(--peach-dark); }
+.stage-select button[data-stage="2"] { --chip: var(--mint); --chip-dark: var(--mint-dark); }
+.stage-select button::before {
+  content: '';
+  width: 16px;
+  height: 16px;
+  flex: none;
+  border-radius: 5px;
+  border: 2px solid rgba(255, 255, 255, 0.85);
+  background: rgba(255, 255, 255, 0.25);
+  transition: all 0.15s;
+}
+.stage-select button.active {
+  background: var(--chip-dark);
+  transform: translateY(1px);
+}
+.stage-select button.active::before {
+  content: '✓';
+  background: #fff;
+  color: var(--chip-dark);
+  border-color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  line-height: 1;
+}
+
+/* 글 종류 선택: 옵션마다 다른 원색 */
+.category-select {
+  display: none;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.category-select.show { display: flex; }
+.category-select button {
+  border: none;
+  background: var(--chip);
+  color: #fff;
+  padding: 8px 14px;
+  border-radius: 14px;
+  font-weight: 800;
+  font-size: 0.92rem;
+  cursor: pointer;
+  font-family: 'Pretendard', 'Gowun Dodum', sans-serif;
+  transition: all 0.15s;
+}
+.category-select button[data-category="novel"] { --chip: var(--lavender); --chip-dark: var(--lavender-dark); }
+.category-select button[data-category="proverbs"] { --chip: var(--peach); --chip-dark: var(--peach-dark); }
+.category-select button[data-category="folktale"] { --chip: var(--sky); --chip-dark: var(--sky-dark); }
+.category-select button[data-category="poem"] { --chip: var(--mint); --chip-dark: var(--mint-dark); }
+.category-select button.active {
+  background: var(--chip-dark);
+  outline: 3px solid rgba(255, 255, 255, 0.8);
+  outline-offset: -5px;
+}
+
+.mode-panel { display: none; }
+.mode-panel.active { display: block; }
+
+/* position mode: 지금 배우는 자리(기본/윗/아랫)에 맞춰 큰 글자·손가락 색이 함께 바뀐다 */
+#mode-position {
+  --row-color: var(--sky);
+  --row-color-dark: var(--sky-dark);
+}
+#mode-position[data-row="1"] { --row-color: var(--peach); --row-color-dark: var(--peach-dark); }
+#mode-position[data-row="2"] { --row-color: var(--mint); --row-color-dark: var(--mint-dark); }
+
+.key-prompt {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 28px;
+  padding: 30px 0 20px;
+}
+.prompt-current {
+  width: 118px;
+  height: 118px;
+  background: var(--row-color-dark);
+  border-radius: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 3.2rem;
+  font-weight: 800;
+  color: #fff;
+  font-family: 'Pretendard', 'Nunito', 'Gowun Dodum', sans-serif;
+  transition: background 0.2s;
+}
+.prompt-next-wrap { text-align: center; }
+.prompt-next-label {
+  display: block;
+  font-size: 0.85rem;
+  color: var(--text-soft);
+  margin-bottom: 6px;
+  font-weight: 700;
+}
+.prompt-next {
+  width: 64px;
+  height: 64px;
+  background: #e9e9ee;
+  border-radius: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.7rem;
+  font-weight: 700;
+  color: var(--text-soft);
+  opacity: 0.9;
+  font-family: 'Pretendard', 'Nunito', 'Gowun Dodum', sans-serif;
+}
+
+.finger-label {
+  text-align: center;
+  font-weight: 800;
+  font-size: 1.1rem;
+  color: var(--lavender-dark);
+  font-family: 'Pretendard', 'Gowun Dodum', sans-serif;
+  margin-bottom: 10px;
+}
+
+/* 손가락 가이드: 자판 위에 반투명하게 겹쳐지는 손 오버레이.
+   손(.hand)의 left/top은 JS가 홈로우 키 위치를 측정해서 정해준다 (layoutHandOverlay).
+   손끝은 폭의 절반(999px는 자동으로 최대치로 잘림)까지 둥글려 뾰족해 보이지 않게 한다 */
+.finger-guide {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+.hand {
+  position: absolute;
+  transform: translate(-50%, -20px);
+}
+.hand-shape {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.fingers {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+}
+/* 손가락은 연한 회색이 반투명하게 얹힌 느낌으로, 자판 색이 은은히 비쳐 보이게 한다 */
+.finger {
+  position: relative;
+  width: 42px;
+  background: rgba(130, 128, 142, 0.28);
+  border: 2px solid rgba(255, 255, 255, 0.85);
+  border-radius: 999px 999px 12px 12px;
+  transition: all 0.15s;
+}
+.finger .nail {
+  position: absolute;
+  top: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 18px;
+  height: 13px;
+  background: rgba(255, 255, 255, 0.4);
+  border-radius: 50% 50% 45% 45%;
+}
+.finger.f-pinky { height: 58px; }
+.finger.f-ring { height: 80px; }
+.finger.f-middle { height: 94px; }
+.finger.f-index { height: 82px; }
+/* 손바닥을 길게 늘려 스페이스바 높이까지 자연스럽게 내려오게 하고,
+   엄지는 그 안쪽 아래 모서리에 비스듬히 붙여서 스페이스바 쪽을 향하게 한다 */
+.palm {
+  width: 172px;
+  height: 98px;
+  margin-top: -8px;
+  background: rgba(130, 128, 142, 0.22);
+  border-radius: 30px 30px 50px 50px;
+}
+.finger.f-thumb {
+  position: absolute;
+  width: 34px;
+  height: 66px;
+  bottom: 10%;
+  z-index: 1;
+}
+.hand-left .finger.f-thumb {
+  right: 6px;
+  transform-origin: bottom center;
+  transform: rotate(58deg);
+}
+.hand-right .finger.f-thumb {
+  left: 6px;
+  transform-origin: bottom center;
+  transform: rotate(-58deg);
+}
+.hand-tag {
+  /* 손이 자판 위에 바로 겹쳐지므로, 위쪽의 finger-label 문구로 충분해 라벨은 숨긴다 */
+  display: none;
+}
+/* 지금 눌러야 할 손가락은 원색이 아니라, 진한 회색이 좀 더 뚜렷하게 얹힌 것처럼 표시한다.
+   실제 이동(translate)은 JS(moveActiveFinger)가 목표 키 위치를 측정해 인라인으로 넣어준다 */
+.finger.active {
+  background: rgba(80, 78, 92, 0.5);
+  z-index: 1;
+}
+.finger.active .nail {
+  background: rgba(255, 255, 255, 0.4);
+}
+
+/* 자판(+ 자리연습에서는 손 오버레이까지)을 담는 무대. 폭이 넘치면 이 박스만 가로 스크롤된다 */
+.keyboard-stage {
+  position: relative;
+  width: fit-content;
+  max-width: 100%;
+  margin: 10px auto 20px;
+  overflow-x: auto;
+}
+/* 자리연습 전용 무대에만 손 오버레이가 있다. overflow-x:auto를 쓰면 overflow-y도 자동으로
+   클리핑되므로, 손바닥이 길어져도 잘리지 않도록 아래쪽에 여유 공간을 넉넉히 둔다 */
+#keyboard-stage {
+  padding-bottom: 90px;
+}
+.virtual-keyboard {
+  position: relative;
+  --key-unit: 54px;
+  /* 목표 키 색: 자리연습뿐 아니라 모든 연습 화면의 자판이 공통으로 쓴다.
+     JS가 지금 눌러야 할 키가 속한 자리(기본/윗/아랫)에 맞춰 data-row를 바꿔준다 */
+  --row-color: var(--sky);
+  --row-color-dark: var(--sky-dark);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+  width: fit-content;
+  max-width: 100%;
+  margin: 10px auto 20px;
+}
+.virtual-keyboard[data-row="1"] { --row-color: var(--peach); --row-color-dark: var(--peach-dark); }
+.virtual-keyboard[data-row="2"] { --row-color: var(--mint); --row-color-dark: var(--mint-dark); }
+/* keyboard-stage 안에서는 바깥쪽이 이미 폭 제한+스크롤을 처리하므로, 안쪽 virtual-keyboard까지
+   max-width:100%를 적용하면 브라우저 폭이 줄 때 이 박스만 먼저 줄어들면서 (내용은 그대로라
+   실제 키들은 안 줄어드는데) 오른쪽 끝에 절대좌표로 붙는 방향키만 왼쪽으로 딸려오는
+   버그가 생긴다. 그래서 여기서는 폭 제한을 풀어 항상 실제 콘텐츠 폭을 유지하게 한다 */
+.keyboard-stage .virtual-keyboard { margin: 0; max-width: none; }
+.kb-row { display: flex; gap: 6px; }
+/* 스페이스줄은 방향키 2줄이 위아래로 튀어나오지 않고 딱 맞게 들어가도록 다른 줄보다 세로로 조금 더 크게 잡는다 */
+.kb-row-space .key { height: calc(var(--key-unit) * 1.05); }
+/* 방향키: 세로는 스페이스줄 높이에 딱 맞추고, 가로는 Ctrl/Alt를 키운 뒤 남는 폭을 꽉 채운다.
+   오른쪽 Ctrl과의 간격도 다른 키 사이 간격(6px)과 같게 맞춘다.
+   다른 줄들 폭 계산과는 무관한 별도의 3x2 격자다 */
+.arrow-cluster {
+  --ak: calc(var(--key-unit) * 0.55);
+  --akh: calc((var(--key-unit) * 1.05 - 6px) / 2);
+  position: absolute;
+  right: 0;
+  top: calc(4 * (var(--key-unit) + 6px));
+  display: grid;
+  grid-template-columns: repeat(3, var(--ak));
+  grid-template-rows: repeat(2, var(--akh));
+  gap: 6px;
+}
+.arrow-cluster .key {
+  width: var(--ak);
+  height: var(--akh);
+  border-radius: 7px;
+  font-size: 0.62rem;
+}
+.key {
+  width: calc(var(--key-unit) * var(--kw, 1));
+  height: var(--key-unit);
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  transition: all 0.08s ease;
+  font-family: 'Pretendard', 'Nunito', 'Gowun Dodum', sans-serif;
+  flex: none;
+}
+/* 실제 자판처럼 보이도록 넣은 장식 키(숫자줄/Tab/Caps/Shift 등)는 연습과 무관하니
+   눈에 덜 띄도록 거의 흰색에 가깝게 하고, 배경과 구분되도록 테두리만 살짝 넣는다.
+   스페이스바는 엄지가 얹히는 자리라 다른 장식 키보다 살짝 더 진하게 남겨둔다 */
+.key.deco {
+  background: #fbfbfd;
+  color: var(--text-soft);
+  font-size: 0.68rem;
+  border: 1.5px solid #e5e5ec;
+}
+.key.deco.key-space {
+  background: #e6e7ef;
+  border-color: #d6d7e2;
+}
+/* 방향키 배치를 맞추기 위한 빈 자리 채우기용 — 화살표 키 위에 오도록 자리만 차지한다 */
+.key.key-blank {
+  background: transparent;
+  border-color: transparent;
+}
+.key.letter { font-size: 1.05rem; }
+/* 연습용 글자키는 평소엔 옅은 색만 띠고, 눌러야 할 목표 키만 진한 원색으로 뚜렷하게 튀게 한다 */
+.kb-row-top .key.letter { background: var(--peach-pale); color: var(--peach-dark); }
+.kb-row-home .key.letter { background: var(--sky-pale); color: var(--sky-dark); }
+.kb-row-bottom .key.letter { background: var(--mint-pale); color: var(--mint-dark); }
+/* 선택되지 않은 자리는 색을 아예 빼고 장식 키처럼 흰색으로 처리한다 (은은히 흐리게 X) */
+.key.letter.dim {
+  background: #fbfbfd;
+  color: var(--text-soft);
+  border: 1.5px solid #e5e5ec;
+}
+/* 목표 키는 항상(어느 연습 화면이든) 그 키가 속한 자리 색(파랑/주황/초록)으로 강조한다.
+   --row-color-dark는 .virtual-keyboard 쪽에서 data-row로 정해준다.
+   .kb-row-x .key.letter (자리별 옅은 색) 규칙과 우선순위가 같아지지 않도록
+   [data-row]를 붙여 확실히 더 구체적인 선택자로 만든다 (그래야 항상 이 색이 이긴다) */
+.virtual-keyboard[data-row] .key.target {
+  background: var(--row-color-dark);
+  color: #fff;
+  animation: pulse 1s ease-in-out infinite;
+}
+/* 정답 눌렀을 때 반짝이는 색도 초록으로 따로 두지 않고, 목표 키 강조와 같은 자리 색을 쓴다 */
+.virtual-keyboard[data-row] .key.correct-flash {
+  background: var(--row-color-dark);
+  color: #fff;
+}
+.virtual-keyboard[data-row] .key.wrong-flash {
+  background: var(--incorrect);
+  color: #fff;
+  animation: shake 0.25s;
+}
+@keyframes pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.08); }
+}
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-4px); }
+  75% { transform: translateX(4px); }
+}
+
+.position-progress {
+  height: 12px;
+  background: #f1ecfa;
+  border-radius: 999px;
+  overflow: hidden;
+}
+.position-progress .bar {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, var(--pink-dark), var(--lavender-dark));
+  transition: width 0.2s;
+}
+
+/* typing display (word/sentence/passage) */
+.typing-display {
+  background: #fff;
+  border: 4px solid var(--lavender);
+  border-radius: 24px;
+  padding: 24px 26px;
+  font-size: clamp(1.6rem, 3.2vw, 2.3rem);
+  font-weight: 800;
+  line-height: 1.9;
+  max-height: 320px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  word-break: keep-all;
+  overflow-wrap: break-word;
+  margin-bottom: 14px;
+}
+.typing-display span.pending { color: #c3b6de; }
+.typing-display span.correct { color: var(--mint-dark); }
+.typing-display span.incorrect {
+  color: #fff;
+  background: var(--incorrect);
+  border-radius: 5px;
+}
+.typing-display span.current {
+  border-bottom: 4px solid var(--pink-dark);
+  border-radius: 2px;
+}
+
+.passage-source {
+  text-align: right;
+  font-size: 0.85rem;
+  color: var(--text-soft);
+  font-style: italic;
+  margin: -6px 4px 10px 0;
+  min-height: 1em;
+}
+
+/* 지금까지 입력한 내용을 보여주는 작은 입력칸. 읽기 전용(readonly)이라 실제 타이핑은
+   여전히 document 전체에서 물리 키로 직접 받아 처리하고(한글 조합 로직 그대로 유지),
+   이 칸은 그 진행 상황을 아이들이 눈으로 확인할 수 있게 보여주기만 한다. 세로 공간을
+   많이 차지하지 않도록 한 줄짜리로, 글씨도 작게 만든다. */
+.typing-preview {
+  display: block;
+  width: 100%;
+  min-height: 1.9em;
+  max-height: 4.6em; /* 대략 두 줄 정도까지만 보여주고, 그 이상은 내부 스크롤로 처리 */
+  resize: none;
+  overflow-y: auto;
+  border: 2px solid var(--lavender);
+  border-radius: 12px;
+  padding: 6px 12px;
+  font-size: 0.85rem;
+  line-height: 1.5;
+  font-family: 'Pretendard', 'Gowun Dodum', 'Nunito', sans-serif;
+  outline: none;
+  background: #fff;
+  color: var(--text-soft);
+  margin-bottom: 8px;
+  cursor: default;
+}
+.typing-preview:focus { border-color: var(--pink-dark); }
+
+.typing-hint {
+  text-align: center;
+  font-weight: 700;
+  font-size: 1.02rem;
+  color: var(--text-soft);
+  margin: -4px 0 10px;
+  min-height: 1.3em;
+  transition: color 0.15s;
+}
+.typing-hint.bad {
+  color: var(--red-dark);
+}
+.typing-hint.good {
+  color: var(--mint-dark);
+}
+
+/* 자리연습처럼 별도 입력칸 없이 화면 아무 곳이든 바로 물리 키보드로 입력한다.
+   오타를 치면 typing-display 카드 자체가 흔들리며 빨갛게 표시된다. */
+.typing-display.shake {
+  animation: inputShake 0.3s;
+  border-color: var(--incorrect);
+}
+
+/* 타자게임 */
+.difficulty-select {
+  display: none;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  background: #fff;
+  border: 2px solid #f3eefa;
+  border-radius: 20px;
+  padding: 12px 18px;
+  margin-bottom: 14px;
+}
+.difficulty-select.show { display: flex; }
+.difficulty-select .stage-label { font-size: 0.9rem; color: var(--text-soft); margin-right: 4px; font-weight: 700; }
+.difficulty-select button {
+  border: none;
+  background: var(--chip);
+  color: #fff;
+  padding: 11px 18px;
+  border-radius: 16px;
+  font-weight: 800;
+  font-size: 1.05rem;
+  cursor: pointer;
+  font-family: 'Pretendard', 'Gowun Dodum', sans-serif;
+  transition: all 0.15s;
+}
+.difficulty-select button[data-difficulty="easy"] { --chip: var(--mint); --chip-dark: var(--mint-dark); }
+.difficulty-select button[data-difficulty="normal"] { --chip: var(--peach); --chip-dark: var(--peach-dark); }
+.difficulty-select button[data-difficulty="hard"] { --chip: var(--red); --chip-dark: var(--red-dark); }
+.difficulty-select button.active {
+  background: var(--chip-dark);
+  outline: 3px solid rgba(255, 255, 255, 0.8);
+  outline-offset: -5px;
+}
+
+.game-hud {
+  display: flex;
+  justify-content: center;
+  gap: 24px;
+  background: #fff;
+  border: 2px solid #f3eefa;
+  border-radius: 20px;
+  padding: 12px 18px;
+  margin-bottom: 14px;
+  font-family: 'Pretendard', 'Nunito', sans-serif;
+  font-weight: 800;
+  color: var(--pink-dark);
+}
+.hud-item { display: flex; align-items: center; gap: 5px; font-size: 1.1rem; }
+#game-lives { color: var(--red-dark); }
+#game-score { color: var(--peach-dark); }
+#game-level { color: var(--sky-dark); }
+
+.game-field {
+  position: relative;
+  height: 520px;
+  background: linear-gradient(180deg, #cdeaff 0%, #9ed6ff 46%, #2e9bff 56%, #0b5fc2 100%);
+  border-radius: 24px;
+  border: 4px solid transparent;
+  overflow: hidden;
+  margin-bottom: 14px;
+  transition: border-color 0.1s;
+}
+.game-field.hit-flash { animation: fieldFlash 0.25s; }
+@keyframes fieldFlash {
+  0%, 100% { border-color: transparent; }
+  50% { border-color: var(--incorrect); }
+}
+
+.game-sea {
+  position: absolute;
+  left: 0; right: 0; bottom: 0;
+  height: 44%;
+  overflow: hidden;
+  pointer-events: none;
+}
+.game-boat {
+  position: absolute;
+  bottom: 14%;
+  left: 50%;
+  font-size: 3rem;
+  transform-origin: 50% 80%;
+  animation: boatBob 3.2s ease-in-out infinite;
+}
+@keyframes boatBob {
+  0%, 100% { transform: translateX(-50%) translateY(0) rotate(-4deg); }
+  50% { transform: translateX(-50%) translateY(-8px) rotate(4deg); }
+}
+.game-boat.hit { animation: boatHit 0.4s ease-out; }
+@keyframes boatHit {
+  0% { transform: translateX(-50%) rotate(0deg); }
+  25% { transform: translateX(-58%) rotate(-10deg); }
+  50% { transform: translateX(-42%) rotate(8deg); }
+  75% { transform: translateX(-54%) rotate(-6deg); }
+  100% { transform: translateX(-50%) rotate(-4deg); }
+}
+
+.game-start-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  background: rgba(255, 255, 255, 0.65);
+  text-align: center;
+  padding: 20px;
+}
+.game-start-overlay p { color: var(--text); font-weight: 700; margin: 0; font-size: 1.05rem; }
+#game-start-btn, #game-restart-btn {
+  border: none;
+  background: linear-gradient(135deg, var(--red-dark), var(--peach-dark));
+  color: #fff;
+  font-weight: 800;
+  padding: 16px 32px;
+  border-radius: 18px;
+  cursor: pointer;
+  font-size: 1.1rem;
+  font-family: 'Pretendard', 'Gowun Dodum', sans-serif;
+}
+#game-start-btn:active, #game-restart-btn:active { transform: translateY(2px); }
+
+.falling-word {
+  position: absolute;
+  top: -46px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 7px 14px 7px 10px;
+  border-radius: 999px;
+  font-weight: 800;
+  font-size: 1.05rem;
+  white-space: nowrap;
+  background: #2f2942;
+  color: #fff;
+  border: 2px solid var(--sky);
+  z-index: 2;
+}
+.falling-word .bomb-icon { font-size: 1.05rem; }
+.falling-word.bonus {
+  border-color: var(--yellow-dark);
+  animation: bonusGlow 0.9s ease-in-out infinite alternate;
+}
+@keyframes bonusGlow {
+  from { transform: scale(1); }
+  to { transform: scale(1.08); }
+}
+.falling-word.targeted { outline: 3px solid #fff; border-color: var(--pink-dark); }
+
+.bonus-toast {
+  position: absolute;
+  top: 16%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(36, 27, 58, 0.88);
+  color: #fff;
+  font-weight: 800;
+  padding: 8px 18px;
+  border-radius: 999px;
+  font-size: 1rem;
+  white-space: nowrap;
+  z-index: 6;
+  animation: bonusToastPop 1.2s ease-out forwards;
+  pointer-events: none;
+}
+@keyframes bonusToastPop {
+  0% { opacity: 0; transform: translateX(-50%) translateY(6px) scale(0.9); }
+  15% { opacity: 1; transform: translateX(-50%) translateY(0) scale(1.05); }
+  25% { transform: translateX(-50%) translateY(0) scale(1); }
+  80% { opacity: 1; }
+  100% { opacity: 0; transform: translateX(-50%) translateY(-10px) scale(1); }
+}
+.falling-word.pop { animation: wordPop 0.3s ease-out forwards; }
+.falling-word.miss { animation: wordMiss 0.35s ease-in forwards; }
+@keyframes wordPop {
+  0% { transform: scale(1); }
+  40% { transform: scale(1.5); }
+  to { transform: scale(0.4); opacity: 0; }
+}
+@keyframes wordMiss {
+  to { transform: translateY(14px) scale(0.7); opacity: 0; }
+}
+
+#game-input {
+  width: 100%;
+  border: 4px solid var(--red);
+  border-radius: 20px;
+  padding: 16px 20px;
+  font-size: 1.3rem;
+  font-family: 'Pretendard', 'Gowun Dodum', 'Nunito', sans-serif;
+  text-align: center;
+  outline: none;
+  background: #fff;
+  color: var(--text);
+  transition: border-color 0.2s;
+}
+#game-input:focus { border-color: var(--pink-dark); }
+#game-input:disabled { background: #f7f2fb; }
+#game-input.shake { animation: inputShake 0.3s; border-color: var(--incorrect); }
+@keyframes inputShake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-6px); }
+  75% { transform: translateX(6px); }
+}
+
+.result-modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(36, 27, 58, 0.42);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+  padding: 16px;
+}
+.result-modal.show { display: flex; }
+.result-card {
+  background: #fff;
+  border: 3px solid #f3eefa;
+  border-radius: 30px;
+  padding: 40px 44px;
+  text-align: center;
+  max-width: 360px;
+  width: 100%;
+}
+.result-card h2 {
+  font-family: 'Jua', 'Gowun Dodum', sans-serif;
+  color: var(--pink-dark);
+  margin: 0 0 18px;
+  font-size: 1.6rem;
+}
+.result-stats {
+  display: flex;
+  justify-content: space-around;
+  margin-bottom: 22px;
+}
+.result-stats div { display: flex; flex-direction: column; }
+.result-stats span {
+  font-family: 'Pretendard', 'Nunito', sans-serif;
+  font-weight: 800;
+  font-size: 1.7rem;
+  color: var(--lavender-dark);
+}
+.result-stats small { color: var(--text-soft); font-size: 0.8rem; margin-top: 4px; }
+#result-speed { color: var(--sky-dark); }
+#result-accuracy { color: var(--mint-dark); }
+#result-time { color: var(--lavender-dark); }
+#result-restart {
+  border: none;
+  background: linear-gradient(135deg, var(--pink-dark), var(--lavender-dark));
+  color: #fff;
+  font-weight: 800;
+  padding: 16px 32px;
+  border-radius: 18px;
+  cursor: pointer;
+  font-size: 1.1rem;
+  font-family: 'Pretendard', 'Gowun Dodum', sans-serif;
+}
+#result-restart:active { transform: translateY(2px); }
+
+.level-up-desc {
+  color: var(--text-soft);
+  font-weight: 700;
+  margin: 0 0 22px;
+}
+.level-up-desc span {
+  color: var(--peach-dark);
+  font-weight: 800;
+}
+#level-up-continue-btn {
+  border: none;
+  background: linear-gradient(135deg, var(--mint-dark), var(--sky-dark));
+  color: #fff;
+  font-weight: 800;
+  padding: 16px 32px;
+  border-radius: 18px;
+  cursor: pointer;
+  font-size: 1.1rem;
+  font-family: 'Pretendard', 'Gowun Dodum', sans-serif;
+}
+#level-up-continue-btn:active { transform: translateY(2px); }
+
+footer {
+  text-align: center;
+  padding: 10px 16px 36px;
+  color: var(--text-soft);
+  font-size: 0.95rem;
+}
+
+@media (max-width: 480px) {
+  html { font-size: 16px; }
+  .tile-grid { grid-template-columns: 1fr; }
+  .app-header h1 { font-size: 1.5rem; }
+  .home-intro-break { display: block; }
+  .virtual-keyboard { --key-unit: 36px; }
+  .keyboard-stage { padding-bottom: 55px; }
+  .key.letter { font-size: 0.85rem; }
+  .key.deco { font-size: 0.56rem; }
+  .game-field { height: 400px; }
+  .game-boat { font-size: 2.2rem; }
+  .hud-item { font-size: 0.9rem; }
+  .falling-word { font-size: 0.9rem; padding: 6px 11px; }
+  .difficulty-select button { padding: 9px 14px; font-size: 0.9rem; }
+  .prompt-current { width: 90px; height: 90px; font-size: 2.2rem; }
+  .typing-display { font-size: 1.2rem; padding: 18px; }
+  #stats-bar { gap: 10px; padding: 12px 14px; }
+  .stat .value { font-size: 1.1rem; }
+  .finger { width: 30px; border-radius: 999px 999px 8px 8px; }
+  .finger .nail { width: 13px; height: 10px; top: 6px; }
+  .finger.f-pinky { height: 40px; }
+  .finger.f-ring { height: 54px; }
+  .finger.f-middle { height: 64px; }
+  .finger.f-index { height: 56px; }
+  .finger.f-thumb { width: 28px; height: 44px; }
+  .palm { width: 118px; height: 88px; }
+  .stage-select button, .category-select button, .difficulty-select button { font-size: 0.92rem; padding: 9px 14px; }
+}
