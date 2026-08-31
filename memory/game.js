@@ -228,7 +228,7 @@
   function renderGrid() {
     cardGrid.innerHTML = "";
     var cols = gridColumns(state.cards.length);
-    cardGrid.style.gridTemplateColumns = "repeat(" + cols + ", 1fr)";
+    cardGrid.style.gridTemplateColumns = "repeat(" + cols + ", minmax(0, 128px))";
     state.cards.forEach(function (card) {
       var btn = document.createElement("button");
       btn.type = "button";
@@ -240,7 +240,6 @@
 
       var back = document.createElement("div");
       back.className = "mem-card-face mem-card-back";
-      back.textContent = "❓";
 
       var front = document.createElement("div");
       front.className = "mem-card-face mem-card-front";
