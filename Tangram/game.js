@@ -34,6 +34,7 @@
   var progressFill = document.getElementById("stage-progress-fill");
   var levelGrid = document.getElementById("level-grid");
   var levelSelectDiffLabel = document.getElementById("levelselect-diff-label");
+  var btnFlip = document.getElementById("btn-flip");
 
   var completionModal = document.getElementById("completion-modal");
   var completionStarsEl = document.getElementById("completion-stars");
@@ -296,6 +297,7 @@
     updateHud();
     startTimer();
     updateRotateHandle();
+    updateFlipButton();
   }
 
   function localBBox(shape) {
@@ -417,6 +419,15 @@
     state.selectedId = piece ? piece.id : null;
     state.pieces.forEach(updatePieceTransform);
     updateRotateHandle();
+    updateFlipButton();
+  }
+
+  // Only the parallelogram is chiral (looks different mirrored); flipping any
+  // other shape is a no-op, so disable the button rather than let it silently
+  // do nothing and look broken.
+  function updateFlipButton() {
+    var piece = state.selectedId ? findPiece(state.selectedId) : null;
+    btnFlip.disabled = !(piece && piece.chiral);
   }
 
   function bringToFront(piece) {

@@ -59,6 +59,11 @@ html, body {
   touch-action: manipulation;
 }
 .btn:active { transform: scale(0.94); }
+.btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+  pointer-events: none;
+}
 
 .btn-primary {
   background: linear-gradient(135deg, var(--pink-dark), var(--lavender-dark));
