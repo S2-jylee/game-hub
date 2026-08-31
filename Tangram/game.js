@@ -634,8 +634,23 @@
     var dxu = (pc.x - slot.centroidPx.x) / state.unitScale;
     var dyu = (pc.y - slot.centroidPx.y) / state.unitScale;
     var dist = Math.sqrt(dxu * dxu + dyu * dyu);
-    var angleDiff = angleDiffMod(piece.current.angleDeg, slot.angleDeg, piece.symmetry);
-    var flipOk = piece.current.flip === slot.flip;
+
+    // Only a truly chiral piece (the parallelogram) needs its flip state to
+    // match literally - no rotation can turn one handedness into the other.
+    // Every other shape has a mirror axis, so a flipped piece already looks
+    // exactly like *some* unflipped rotation; compare against that instead
+    // of the raw angle, so completion judges the piece's actual appearance
+    // rather than which controls (rotate vs flip) the player happened to use.
+    var flipOk, effectiveAngle;
+    if (piece.chiral) {
+      flipOk = piece.current.flip === slot.flip;
+      effectiveAngle = piece.current.angleDeg;
+    } else {
+      flipOk = true;
+      var offset = piece.current.flip ? (TD.SHAPE_FLIP_ROTATE_OFFSET[piece.shape] || 0) : 0;
+      effectiveAngle = piece.current.angleDeg + offset;
+    }
+    var angleDiff = angleDiffMod(effectiveAngle, slot.angleDeg, piece.symmetry);
     return { dist: dist, angleDiff: angleDiff, flipOk: flipOk };
   }
 

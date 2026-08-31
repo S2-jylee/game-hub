@@ -21,9 +21,24 @@
     parallelogram: 180
   };
 
-  // Mirroring a parallelogram produces a genuinely different (chiral) piece;
-  // the other shapes are symmetric so flipping them changes nothing meaningful.
+  // Mirroring a parallelogram produces a genuinely different (chiral) piece
+  // that no rotation can reproduce, so its flip state must match the target
+  // exactly. Every other shape has a mirror symmetry axis, so flipping it is
+  // either a total no-op (mediumTri, square - the axis runs through the
+  // shape's own centroid the way our flip mirrors it) or exactly reproduces
+  // some rotated unflipped orientation (largeTri/smallTri, whose axis runs
+  // diagonally rather than through the vertical mirror we apply - two
+  // reflections at 45 degrees to each other compose into a 90 degree
+  // rotation). This offset is added to a flipped piece's angle before
+  // comparing it to the target, so completion only cares how the piece
+  // actually looks, never whether flip was the way the player got there.
   var CHIRAL_SHAPES = { parallelogram: true };
+  var SHAPE_FLIP_ROTATE_OFFSET = {
+    largeTri: 90,
+    mediumTri: 0,
+    smallTri: 90,
+    square: 0
+  };
 
   // Cosmetic colors per shape; index = which physical copy (0-based) for
   // shapes that appear twice in a set. Purely visual - matching is shape-based.
@@ -215,6 +230,7 @@
     SHAPES: SHAPES,
     SHAPE_SYMMETRY: SHAPE_SYMMETRY,
     CHIRAL_SHAPES: CHIRAL_SHAPES,
+    SHAPE_FLIP_ROTATE_OFFSET: SHAPE_FLIP_ROTATE_OFFSET,
     SHAPE_COLORS: SHAPE_COLORS,
     LEVELS: LEVELS,
     rotatePt: rotatePt,
