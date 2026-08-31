@@ -148,6 +148,9 @@ header, main {
 .tile-memory { background: var(--mint); }
 .tile-memory .tile-emoji { color: var(--mint-dark); }
 
+.tile-puzzle { background: var(--lavender); }
+.tile-puzzle .tile-emoji { color: var(--lavender-dark); }
+
 /* ---- Game screen (top nav + embedded game) ---- */
 #game-screen {
   display: none;

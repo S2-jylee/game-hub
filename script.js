@@ -4,7 +4,8 @@
   var GAMES = {
     tangram: "https://tangram-azure.vercel.app",
     typing: "https://typing-practice-izqt.vercel.app/",
-    memory: "https://memory-virid-five.vercel.app"
+    memory: "https://memory-virid-five.vercel.app",
+    puzzle: "puzzle/index.html"
   };
 
   var homeScreen = document.getElementById("home-screen");
