@@ -241,8 +241,7 @@
     completionModal.classList.remove("show", "show-success");
 
     var level = MD.LEVELS[idx];
-    var cat = MD.CATEGORIES[level.themeKey];
-    var icons = cat.icons.slice(0, level.pairs);
+    var icons = MD.iconsForStage(level.stage, level.pairs);
     state.pairs = level.pairs;
 
     var deck = shuffle(icons.concat(icons));
@@ -294,7 +293,7 @@
   function updateHud() {
     var level = currentLevel();
     hudStageVal.textContent = (state.levelIndex + 1) + " / " + MD.LEVELS.length;
-    hudThemeVal.textContent = level.themeName;
+    hudThemeVal.textContent = level.pairs + "쌍 짝맞추기";
     hudTriesVal.textContent = state.tries;
     hudScoreVal.textContent = state.totalScore;
     progressFill.style.width = (state.levelIndex / MD.LEVELS.length * 100) + "%";
@@ -378,7 +377,7 @@
 
     state.totalScore += scoreGain;
     state.results.push({
-      name: currentLevel().themeName + " · " + (state.levelIndex + 1) + "단계",
+      name: (state.levelIndex + 1) + "단계 (" + currentLevel().pairs + "쌍)",
       elapsed: elapsed, gain: scoreGain, stars: stars, percent: finalPercent
     });
     recordStars(currentLevel().id, stars);
@@ -399,7 +398,7 @@
 
   function openRanking(levelIndex) {
     var level = MD.LEVELS[levelIndex];
-    rankingStageLabel.textContent = (levelIndex + 1) + "단계 · " + level.themeName;
+    rankingStageLabel.textContent = (levelIndex + 1) + "단계 (" + level.pairs + "쌍)";
     rankingList.innerHTML = "";
     rankingModal.classList.add("show");
 
@@ -459,11 +458,12 @@
     MD.LEVELS.forEach(function (lvl, i) {
       var btn = document.createElement("button");
       btn.className = "level-grid-btn";
+      var st = starsMap[lvl.id] || 0;
+      var locked = i > 0 && !(starsMap[MD.LEVELS[i - 1].id] > 0);
       var num = document.createElement("div");
       num.textContent = (i + 1);
       var starsEl = document.createElement("div");
       starsEl.className = "lvl-stars";
-      var st = starsMap[lvl.id] || 0;
       if (st > 0) {
         starsEl.textContent = starsGlyph(st, 5);
         btn.classList.add("has-stars");
@@ -479,12 +479,23 @@
       btn.appendChild(num);
       btn.appendChild(starsEl);
       btn.appendChild(trophy);
-      btn.addEventListener("click", function () {
-        state.totalScore = 0;
-        state.results = [];
-        showScreen("game");
-        loadLevel(i);
-      });
+      if (locked) {
+        btn.classList.add("locked");
+        btn.disabled = true;
+        btn.title = "이전 단계를 클리어해야 도전할 수 있어요";
+        var lockEl = document.createElement("div");
+        lockEl.className = "lvl-lock";
+        lockEl.textContent = "🔒";
+        btn.appendChild(lockEl);
+        trophy.style.display = "none";
+      } else {
+        btn.addEventListener("click", function () {
+          state.totalScore = 0;
+          state.results = [];
+          showScreen("game");
+          loadLevel(i);
+        });
+      }
       levelGrid.appendChild(btn);
     });
   }
