@@ -12,32 +12,53 @@
 </head>
 <body>
 
-<div class="bg-decor" aria-hidden="true">
-  <span style="--x:6%; --d:0s; --dur:9s;">⭐</span>
-  <span style="--x:88%; --d:1.5s; --dur:11s;">🔺</span>
-  <span style="--x:20%; --d:3s; --dur:10s;">☁️</span>
-  <span style="--x:70%; --d:2s; --dur:8s;">⌨️</span>
-  <span style="--x:45%; --d:4s; --dur:12s;">🟦</span>
-  <span style="--x:60%; --d:0.5s; --dur:9.5s;">🎮</span>
-</div>
+<section id="home-screen" class="screen active">
+  <div class="bg-decor" aria-hidden="true">
+    <span style="--x:6%; --d:0s; --dur:9s;">⭐</span>
+    <span style="--x:88%; --d:1.5s; --dur:11s;">🔺</span>
+    <span style="--x:20%; --d:3s; --dur:10s;">☁️</span>
+    <span style="--x:70%; --d:2s; --dur:8s;">⌨️</span>
+    <span style="--x:45%; --d:4s; --dur:12s;">🟦</span>
+    <span style="--x:60%; --d:0.5s; --dur:9.5s;">🎮</span>
+  </div>
 
-<header class="hub-header">
-  <h1>게임 플레이 존</h1>
-  <p class="hub-subtitle">하고 싶은 게임을 골라주세요!</p>
-</header>
+  <header class="hub-header">
+    <h1>게임 플레이 존</h1>
+    <p class="hub-subtitle">하고 싶은 게임을 골라주세요!</p>
+  </header>
 
-<main class="tile-grid">
-  <a class="tile tile-tangram" href="https://tangram-azure.vercel.app" target="_blank" rel="noopener">
-    <div class="tile-emoji">🧩</div>
-    <div class="tile-title">탱그램 칠교놀이</div>
-    <div class="tile-desc">조각을 맞춰 모양을 완성해요</div>
-  </a>
-  <a class="tile tile-typing" href="https://typing-practice-izqt.vercel.app/" target="_blank" rel="noopener">
-    <div class="tile-emoji">⌨️</div>
-    <div class="tile-title">말랑말랑 타자연습</div>
-    <div class="tile-desc">손가락 위치부터 타자게임까지</div>
-  </a>
-</main>
+  <main class="tile-grid">
+    <button class="tile tile-tangram" data-game="tangram" type="button">
+      <div class="tile-emoji">
+        <svg viewBox="0 0 100 100" width="46" height="46" aria-hidden="true">
+          <polygon points="50,50 0,0 100,0" fill="#ff4fa3"/>
+          <polygon points="50,50 100,0 100,100" fill="#2e9bff"/>
+          <polygon points="50,50 100,100 0,100" fill="#0e9b45"/>
+          <polygon points="50,50 0,100 0,0" fill="#a259ff"/>
+        </svg>
+      </div>
+      <div class="tile-title">탱그램 칠교놀이</div>
+      <div class="tile-desc">조각을 맞춰 모양을 완성해요</div>
+    </button>
+    <button class="tile tile-typing" data-game="typing" type="button">
+      <div class="tile-emoji">⌨️</div>
+      <div class="tile-title">말랑말랑 타자연습</div>
+      <div class="tile-desc">손가락 위치부터 타자게임까지</div>
+    </button>
+  </main>
+</section>
 
+<section id="game-screen" class="screen">
+  <nav class="game-nav">
+    <button class="nav-home" id="btn-home" type="button" title="홈으로">🏠</button>
+    <div class="nav-menu">
+      <button class="nav-item" data-game="tangram" type="button">🧩 탱그램 칠교놀이</button>
+      <button class="nav-item" data-game="typing" type="button">⌨️ 말랑말랑 타자연습</button>
+    </div>
+  </nav>
+  <iframe id="game-frame" class="game-frame" src="" title="게임 화면" allow="autoplay"></iframe>
+</section>
+
+<script src="script.js"></script>
 </body>
 </html>
