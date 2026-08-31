@@ -3,7 +3,8 @@
 
   var GAMES = {
     tangram: "https://tangram-azure.vercel.app",
-    typing: "https://typing-practice-izqt.vercel.app/"
+    typing: "https://typing-practice-izqt.vercel.app/",
+    memory: "https://memory-game-hub.vercel.app"
   };
 
   var homeScreen = document.getElementById("home-screen");

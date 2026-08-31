@@ -145,6 +145,9 @@ header, main {
 .tile-typing { background: var(--sky); }
 .tile-typing .tile-emoji { color: var(--sky-dark); }
 
+.tile-memory { background: var(--mint); }
+.tile-memory .tile-emoji { color: var(--mint-dark); }
+
 /* ---- Game screen (top nav + embedded game) ---- */
 #game-screen {
   display: none;
