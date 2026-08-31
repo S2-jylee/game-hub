@@ -3,7 +3,11 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>탱그램 타자놀이</title>
+<title>탱그램 칠교놀이</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Jua&family=Gowun+Dodum&family=Nunito:wght@400;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css">
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -17,10 +21,24 @@
       <span class="ts ts3"></span>
       <span class="ts ts4"></span>
     </div>
-    <h1>탱그램 타자놀이</h1>
+    <h1>탱그램 칠교놀이</h1>
     <p class="subtitle">모양을 빨리 맞추고 점수를 모아요!</p>
     <button id="btn-start" class="btn btn-primary btn-huge">시작하기</button>
     <button id="btn-howto" class="btn btn-ghost">놀이 방법</button>
+  </div>
+</section>
+
+<!-- 사용자 선택 화면 -->
+<section id="screen-user" class="screen">
+  <div class="card">
+    <h2>누구인가요?</h2>
+    <div id="user-list" class="user-list"></div>
+    <div class="user-new-row">
+      <input id="user-name-input" class="user-name-input" type="text" maxlength="10" placeholder="새 이름을 입력하세요">
+      <button id="btn-user-new-start" class="btn btn-primary btn-small">시작</button>
+    </div>
+    <button id="btn-user-guest" class="btn btn-ghost">게스트로 시작</button>
+    <button id="btn-user-back" class="btn btn-ghost">처음으로</button>
   </div>
 </section>
 
@@ -41,7 +59,7 @@
 <!-- 난이도 선택 화면 -->
 <section id="screen-difficulty" class="screen">
   <div class="card">
-    <h2>난이도를 골라주세요</h2>
+    <h2>난이도를 골라주세요 <span class="current-user-badge diff-tag"></span></h2>
     <div class="difficulty-options">
       <button class="diff-btn" data-diff="easy">
         <div class="diff-emoji">🙂</div>
@@ -61,7 +79,7 @@
 <!-- 레벨 선택 화면 -->
 <section id="screen-levelselect" class="screen">
   <div class="card card-wide">
-    <h2>모양 고르기 <span id="levelselect-diff-label" class="diff-tag"></span></h2>
+    <h2>모양 고르기 <span id="levelselect-diff-label" class="diff-tag"></span> <span class="current-user-badge diff-tag"></span></h2>
     <div id="level-grid" class="level-grid"></div>
     <div class="result-buttons">
       <button id="btn-levelselect-diff" class="btn btn-ghost">난이도 다시 고르기</button>

@@ -9,17 +9,20 @@
   var FAIL_POS_TOL = 1.0;    // unit-space centroid distance
   var FAIL_ANGLE_TOL = 45;   // degrees
 
-  var STORAGE_KEY = "tangram_typing_stars_v1";
+  var PROFILES_KEY = "tangram_profiles_v1";
 
   // ---- DOM refs ----------------------------------------------------
   var screens = {
     title: document.getElementById("screen-title"),
+    user: document.getElementById("screen-user"),
     howto: document.getElementById("screen-howto"),
     difficulty: document.getElementById("screen-difficulty"),
     levelselect: document.getElementById("screen-levelselect"),
     game: document.getElementById("screen-game"),
     result: document.getElementById("screen-result")
   };
+  var userListEl = document.getElementById("user-list");
+  var userNameInput = document.getElementById("user-name-input");
   var boardSvg = document.getElementById("board");
   var layerTarget = document.getElementById("layer-target");
   var layerPieces = document.getElementById("layer-pieces");
@@ -48,12 +51,82 @@
     showScreen("levelselect");
   }
 
-  // ---- Star storage (this device only, via localStorage) ---------------
+  // ---- User profiles (this device only, via localStorage) --------------
+  // Each profile keeps its own star map, keyed by name, so several people
+  // sharing this PC don't overwrite each other's progress. Guest play is
+  // kept in memory only and never touches storage.
+  var currentUser = null;
+  var guestMode = false;
+  var guestStars = {};
+
+  function loadProfiles() {
+    try { return JSON.parse(localStorage.getItem(PROFILES_KEY)) || {}; } catch (e) { return {}; }
+  }
+  function saveProfiles(profiles) {
+    try { localStorage.setItem(PROFILES_KEY, JSON.stringify(profiles)); } catch (e) { /* storage unavailable, ignore */ }
+  }
+  function ensureProfile(name) {
+    var profiles = loadProfiles();
+    if (!profiles[name]) {
+      profiles[name] = { stars: {} };
+      saveProfiles(profiles);
+    }
+  }
+  function totalStarsFor(profile) {
+    var stars = (profile && profile.stars) || {};
+    return Object.keys(stars).reduce(function (sum, k) { return sum + stars[k]; }, 0);
+  }
+  function updateUserBadge() {
+    var text = guestMode ? "게스트" : (currentUser || "");
+    Array.prototype.forEach.call(document.querySelectorAll(".current-user-badge"), function (el) {
+      el.textContent = text;
+    });
+  }
+  function buildUserList() {
+    userListEl.innerHTML = "";
+    var profiles = loadProfiles();
+    var names = Object.keys(profiles);
+    if (names.length === 0) {
+      var hint = document.createElement("div");
+      hint.className = "user-empty-hint";
+      hint.textContent = "저장된 사용자가 없어요. 새 이름으로 시작해보세요!";
+      userListEl.appendChild(hint);
+      return;
+    }
+    names.forEach(function (name) {
+      var btn = document.createElement("button");
+      btn.className = "user-item-btn";
+      var nameSpan = document.createElement("span");
+      nameSpan.textContent = name;
+      var starsSpan = document.createElement("span");
+      starsSpan.className = "user-item-stars";
+      starsSpan.textContent = "★ " + totalStarsFor(profiles[name]);
+      btn.appendChild(nameSpan);
+      btn.appendChild(starsSpan);
+      btn.addEventListener("click", function () {
+        currentUser = name;
+        guestMode = false;
+        updateUserBadge();
+        showScreen("difficulty");
+      });
+      userListEl.appendChild(btn);
+    });
+  }
+
+  // ---- Star storage (scoped to the active user) -------------------------
   function loadStars() {
-    try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || {}; } catch (e) { return {}; }
+    if (guestMode) return guestStars;
+    if (!currentUser) return {};
+    var profiles = loadProfiles();
+    return (profiles[currentUser] && profiles[currentUser].stars) || {};
   }
   function saveStars(map) {
-    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(map)); } catch (e) { /* storage unavailable, ignore */ }
+    if (guestMode) { guestStars = map; return; }
+    if (!currentUser) return;
+    var profiles = loadProfiles();
+    profiles[currentUser] = profiles[currentUser] || { stars: {} };
+    profiles[currentUser].stars = map;
+    saveProfiles(profiles);
   }
   function recordStars(levelId, stars) {
     var map = loadStars();
@@ -675,10 +748,37 @@
   }
 
   // ---- Wire up UI ----------------------------------------------------
-  document.getElementById("btn-start").addEventListener("click", function () { ac(); showScreen("difficulty"); });
+  document.getElementById("btn-start").addEventListener("click", function () {
+    ac();
+    buildUserList();
+    userNameInput.value = "";
+    showScreen("user");
+  });
   document.getElementById("btn-howto").addEventListener("click", function () { showScreen("howto"); });
   document.getElementById("btn-howto-back").addEventListener("click", function () { showScreen("title"); });
   document.getElementById("btn-diff-back").addEventListener("click", function () { showScreen("title"); });
+
+  document.getElementById("btn-user-guest").addEventListener("click", function () {
+    currentUser = null;
+    guestMode = true;
+    guestStars = {};
+    updateUserBadge();
+    showScreen("difficulty");
+  });
+  function submitNewUser() {
+    var name = userNameInput.value.trim();
+    if (!name) return;
+    ensureProfile(name);
+    currentUser = name;
+    guestMode = false;
+    updateUserBadge();
+    showScreen("difficulty");
+  }
+  document.getElementById("btn-user-new-start").addEventListener("click", submitNewUser);
+  userNameInput.addEventListener("keydown", function (evt) {
+    if (evt.key === "Enter") submitNewUser();
+  });
+  document.getElementById("btn-user-back").addEventListener("click", function () { showScreen("title"); });
 
   Array.prototype.forEach.call(document.querySelectorAll(".diff-btn"), function (btn) {
     btn.addEventListener("click", function () {
