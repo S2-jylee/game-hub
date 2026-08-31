@@ -140,6 +140,7 @@ h1 { font-family: "Jua", "Gowun Dodum", sans-serif; font-size: 2.6rem; margin: 6
   line-height: 1.4;
 }
 .howto-list .ico { font-size: 1.6rem; flex: none; }
+.howto-list li b { white-space: nowrap; }
 
 .card-wide { max-width: 900px; }
 
