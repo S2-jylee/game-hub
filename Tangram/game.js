@@ -368,10 +368,15 @@
 
   function updatePieceTransform(piece) {
     var c = piece.current;
-    var sx = c.flip ? -1 : 1;
+    // Mirror around the piece's own local centroid (not the shape's raw
+    // origin) so flipping turns it over in place instead of jumping it
+    // sideways by however far the origin happens to sit from center.
+    var mirror = c.flip
+      ? "translate(" + (2 * piece.localCentroid[0] * state.unitScale) + " 0) scale(-1 1)"
+      : "";
     piece.groupEl.setAttribute(
       "transform",
-      "translate(" + c.x + " " + c.y + ") rotate(" + c.angleDeg + ") scale(" + sx + " 1)"
+      "translate(" + c.x + " " + c.y + ") rotate(" + c.angleDeg + ") " + mirror
     );
     piece.el.classList.toggle("selected", state.selectedId === piece.id);
     if (state.selectedId === piece.id) updateRotateHandle();
@@ -422,12 +427,8 @@
     updateFlipButton();
   }
 
-  // Only the parallelogram is chiral (looks different mirrored); flipping any
-  // other shape is a no-op, so disable the button rather than let it silently
-  // do nothing and look broken.
   function updateFlipButton() {
-    var piece = state.selectedId ? findPiece(state.selectedId) : null;
-    btnFlip.disabled = !(piece && piece.chiral);
+    btnFlip.disabled = !state.selectedId;
   }
 
   function bringToFront(piece) {
@@ -439,6 +440,7 @@
     var piece = findPiece(id);
     if (!piece) return;
     evt.preventDefault();
+    var wasSelected = state.selectedId === piece.id;
     bringToFront(piece);
     selectPiece(piece);
     var p = svgPoint(evt);
@@ -446,7 +448,8 @@
       piece: piece,
       startX: p.x, startY: p.y,
       pieceStartX: piece.current.x, pieceStartY: piece.current.y,
-      moved: false
+      moved: false,
+      wasSelected: wasSelected
     };
     evt.currentTarget.classList.add("dragging");
     evt.currentTarget.setPointerCapture(evt.pointerId);
@@ -470,8 +473,10 @@
     piece.el.classList.remove("dragging");
     window.removeEventListener("pointermove", onPointerMove);
     window.removeEventListener("pointerup", onPointerUp);
-    if (!drag.moved) {
-      // tap = rotate 45 deg
+    if (!drag.moved && drag.wasSelected) {
+      // tap on an already-selected piece = rotate 45 deg. A tap that only
+      // just selected the piece stops there, so picking a piece never also
+      // spins it before the player has chosen what to do with it.
       piece.current.angleDeg = normalizeDeg(piece.current.angleDeg + 45);
       updatePieceTransform(piece);
       playClick();
@@ -496,8 +501,9 @@
   // player used doesn't matter - only the shape's actual final position does).
   function pieceCentroidPx(piece) {
     var lc = piece.localCentroid;
+    // Flip now mirrors the piece around this same centroid (see
+    // updatePieceTransform), so the centroid itself never moves under a flip.
     var p = [lc[0] * state.unitScale, lc[1] * state.unitScale];
-    if (piece.current.flip) p = [-p[0], p[1]];
     var rad = piece.current.angleDeg * Math.PI / 180;
     var c = Math.cos(rad), s = Math.sin(rad);
     var rx = p[0] * c - p[1] * s, ry = p[0] * s + p[1] * c;
@@ -584,7 +590,7 @@
   function flipSelected() {
     if (!state.selectedId) return;
     var piece = findPiece(state.selectedId);
-    if (!piece || !piece.chiral) return;
+    if (!piece) return;
     piece.current.flip = !piece.current.flip;
     updatePieceTransform(piece);
     playClick();
@@ -629,7 +635,7 @@
     var dyu = (pc.y - slot.centroidPx.y) / state.unitScale;
     var dist = Math.sqrt(dxu * dxu + dyu * dyu);
     var angleDiff = angleDiffMod(piece.current.angleDeg, slot.angleDeg, piece.symmetry);
-    var flipOk = piece.chiral ? (piece.current.flip === slot.flip) : true;
+    var flipOk = piece.current.flip === slot.flip;
     return { dist: dist, angleDiff: angleDiff, flipOk: flipOk };
   }
 
