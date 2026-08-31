@@ -198,6 +198,24 @@ h1 { font-family: "Jua", "Gowun Dodum", sans-serif; font-size: 2.6rem; margin: 6
   color: rgba(255,255,255,0.9);
   line-height: 1;
 }
+.level-grid-btn { position: relative; }
+.lvl-trophy {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: #fff;
+  border: 2px solid var(--yellow-dark);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.7rem;
+  cursor: pointer;
+  box-shadow: 0 2px 4px rgba(36,27,58,0.18);
+}
+.lvl-trophy:hover { transform: scale(1.1); }
 
 /* ---- HUD ---- */
 .hud {
@@ -366,6 +384,66 @@ h1 { font-family: "Jua", "Gowun Dodum", sans-serif; font-size: 2.6rem; margin: 6
 }
 .completion-variant { display: none; }
 .completion-modal.show-success #completion-success { display: block; }
+
+/* ---- Ranking modal ---- */
+.ranking-modal {
+  position: absolute;
+  inset: 0;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  background: rgba(36, 27, 58, 0.42);
+  z-index: 5;
+}
+.ranking-modal.show { display: flex; }
+.ranking-card {
+  background: white;
+  border: 2px solid #f3eefa;
+  border-radius: 28px;
+  padding: 26px 30px;
+  text-align: center;
+  box-shadow: var(--shadow);
+  animation: clearpop 0.4s cubic-bezier(.2,1.4,.4,1);
+  max-width: 340px;
+  width: 88%;
+}
+.ranking-title {
+  font-family: "Jua", "Gowun Dodum", sans-serif;
+  font-size: 1.3rem;
+  color: var(--pink-dark);
+  margin-bottom: 14px;
+}
+.ranking-list {
+  list-style: none;
+  margin: 0 0 8px;
+  padding: 0;
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-height: 260px;
+  overflow-y: auto;
+}
+.ranking-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #f7f3fe;
+  border-radius: 12px;
+  padding: 8px 14px;
+  font-weight: 700;
+}
+.ranking-row.me { background: #fdeaf3; border: 2px solid var(--pink); }
+.ranking-rank { flex: none; width: 26px; font-weight: 800; color: var(--lavender-dark); }
+.ranking-name { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ranking-time { flex: none; color: var(--text-soft); font-variant-numeric: tabular-nums; font-size: 0.9rem; }
+.ranking-empty { color: var(--text-soft); font-size: 0.9rem; margin: 10px 0; display: none; }
+.ranking-modal.empty #ranking-empty { display: block; }
+.ranking-modal.loading #ranking-loading { display: block; }
+#ranking-loading { display: none; }
+.ranking-modal:not(.loading) #ranking-loading { display: none; }
+.ranking-modal.loading .ranking-list,
+.ranking-modal.loading #ranking-empty { display: none; }
 
 .completion-emoji { font-size: 3rem; }
 .completion-title { font-family: "Jua", "Gowun Dodum", sans-serif; font-size: 1.6rem; margin-top: 4px; color: var(--pink-dark); }
