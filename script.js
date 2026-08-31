@@ -5,7 +5,8 @@
     tangram: "https://tangram-azure.vercel.app",
     typing: "https://typing-practice-izqt.vercel.app/",
     memory: "https://memory-virid-five.vercel.app",
-    puzzle: "https://puzzle-lyart-one.vercel.app"
+    puzzle: "https://puzzle-lyart-one.vercel.app",
+    findhidden: "https://find-hidden-picture.vercel.app"
   };
 
   var homeScreen = document.getElementById("home-screen");

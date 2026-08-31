@@ -27,9 +27,9 @@
 * { box-sizing: border-box; }
 
 @font-face {
-  font-family: "HunJungleBook";
-  src: url("HunJungleBook-Regular.ttf") format("truetype");
-  font-weight: 400;
+  font-family: "CookieRun";
+  src: url("CookieRun-Bold.ttf") format("truetype");
+  font-weight: 700;
   font-style: normal;
   font-display: swap;
 }
@@ -89,7 +89,7 @@ header, nav, main, footer {
 }
 
 .app-header h1 {
-  font-family: 'HunJungleBook', 'Jua', sans-serif;
+  font-family: 'CookieRun', 'Jua', sans-serif;
   font-size: 2.2rem;
   color: var(--pink-dark);
   margin: 0;
@@ -1017,7 +1017,7 @@ body.home-active .home-view { display: block; }
   width: 100%;
 }
 .result-card h2 {
-  font-family: 'HunJungleBook', 'Jua', sans-serif;
+  font-family: 'CookieRun', 'Jua', sans-serif;
   color: var(--pink-dark);
   margin: 0 0 18px;
   font-size: 1.6rem;
@@ -1081,7 +1081,7 @@ body.home-active .home-view { display: block; }
 
 .ranking-section { margin: 4px 0 22px; text-align: left; }
 .ranking-title {
-  font-family: 'HunJungleBook', 'Jua', sans-serif;
+  font-family: 'CookieRun', 'Jua', sans-serif;
   font-size: 1rem;
   color: var(--pink-dark);
   text-align: center;

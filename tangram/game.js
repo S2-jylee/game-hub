@@ -3,19 +3,25 @@
 
   var TD = window.TangramData;
   var SVG_NS = "http://www.w3.org/2000/svg";
-  var VB_W = 1200, VB_H = 600;
+  // VB_W is a fixed reference frame; VB_H is set per-level from the actual
+  // board-wrap's on-screen aspect ratio (see updateViewBoxHeight) so the
+  // viewBox always matches the real container and "meet" scaling doesn't
+  // waste space letterboxing top/bottom or left/right.
+  var VB_W = 1200, VB_H = 650;
 
   // Piece tray lives in a column on the right; the target board gets
   // everything to the left of it.
-  var TRAY_WIDTH = 260;
+  var TRAY_WIDTH = 480;
   var TRAY_X0 = VB_W - TRAY_WIDTH;
   var TRAY_MARGIN = 16;
   var TRAY_GAP = 14;
   var TRAY_TOP = 20;
   var TRAY_USABLE_W = TRAY_WIDTH - TRAY_MARGIN * 2;
-  var TRAY_USABLE_H = VB_H - TRAY_TOP * 2;
-  var TARGET_AREA_W = 840, TARGET_AREA_H = 560;
+  var TARGET_AREA_W = TRAY_X0 - 40;
   var TARGET_CENTER_X = TRAY_X0 / 2;
+  // Recomputed alongside VB_H in updateViewBoxHeight().
+  var TRAY_USABLE_H = VB_H - TRAY_TOP * 2;
+  var TARGET_AREA_H = VB_H - 40;
   var TARGET_CENTER_Y = VB_H / 2;
 
   // Within this distance/angle of a slot, a dropped piece snaps into place.
@@ -211,8 +217,25 @@
     return isFinite(best) ? best : 1;
   }
 
+  // Matches the viewBox height to board-wrap's actual current aspect ratio,
+  // so "meet" scaling fills the real container edge-to-edge on whatever
+  // device/orientation this happens to be, instead of letterboxing based on
+  // a guessed ratio. Only read at level-load time (not on resize) so an
+  // in-progress board never gets rebuilt out from under the player.
+  function updateViewBoxHeight() {
+    var w = boardSvg.parentElement.clientWidth, h = boardSvg.parentElement.clientHeight;
+    if (w > 0 && h > 0) {
+      VB_H = Math.max(500, Math.min(900, Math.round(VB_W * h / w)));
+    }
+    TRAY_USABLE_H = VB_H - TRAY_TOP * 2;
+    TARGET_AREA_H = VB_H - 40;
+    TARGET_CENTER_Y = VB_H / 2;
+    boardSvg.setAttribute("viewBox", "0 0 " + VB_W + " " + VB_H);
+  }
+
   // ---- Level loading ----------------------------------------------------
   function loadLevel(idx) {
+    updateViewBoxHeight();
     state.levelIndex = idx;
     state.selectedId = null;
     completionModal.classList.remove("show", "show-retry", "show-success");
@@ -230,7 +253,7 @@
     });
     var bw = maxX - minX, bh = maxY - minY;
     var areaScale = Math.min(TARGET_AREA_W / bw, TARGET_AREA_H / bh);
-    areaScale = Math.max(38, Math.min(130, areaScale));
+    areaScale = Math.max(38, Math.min(170, areaScale));
     var trayShapes = level.slots.map(function (s) { return TD.SHAPES[s.shape]; });
     var scale = fitTrayScale(trayShapes, areaScale);
     state.unitScale = scale;

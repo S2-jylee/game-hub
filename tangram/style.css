@@ -24,9 +24,9 @@
 * { box-sizing: border-box; }
 
 @font-face {
-  font-family: "HunJungleBook";
-  src: url("HunJungleBook-Regular.ttf") format("truetype");
-  font-weight: 400;
+  font-family: "CookieRun";
+  src: url("CookieRun-Bold.ttf") format("truetype");
+  font-weight: 700;
   font-style: normal;
   font-display: swap;
 }
@@ -128,7 +128,7 @@ html, body {
 .ts4 { width: 45px; height: 45px; background: var(--mint); left: calc(50% + 110px); top: -2px; transform: rotate(35deg); animation-delay: 1.2s; }
 @keyframes floaty { 0%, 100% { transform: translateY(0) rotate(var(--r,0)); } 50% { transform: translateY(-12px); } }
 
-h1 { font-family: "HunJungleBook", "Jua", sans-serif; font-size: 2.6rem; margin: 6px 0 4px; color: var(--pink-dark); }
+h1 { font-family: "CookieRun", "Jua", sans-serif; font-size: 2.6rem; margin: 6px 0 4px; color: var(--pink-dark); }
 .subtitle { font-size: 1.1rem; color: var(--text-soft); margin-bottom: 18px; }
 
 /* ---- Card (howto / result) ---- */
@@ -145,7 +145,7 @@ h1 { font-family: "HunJungleBook", "Jua", sans-serif; font-size: 2.6rem; margin:
   overflow-y: auto;
   overflow-x: hidden;
 }
-.card h2 { font-family: "HunJungleBook", "Jua", sans-serif; color: var(--pink-dark); margin-top: 0; font-size: 1.8rem; }
+.card h2 { font-family: "CookieRun", "Jua", sans-serif; color: var(--pink-dark); margin-top: 0; font-size: 1.8rem; }
 
 .howto-list { list-style: none; padding: 0; text-align: left; margin: 20px 0; }
 .howto-list li {
@@ -403,7 +403,7 @@ h1 { font-family: "HunJungleBook", "Jua", sans-serif; font-size: 2.6rem; margin:
 .completion-modal.show-success #completion-success { display: block; }
 
 .completion-emoji { font-size: 3rem; }
-.completion-title { font-family: "HunJungleBook", "Jua", sans-serif; font-size: 1.6rem; margin-top: 4px; color: var(--pink-dark); }
+.completion-title { font-family: "CookieRun", "Jua", sans-serif; font-size: 1.6rem; margin-top: 4px; color: var(--pink-dark); }
 .completion-sub { font-size: 0.95rem; color: var(--text-soft); margin-top: 8px; }
 .completion-buttons { margin-top: 14px; display: flex; flex-direction: column; align-items: center; gap: 4px; }
 
