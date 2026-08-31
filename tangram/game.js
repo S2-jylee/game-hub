@@ -3,11 +3,27 @@
 
   var TD = window.TangramData;
   var SVG_NS = "http://www.w3.org/2000/svg";
-  var VB_W = 900, VB_H = 600;
+  var VB_W = 1200, VB_H = 600;
 
-  // Beyond these, a piece counts as "way off" and completion is rejected.
-  var FAIL_POS_TOL = 1.0;    // unit-space centroid distance
-  var FAIL_ANGLE_TOL = 45;   // degrees
+  // Piece tray lives in a column on the right; the target board gets
+  // everything to the left of it.
+  var TRAY_WIDTH = 260;
+  var TRAY_X0 = VB_W - TRAY_WIDTH;
+  var TRAY_MARGIN = 16;
+  var TRAY_GAP = 14;
+  var TRAY_TOP = 20;
+  var TRAY_USABLE_W = TRAY_WIDTH - TRAY_MARGIN * 2;
+  var TRAY_USABLE_H = VB_H - TRAY_TOP * 2;
+  var TARGET_AREA_W = 840, TARGET_AREA_H = 560;
+  var TARGET_CENTER_X = TRAY_X0 / 2;
+  var TARGET_CENTER_Y = VB_H / 2;
+
+  // Within this distance/angle of a slot, a dropped piece snaps into place.
+  // The angle tolerance is kept well under one 45-degree rotate step so that
+  // rotating a piece away from a slot it's sitting near reliably clears
+  // snap range instead of the piece re-snapping right back on every click.
+  var SNAP_POS_TOL = 1.0;    // unit-space centroid distance
+  var SNAP_ANGLE_TOL = 20;   // degrees
 
   var PROFILES_KEY = "tangram_profiles_v1";
 
@@ -30,20 +46,13 @@
   var hudStageVal = document.getElementById("hud-stage-val");
   var hudLevelName = document.getElementById("hud-level-name");
   var hudTimerVal = document.getElementById("hud-timer-val");
-  var hudScoreVal = document.getElementById("hud-score-val");
   var progressFill = document.getElementById("stage-progress-fill");
   var levelGrid = document.getElementById("level-grid");
   var levelSelectDiffLabel = document.getElementById("levelselect-diff-label");
   var btnFlip = document.getElementById("btn-flip");
+  var btnHint = document.getElementById("btn-hint");
 
   var completionModal = document.getElementById("completion-modal");
-  var completionStarsEl = document.getElementById("completion-stars");
-  var completionPercentEl = document.getElementById("completion-percent");
-  var completionScoreEl = document.getElementById("completion-score");
-
-  var rankingModal = document.getElementById("ranking-modal");
-  var rankingStageLabel = document.getElementById("ranking-stage-label");
-  var rankingList = document.getElementById("ranking-list");
 
   function showScreen(name) {
     Object.keys(screens).forEach(function (k) {
@@ -57,12 +66,12 @@
   }
 
   // ---- User profiles (this device only, via localStorage) --------------
-  // Each profile keeps its own star map, keyed by name, so several people
-  // sharing this PC don't overwrite each other's progress. Guest play is
-  // kept in memory only and never touches storage.
+  // Each profile keeps its own cleared-level map, keyed by name, so several
+  // people sharing this PC don't overwrite each other's progress. Guest play
+  // is kept in memory only and never touches storage.
   var currentUser = null;
   var guestMode = false;
-  var guestStars = {};
+  var guestCleared = {};
 
   function loadProfiles() {
     try { return JSON.parse(localStorage.getItem(PROFILES_KEY)) || {}; } catch (e) { return {}; }
@@ -73,13 +82,9 @@
   function ensureProfile(name) {
     var profiles = loadProfiles();
     if (!profiles[name]) {
-      profiles[name] = { stars: {} };
+      profiles[name] = { cleared: {} };
       saveProfiles(profiles);
     }
-  }
-  function totalStarsFor(profile) {
-    var stars = (profile && profile.stars) || {};
-    return Object.keys(stars).reduce(function (sum, k) { return sum + stars[k]; }, 0);
   }
   function updateUserBadge() {
     var text = guestMode ? "게스트" : (currentUser || "");
@@ -103,11 +108,7 @@
       btn.className = "user-item-btn";
       var nameSpan = document.createElement("span");
       nameSpan.textContent = name;
-      var starsSpan = document.createElement("span");
-      starsSpan.className = "user-item-stars";
-      starsSpan.textContent = "★ " + totalStarsFor(profiles[name]);
       btn.appendChild(nameSpan);
-      btn.appendChild(starsSpan);
       btn.addEventListener("click", function () {
         currentUser = name;
         guestMode = false;
@@ -118,67 +119,20 @@
     });
   }
 
-  // ---- Star storage (scoped to the active user) -------------------------
-  function loadStars() {
-    if (guestMode) return guestStars;
+  // ---- Cleared-level storage (scoped to the active user) -----------------
+  function loadCleared() {
+    if (guestMode) return guestCleared;
     if (!currentUser) return {};
     var profiles = loadProfiles();
-    return (profiles[currentUser] && profiles[currentUser].stars) || {};
+    return (profiles[currentUser] && profiles[currentUser].cleared) || {};
   }
-  function saveStars(map) {
-    if (guestMode) { guestStars = map; return; }
+  function markCleared(levelId) {
+    if (guestMode) { guestCleared[levelId] = true; return; }
     if (!currentUser) return;
     var profiles = loadProfiles();
-    profiles[currentUser] = profiles[currentUser] || { stars: {} };
-    profiles[currentUser].stars = map;
+    profiles[currentUser] = profiles[currentUser] || { cleared: {} };
+    profiles[currentUser].cleared[levelId] = true;
     saveProfiles(profiles);
-  }
-  function recordStars(levelId, stars) {
-    var map = loadStars();
-    if (!map[levelId] || map[levelId] < stars) {
-      map[levelId] = stars;
-      saveStars(map);
-    }
-    return map[levelId];
-  }
-
-  // ---- Local ranking (this device only) ----------------------------------
-  // Records live inside each profile's own entry, so the board only ever
-  // shows names/times that were set by playing on this PC/browser - nothing
-  // is shared with other devices.
-  function recordTime(levelId, elapsed) {
-    if (guestMode || !currentUser) return;
-    var profiles = loadProfiles();
-    var profile = profiles[currentUser] = profiles[currentUser] || { stars: {} };
-    profile.times = profile.times || {};
-    var prev = profile.times[levelId];
-    if (prev == null || elapsed < prev) {
-      profile.times[levelId] = elapsed;
-      saveProfiles(profiles);
-    }
-  }
-  function localRanking(levelId, limit) {
-    var profiles = loadProfiles();
-    var rows = [];
-    Object.keys(profiles).forEach(function (name) {
-      var t = profiles[name] && profiles[name].times && profiles[name].times[levelId];
-      if (t != null) rows.push({ player_name: name, elapsed_seconds: t });
-    });
-    rows.sort(function (a, b) { return a.elapsed_seconds - b.elapsed_seconds; });
-    return rows.slice(0, limit || 5);
-  }
-
-  function starsGlyph(n, total) {
-    var s = "";
-    for (var i = 1; i <= total; i++) s += (i <= n ? "★" : "☆");
-    return s;
-  }
-  function starsHtml(n, total) {
-    var s = "";
-    for (var i = 1; i <= total; i++) {
-      s += '<span class="' + (i <= n ? "star-filled" : "star-empty") + '">' + (i <= n ? "★" : "☆") + "</span>";
-    }
-    return s;
   }
 
   // ---- Audio (tiny synth beeps, no assets needed) --------------------
@@ -216,10 +170,9 @@
   var state = {
     difficulty: "easy",
     levelIndex: 0,
-    totalScore: 0,
-    results: [],       // {name, elapsed, gain, stars, percent}
     slots: [],          // target slots for current level
     pieces: [],         // physical draggable pieces for current level
+    slotOccupant: [],   // slotOccupant[i] = id of the piece snapped into slots[i], or null
     selectedId: null,
     stageStartTime: 0,
     timerHandle: null,
@@ -276,14 +229,15 @@
       });
     });
     var bw = maxX - minX, bh = maxY - minY;
-    var targetAreaW = 480, targetAreaH = 300;
-    var scale = Math.min(targetAreaW / bw, targetAreaH / bh);
-    scale = Math.max(38, Math.min(92, scale));
+    var areaScale = Math.min(TARGET_AREA_W / bw, TARGET_AREA_H / bh);
+    areaScale = Math.max(38, Math.min(130, areaScale));
+    var trayShapes = level.slots.map(function (s) { return TD.SHAPES[s.shape]; });
+    var scale = fitTrayScale(trayShapes, areaScale);
     state.unitScale = scale;
 
     var cx = (minX + maxX) / 2, cy = (minY + maxY) / 2;
-    state.offsetX = VB_W / 2 - cx * scale;
-    state.offsetY = 195 - cy * scale;
+    state.offsetX = TARGET_CENTER_X - cx * scale;
+    state.offsetY = TARGET_CENTER_Y - cy * scale;
 
     // Build slots (targets) - identified by SHAPE only, not tied to any one
     // physical piece; matching at completion time pairs pieces to slots by
@@ -317,10 +271,12 @@
         localCentroid: lc,
         handleRadiusPx: localUpExtent(localShape, lc) * scale + 24,
         current: { x: 0, y: 0, angleDeg: 0, flip: false },
+        snappedSlot: null,
         el: null,
         groupEl: null
       };
     });
+    state.slotOccupant = new Array(state.slots.length).fill(null);
 
     layoutTray();
     renderTarget(resolved, scale);
@@ -329,6 +285,8 @@
     startTimer();
     updateRotateHandle();
     updateFlipButton();
+    resetHint();
+    btnHint.hidden = state.difficulty !== "hard";
   }
 
   function localBBox(shape) {
@@ -340,25 +298,61 @@
     return { cx: (minX + maxX) / 2, cy: (minY + maxY) / 2, w: maxX - minX, h: maxY - minY };
   }
 
+  // Lays shapes out left-to-right, wrapping into a new row when the next
+  // one wouldn't fit within TRAY_USABLE_W - a plain shelf packer. Used both
+  // to size-check candidate scales (fitTrayScale) and to actually place the
+  // pieces (layoutTray), so what's checked is exactly what's rendered.
+  function packShelves(shapes, scale) {
+    var x = 0, y = 0, rowH = 0;
+    var positions = shapes.map(function (shape) {
+      var bb = localBBox(shape);
+      var w = bb.w * scale, h = bb.h * scale;
+      if (x > 0 && x + w > TRAY_USABLE_W) { x = 0; y += rowH + TRAY_GAP; rowH = 0; }
+      var pos = { x: x, y: y, w: w, h: h, bb: bb };
+      x += w + TRAY_GAP;
+      rowH = Math.max(rowH, h);
+      return pos;
+    });
+    return { positions: positions, totalHeight: y + rowH };
+  }
+
+  // The target board and the tray pieces share one scale (they have to line
+  // up 1:1), so a board big enough to want a large scale can leave the tray
+  // too cramped for however many pieces this level has. Shrinks from the
+  // area-based scale only as far as needed for the tray to still fit.
+  function fitTrayScale(shapes, maxScale) {
+    // However roomy the target area allows, no single piece may end up
+    // wider than the tray column itself.
+    var maxPieceW = 0;
+    shapes.forEach(function (shape) { maxPieceW = Math.max(maxPieceW, localBBox(shape).w); });
+    var scale = Math.min(maxScale, TRAY_USABLE_W / maxPieceW);
+    while (scale > 30) {
+      if (packShelves(shapes, scale).totalHeight <= TRAY_USABLE_H) return scale;
+      scale -= 1;
+    }
+    return 30;
+  }
+
   function layoutTray() {
-    var n = state.pieces.length;
-    var trayTop = 400;
-    var trayBottom = 560;
-    var cols = n;
-    var slotW = (VB_W - 60) / cols;
+    var shapes = state.pieces.map(function (piece) { return piece.localShape; });
+    var packed = packShelves(shapes, state.unitScale);
+    var vOffset = Math.max(0, (TRAY_USABLE_H - packed.totalHeight) / 2);
     state.pieces.forEach(function (piece, i) {
-      var bb = localBBox(piece.localShape);
-      var slotX = 30 + slotW * (i + 0.5);
-      var slotY = trayTop + (trayBottom - trayTop) / 2;
-      piece.current.x = slotX - bb.cx * state.unitScale;
-      piece.current.y = slotY - bb.cy * state.unitScale;
+      var pos = packed.positions[i];
+      var screenLeft = TRAY_X0 + TRAY_MARGIN + pos.x;
+      var screenTop = TRAY_TOP + vOffset + pos.y;
+      piece.current.x = screenLeft - pos.bb.cx * state.unitScale + pos.w / 2;
+      piece.current.y = screenTop - pos.bb.cy * state.unitScale + pos.h / 2;
       piece.current.angleDeg = 0;
       piece.current.flip = false;
     });
   }
 
+  var targetEls = [];
+
   function renderTarget(resolved, scale) {
     layerTarget.innerHTML = "";
+    targetEls = [];
     var hard = state.difficulty === "hard";
     resolved.forEach(function (p) {
       var poly = document.createElementNS(SVG_NS, "polygon");
@@ -368,7 +362,33 @@
       poly.setAttribute("points", pts);
       poly.setAttribute("class", hard ? "target-poly hard" : "target-poly");
       layerTarget.appendChild(poly);
+      targetEls.push(poly);
     });
+  }
+
+  // ---- Hint (hard mode only) --------------------------------------------
+  // Briefly shows one random slot the way easy mode always shows it, then
+  // hides it again - a peek, not a permanent reveal.
+  var hintTimer = null;
+
+  function resetHint() {
+    if (hintTimer) { clearTimeout(hintTimer); hintTimer = null; }
+    btnHint.disabled = false;
+  }
+
+  function showHint() {
+    if (state.difficulty !== "hard" || hintTimer || !state.slots.length) return;
+    var idx = Math.floor(Math.random() * targetEls.length);
+    var el = targetEls[idx];
+    el.classList.remove("hard");
+    el.classList.add("hint-active");
+    btnHint.disabled = true;
+    hintTimer = setTimeout(function () {
+      el.classList.remove("hint-active");
+      el.classList.add("hard");
+      hintTimer = null;
+      btnHint.disabled = false;
+    }, 3000);
   }
 
   function pointsAttr(shape, scale) {
@@ -425,7 +445,6 @@
   function updateHud() {
     hudStageVal.textContent = (state.levelIndex + 1) + " / " + TD.LEVELS.length;
     hudLevelName.textContent = currentLevel().name;
-    hudScoreVal.textContent = state.totalScore;
     progressFill.style.width = ((state.levelIndex) / TD.LEVELS.length * 100) + "%";
   }
 
@@ -442,7 +461,6 @@
   function stopTimer() {
     if (state.timerHandle) { clearInterval(state.timerHandle); state.timerHandle = null; }
   }
-  function elapsedStage() { return (performance.now() - state.stageStartTime) / 1000; }
 
   // ---- Pointer interaction --------------------------------------------
   var drag = null; // {piece, startX, startY, pieceStartX, pieceStartY, moved}
@@ -502,6 +520,7 @@
     var p = svgPoint(evt);
     var dx = p.x - drag.startX, dy = p.y - drag.startY;
     if (Math.abs(dx) + Math.abs(dy) > 4) drag.moved = true;
+    if (drag.moved) releaseSnap(drag.piece);
     drag.piece.current.x = drag.pieceStartX + dx;
     drag.piece.current.y = drag.pieceStartY + dy;
     updatePieceTransform(drag.piece);
@@ -517,10 +536,12 @@
       // tap on an already-selected piece = rotate 45 deg. A tap that only
       // just selected the piece stops there, so picking a piece never also
       // spins it before the player has chosen what to do with it.
+      releaseSnap(piece);
       piece.current.angleDeg = normalizeDeg(piece.current.angleDeg + 45);
       updatePieceTransform(piece);
       playClick();
     }
+    trySnap(piece);
     drag = null;
   }
 
@@ -601,6 +622,7 @@
 
   function onHandlePointerMove(evt) {
     if (!rotateDrag) return;
+    releaseSnap(rotateDrag.piece);
     var p = svgPoint(evt);
     var angleNow = Math.atan2(p.y - rotateDrag.centroid.y, p.x - rotateDrag.centroid.x) * 180 / Math.PI;
     var delta = angleNow - rotateDrag.startPointerAngle;
@@ -612,6 +634,7 @@
     if (!rotateDrag) return;
     window.removeEventListener("pointermove", onHandlePointerMove);
     window.removeEventListener("pointerup", onHandlePointerUp);
+    trySnap(rotateDrag.piece);
     rotateDrag = null;
     playClick();
   }
@@ -622,8 +645,10 @@
     if (!state.selectedId) return;
     var piece = findPiece(state.selectedId);
     if (!piece) return;
+    releaseSnap(piece);
     piece.current.angleDeg = normalizeDeg(piece.current.angleDeg + dir * 45);
     updatePieceTransform(piece);
+    trySnap(piece);
     playClick();
   }
 
@@ -631,42 +656,82 @@
     if (!state.selectedId) return;
     var piece = findPiece(state.selectedId);
     if (!piece) return;
+    releaseSnap(piece);
     piece.current.flip = !piece.current.flip;
     updatePieceTransform(piece);
+    trySnap(piece);
     playClick();
   }
 
-  // ---- Completion evaluation ---------------------------------------------
-  // Pairs each physical piece with its best-fitting UNfilled slot of the same
-  // shape (duplicate pieces are interchangeable - only shape identity matters),
-  // then scores the whole board by how close every pairing actually is.
-  function groupIndicesByShape(list) {
-    var map = {};
-    list.forEach(function (item, i) {
-      (map[item.shape] = map[item.shape] || []).push(i);
-    });
-    return map;
+  // ---- Snapping ------------------------------------------------------------
+  function releaseSnap(piece) {
+    if (piece.snappedSlot != null) {
+      state.slotOccupant[piece.snappedSlot] = null;
+      piece.snappedSlot = null;
+    }
   }
 
-  function bestAssignmentForGroup(pieceIdxs, slotIdxs, costFn) {
-    var n = pieceIdxs.length;
-    var perm = slotIdxs.slice();
-    var bestPerm = null, bestCost = Infinity;
-    function permute(k) {
-      if (k === n) {
-        var cost = 0;
-        for (var i = 0; i < n; i++) cost += costFn(pieceIdxs[i], perm[i]);
-        if (cost < bestCost) { bestCost = cost; bestPerm = perm.slice(); }
-        return;
-      }
-      for (var i = k; i < n; i++) {
-        var tmp = perm[k]; perm[k] = perm[i]; perm[i] = tmp;
-        permute(k + 1);
-        tmp = perm[k]; perm[k] = perm[i]; perm[i] = tmp;
-      }
+  // Exact transform (x, y, angleDeg) that lands this piece precisely on the
+  // given slot, reusing the same flip/symmetry reconciliation pieceSlotDeviation
+  // uses to judge a match, so "close enough to snap" and "how it looks once
+  // snapped" always agree. Keeps the piece's current flip state (for
+  // non-chiral shapes, some rotation always reproduces the target look) and
+  // picks whichever symmetry-equivalent angle is closest to the piece's
+  // current angle, so snapping never spins it further than necessary.
+  function computeSnapPose(piece, slot) {
+    var flip = piece.current.flip;
+    var targetAngle;
+    if (piece.chiral) {
+      if (flip !== slot.flip) return null;
+      targetAngle = slot.angleDeg;
+    } else {
+      var offset = TD.SHAPE_FLIP_ROTATE_OFFSET[piece.shape] || 0;
+      targetAngle = flip ? (offset - slot.angleDeg) : slot.angleDeg;
     }
-    permute(0);
-    return bestPerm;
+    var base = normalizeDeg(targetAngle);
+    var cur = normalizeDeg(piece.current.angleDeg);
+    var best = base, bestDiff = Infinity;
+    for (var k = -2; k <= 2; k++) {
+      var cand = base + k * piece.symmetry;
+      var diff = Math.abs(cur - normalizeDeg(cand));
+      diff = Math.min(diff, 360 - diff);
+      if (diff < bestDiff) { bestDiff = diff; best = cand; }
+    }
+    var angleDeg = normalizeDeg(best);
+    var lc = piece.localCentroid;
+    var rad = angleDeg * Math.PI / 180;
+    var p0 = lc[0] * state.unitScale, p1 = lc[1] * state.unitScale;
+    var rx = p0 * Math.cos(rad) - p1 * Math.sin(rad);
+    var ry = p0 * Math.sin(rad) + p1 * Math.cos(rad);
+    return { x: slot.centroidPx.x - rx, y: slot.centroidPx.y - ry, angleDeg: angleDeg, flip: flip };
+  }
+
+  // Called whenever a piece's pose settles (drag/rotate/flip ends). If it's
+  // now close enough to an open matching-shape slot, snaps it exactly into
+  // place - "손 놓으면 착 붙는" - and claims that slot.
+  function trySnap(piece) {
+    var bestIdx = -1, bestCost = Infinity;
+    state.slots.forEach(function (slot, i) {
+      if (slot.shape !== piece.shape) return;
+      if (state.slotOccupant[i] != null) return;
+      var d = pieceSlotDeviation(piece, slot);
+      if (d.dist > SNAP_POS_TOL || d.angleDiff > SNAP_ANGLE_TOL || !d.flipOk) return;
+      var cost = d.dist + d.angleDiff / 90;
+      if (cost < bestCost) { bestCost = cost; bestIdx = i; }
+    });
+    if (bestIdx === -1) return;
+    var pose = computeSnapPose(piece, state.slots[bestIdx]);
+    if (!pose) return;
+    piece.current.x = pose.x;
+    piece.current.y = pose.y;
+    piece.current.angleDeg = pose.angleDeg;
+    piece.current.flip = pose.flip;
+    piece.snappedSlot = bestIdx;
+    state.slotOccupant[bestIdx] = piece.id;
+    updatePieceTransform(piece);
+    piece.el.classList.remove("snap-pop");
+    requestAnimationFrame(function () { piece.el.classList.add("snap-pop"); });
+    playClick();
   }
 
   function pieceSlotDeviation(piece, slot) {
@@ -698,47 +763,11 @@
     return { dist: dist, angleDiff: angleDiff, flipOk: flipOk };
   }
 
+  // With snapping in place a piece is either exactly seated in its slot or
+  // not placed at all, so completion is just "every slot has an occupant" -
+  // no more scoring/ranking pieces against each other.
   function evaluateCompletion() {
-    var pieces = state.pieces, slots = state.slots;
-    var pieceGroups = groupIndicesByShape(pieces);
-    var slotGroups = groupIndicesByShape(slots);
-    var assignment = new Array(pieces.length).fill(-1);
-
-    function costFn(pieceIdx, slotIdx) {
-      var d = pieceSlotDeviation(pieces[pieceIdx], slots[slotIdx]);
-      return d.dist + d.angleDiff / 90 + (d.flipOk ? 0 : 5);
-    }
-
-    Object.keys(pieceGroups).forEach(function (shape) {
-      var pIdxs = pieceGroups[shape], sIdxs = slotGroups[shape] || [];
-      var perm = bestAssignmentForGroup(pIdxs, sIdxs, costFn);
-      pIdxs.forEach(function (pIdx, k) { assignment[pIdx] = perm[k]; });
-    });
-
-    var anyFail = false;
-    var totalScore = 0;
-    pieces.forEach(function (piece, i) {
-      var slot = slots[assignment[i]];
-      var d = pieceSlotDeviation(piece, slot);
-      if (d.dist > FAIL_POS_TOL || d.angleDiff > FAIL_ANGLE_TOL || !d.flipOk) anyFail = true;
-      var posScore = Math.max(0, 1 - d.dist / FAIL_POS_TOL);
-      var angleScore = Math.max(0, 1 - d.angleDiff / FAIL_ANGLE_TOL);
-      var flipScore = d.flipOk ? 1 : 0;
-      totalScore += posScore * 0.5 + angleScore * 0.3 + flipScore * 0.2;
-    });
-
-    if (anyFail) return { ok: false };
-
-    var accuracyPercent = (totalScore / pieces.length) * 100;
-    var elapsed = elapsedStage();
-    var idealTime = pieces.length * 3.5;
-    var timeScore = Math.max(40, Math.min(100, 100 - Math.max(0, elapsed - idealTime) * 4));
-    var finalPercent = Math.round(accuracyPercent * 0.75 + timeScore * 0.25);
-    finalPercent = Math.max(0, Math.min(100, finalPercent));
-    var stars = finalPercent >= 95 ? 5 : finalPercent >= 85 ? 4 : finalPercent >= 70 ? 3 : finalPercent >= 50 ? 2 : 1;
-    var scoreGain = Math.round(finalPercent * 10);
-
-    return { ok: true, finalPercent: finalPercent, stars: stars, scoreGain: scoreGain, elapsed: elapsed };
+    return { ok: state.slotOccupant.indexOf(null) === -1 };
   }
 
   // ---- Complete button / modal --------------------------------------------
@@ -752,60 +781,13 @@
     }
 
     stopTimer();
-    state.totalScore += result.scoreGain;
-    state.results.push({
-      name: currentLevel().name, elapsed: result.elapsed,
-      gain: result.scoreGain, stars: result.stars, percent: result.finalPercent
-    });
-    recordStars(currentLevel().id, result.stars);
-    recordTime(currentLevel().id, result.elapsed);
-    updateHud();
-
-    completionStarsEl.innerHTML = starsHtml(result.stars, 5);
-    completionPercentEl.textContent = result.finalPercent + "% 완성";
-    completionScoreEl.textContent = "+" + result.scoreGain + "점";
+    markCleared(currentLevel().id);
     completionModal.classList.add("show", "show-success");
     playClear();
   }
 
   function closeRetryModal() {
     completionModal.classList.remove("show", "show-retry");
-  }
-
-  // ---- Ranking modal ----------------------------------------------------
-  function formatTime(sec) {
-    return sec.toFixed(1) + "초";
-  }
-
-  function openRanking(levelIndex) {
-    var level = TD.LEVELS[levelIndex];
-    rankingStageLabel.textContent = (levelIndex + 1) + "단계 · " + level.name;
-    rankingList.innerHTML = "";
-    rankingModal.classList.add("show");
-
-    var rows = localRanking(level.id, 5);
-    rankingModal.classList.toggle("empty", rows.length === 0);
-    var medals = ["🥇", "🥈", "🥉"];
-    rows.forEach(function (row, i) {
-      var li = document.createElement("li");
-      li.className = "ranking-row";
-      if (!guestMode && currentUser && row.player_name === currentUser) li.classList.add("me");
-      var rank = document.createElement("span");
-      rank.className = "ranking-rank";
-      rank.textContent = medals[i] || (i + 1) + "위";
-      var name = document.createElement("span");
-      name.className = "ranking-name";
-      name.textContent = row.player_name;
-      var time = document.createElement("span");
-      time.className = "ranking-time";
-      time.textContent = formatTime(row.elapsed_seconds);
-      li.appendChild(rank); li.appendChild(name); li.appendChild(time);
-      rankingList.appendChild(li);
-    });
-  }
-
-  function closeRanking() {
-    rankingModal.classList.remove("show", "empty");
   }
 
   function goToNextLevelOrResult() {
@@ -820,46 +802,27 @@
   function showResult() {
     stopTimer();
     showScreen("result");
-    document.getElementById("result-total-score").textContent = state.totalScore;
-    var table = document.getElementById("result-table");
-    var rows = ["<tr><th>모양</th><th>별</th><th>시간</th><th>점수</th></tr>"];
-    state.results.forEach(function (r) {
-      rows.push(
-        "<tr><td>" + r.name + "</td><td class=\"result-stars\">" + starsHtml(r.stars, 5) + "</td><td>" +
-        r.elapsed.toFixed(1) + "초</td><td>+" + r.gain + "</td></tr>"
-      );
-    });
-    table.innerHTML = rows.join("");
   }
 
   // ---- Level select ------------------------------------------------------
   function buildLevelGrid() {
     levelGrid.innerHTML = "";
-    var starsMap = loadStars();
+    var clearedMap = loadCleared();
     TD.LEVELS.forEach(function (lvl, i) {
       var btn = document.createElement("button");
       btn.className = "level-grid-btn";
-      var st = starsMap[lvl.id] || 0;
-      var locked = i > 0 && !(starsMap[TD.LEVELS[i - 1].id] > 0);
+      var cleared = !!clearedMap[lvl.id];
+      var locked = i > 0 && !clearedMap[TD.LEVELS[i - 1].id];
       var num = document.createElement("div");
       num.textContent = (i + 1);
-      var starsEl = document.createElement("div");
-      starsEl.className = "lvl-stars";
-      if (st > 0) {
-        starsEl.textContent = starsGlyph(st, 5);
-        btn.classList.add("has-stars");
-      }
-      var trophy = document.createElement("span");
-      trophy.className = "lvl-trophy";
-      trophy.textContent = "🏆";
-      trophy.title = "랭킹 보기";
-      trophy.addEventListener("click", function (evt) {
-        evt.stopPropagation();
-        openRanking(i);
-      });
       btn.appendChild(num);
-      btn.appendChild(starsEl);
-      btn.appendChild(trophy);
+      if (cleared) {
+        btn.classList.add("cleared");
+        var checkEl = document.createElement("div");
+        checkEl.className = "lvl-check";
+        checkEl.textContent = "✓";
+        btn.appendChild(checkEl);
+      }
       if (locked) {
         btn.classList.add("locked");
         btn.disabled = true;
@@ -868,11 +831,8 @@
         lockEl.className = "lvl-lock";
         lockEl.textContent = "🔒";
         btn.appendChild(lockEl);
-        trophy.style.display = "none";
       } else {
         btn.addEventListener("click", function () {
-          state.totalScore = 0;
-          state.results = [];
           showScreen("game");
           loadLevel(i);
         });
@@ -895,7 +855,7 @@
   document.getElementById("btn-user-guest").addEventListener("click", function () {
     currentUser = null;
     guestMode = true;
-    guestStars = {};
+    guestCleared = {};
     updateUserBadge();
     showScreen("difficulty");
   });
@@ -934,6 +894,7 @@
   document.getElementById("btn-rotate-left").addEventListener("click", function () { rotateSelected(-1); });
   document.getElementById("btn-rotate-right").addEventListener("click", function () { rotateSelected(1); });
   document.getElementById("btn-flip").addEventListener("click", flipSelected);
+  btnHint.addEventListener("click", showHint);
   document.getElementById("btn-complete").addEventListener("click", onCompleteClick);
   document.getElementById("btn-completion-retry-ok").addEventListener("click", closeRetryModal);
   document.getElementById("btn-completion-next").addEventListener("click", goToNextLevelOrResult);
@@ -941,10 +902,6 @@
     completionModal.classList.remove("show", "show-success");
     goToLevelSelect();
   });
-  document.getElementById("btn-completion-rank").addEventListener("click", function () {
-    openRanking(state.levelIndex);
-  });
-  document.getElementById("btn-ranking-close").addEventListener("click", closeRanking);
 
   buildLevelGrid();
   showScreen("title");

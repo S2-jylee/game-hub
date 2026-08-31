@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>틀린그림 찾기</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Jua&family=Gowun+Dodum&family=Nunito:wght@400;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- 타이틀 화면 -->
+<section id="screen-title" class="screen active">
+  <div class="title-card">
+    <div class="title-shapes" aria-hidden="true">
+      <span class="ts ts1">🔍</span>
+      <span class="ts ts2">👀</span>
+      <span class="ts ts3">✏️</span>
+      <span class="ts ts4">✨</span>
+    </div>
+    <h1>틀린그림 찾기</h1>
+    <p class="subtitle">왼쪽과 오른쪽, 다른 곳 5개를 찾아보세요!</p>
+    <button id="btn-start" class="btn btn-primary btn-huge">시작하기</button>
+    <button id="btn-howto" class="btn btn-ghost">놀이 방법</button>
+  </div>
+</section>
+
+<!-- 방법 안내 화면 -->
+<section id="screen-howto" class="screen">
+  <div class="card">
+    <h2>놀이 방법</h2>
+    <ul class="howto-list">
+      <li><span class="ico">✏️</span><span class="howto-text">연필 커서로 <b>왼쪽이나 오른쪽 그림, 어디든</b> 다른 곳을 콕 찍어요.</span></li>
+      <li><span class="ico">⭕</span><span class="howto-text">정답이면 <b>빨간 색연필 동그라미</b>가 그려져요!</span></li>
+      <li><span class="ico">❌</span><span class="howto-text">틀리면 <b>엑스 표시</b>가 잠깐 나타났다 사라져요.</span></li>
+      <li><span class="ico">❤️</span><span class="howto-text">에너지는 하트 <b>5개</b>! 틀릴 때마다 하나씩 줄어들어요.</span></li>
+      <li><span class="ico">🧨</span><span class="howto-text">위쪽 심지가 타들어가요. 다 타면 <b>펑!</b> 게임이 끝나요. 한 판 클리어하면 <b>+15초</b>, 틀리면 <b>-5초</b>예요.</span></li>
+      <li><span class="ico">💡</span><span class="howto-text">힌트는 <b>3번</b>! 아직 못 찾은 곳이 반짝반짝 알려줘요.</span></li>
+    </ul>
+    <button id="btn-howto-back" class="btn btn-primary btn-huge">알겠어요!</button>
+  </div>
+</section>
+
+<!-- 게임 화면 -->
+<section id="screen-game" class="screen">
+  <header class="hud">
+    <div class="hud-item hud-round">
+      <span class="hud-label">라운드</span>
+      <span id="hud-round-val" class="hud-value">1</span>
+    </div>
+    <div class="hud-item hud-hearts">
+      <span class="hud-label">에너지</span>
+      <span id="hud-hearts-val" class="hud-value hearts-row"></span>
+    </div>
+    <div class="hud-item hud-progress">
+      <span class="hud-label">찾은 개수</span>
+      <span id="hud-progress-val" class="hud-value">0 / 5</span>
+    </div>
+    <button id="btn-hint" class="btn btn-hint" type="button">💡 힌트 <span id="hint-count">3</span></button>
+    <button id="btn-quit" class="btn btn-ghost btn-small">← 나가기</button>
+  </header>
+
+  <div class="fuse-hud">
+    <div class="fuse-track">
+      <div id="fuse-burnt" class="fuse-burnt"></div>
+      <div id="fuse-spark" class="fuse-spark">🔥</div>
+    </div>
+    <div id="fuse-bomb" class="fuse-bomb">💣</div>
+    <span id="fuse-time" class="fuse-time">2:00</span>
+  </div>
+
+  <div class="stage-title"><span id="stage-emoji">🛝</span> <span id="stage-name">신나는 놀이터</span></div>
+
+  <div class="board-wrap">
+    <div class="diff-board">
+      <div class="diff-panel" id="panel-left" data-side="left">
+        <svg id="svg-left" viewBox="0 0 480 480" class="diff-svg" preserveAspectRatio="xMidYMid slice"><g id="g-left"></g></svg>
+        <svg id="overlay-left" viewBox="0 0 480 480" class="diff-overlay"></svg>
+      </div>
+      <div class="diff-panel" id="panel-right" data-side="right">
+        <svg id="svg-right" viewBox="0 0 480 480" class="diff-svg" preserveAspectRatio="xMidYMid slice"><g id="g-right"></g></svg>
+        <svg id="overlay-right" viewBox="0 0 480 480" class="diff-overlay"></svg>
+      </div>
+    </div>
+    <div id="round-toast" class="round-toast">🎉 정답! 모두 찾았어요! (+15초)</div>
+    <div id="explosion-flash" class="explosion-flash"></div>
+  </div>
+</section>
+
+<!-- 결과 화면 -->
+<section id="screen-result" class="screen">
+  <div class="card">
+    <div class="result-emoji" id="result-emoji">🏆</div>
+    <h2 id="result-title">게임 종료!</h2>
+    <p id="result-reason" class="result-reason"></p>
+    <div class="completion-stars" id="result-stars"></div>
+    <div class="result-score">클리어한 라운드 <span id="result-rounds">0</span>개</div>
+    <div class="result-sub">실수 <span id="result-mistakes">0</span>번 · 사용한 힌트 <span id="result-hints">0</span>개</div>
+    <div class="result-buttons">
+      <button id="btn-retry" class="btn btn-primary btn-huge">다시 하기</button>
+      <button id="btn-to-title" class="btn btn-ghost">처음으로</button>
+    </div>
+  </div>
+</section>
+
+<script src="levels-data.js"></script>
+<script src="game.js"></script>
+</body>
+</html>

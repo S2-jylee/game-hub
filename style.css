@@ -19,6 +19,14 @@
 
 * { box-sizing: border-box; }
 
+@font-face {
+  font-family: "HunJungleBook";
+  src: url("HunJungleBook-Regular.ttf") format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
 html { font-size: 18px; }
 
 html, body {
@@ -76,7 +84,7 @@ header, main {
   padding: 64px 16px 12px;
 }
 .hub-header h1 {
-  font-family: "Jua", "Gowun Dodum", sans-serif;
+  font-family: "HunJungleBook", "Jua", sans-serif;
   font-size: 2.6rem;
   color: var(--pink-dark);
   margin: 0 0 8px;

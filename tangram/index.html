@@ -22,7 +22,7 @@
       <span class="ts ts4"></span>
     </div>
     <h1>탱그램 칠교놀이</h1>
-    <p class="subtitle">모양을 빨리 맞추고 점수를 모아요!</p>
+    <p class="subtitle">모양을 빨리 맞춰봐요!</p>
     <button id="btn-start" class="btn btn-primary btn-huge">시작하기</button>
     <button id="btn-howto" class="btn btn-ghost">놀이 방법</button>
   </div>
@@ -48,9 +48,9 @@
     <h2>놀이 방법</h2>
     <ul class="howto-list">
       <li><span class="ico">✋</span><span class="howto-text">조각을 <b>손가락으로 끌어서</b> 회색 모양 위에 놓아요.</span></li>
-      <li><span class="ico">🔄</span><span class="howto-text">조각을 <b>톡 누르거나 손잡이를 돌려서</b> 방향을 바꿔요. 버튼으로도 돌릴 수 있어요.</span></li>
+      <li><span class="ico">🔄</span><span class="howto-text">선택된 조각을 <b>다시 눌러 돌리거나 손잡이를 돌려서</b> 방향을 바꿔요. 버튼으로도 돌릴 수 있어요.</span></li>
+      <li><span class="ico">🧲</span><span class="howto-text">맞는 자리 가까이 가져가면 <b>착 달라붙어요!</b></span></li>
       <li><span class="ico">✅</span><span class="howto-text">다 놓았다고 생각되면 <b>완료</b> 버튼을 눌러요.</span></li>
-      <li><span class="ico">⭐</span><span class="howto-text">얼마나 딱 맞았는지, 얼마나 빨랐는지에 따라 별을 최대 5개까지 받아요!</span></li>
     </ul>
     <button id="btn-howto-back" class="btn btn-primary btn-huge">알겠어요!</button>
   </div>
@@ -102,17 +102,13 @@
       <span class="hud-label">시간</span>
       <span id="hud-timer-val" class="hud-value">0.0초</span>
     </div>
-    <div class="hud-item hud-score">
-      <span class="hud-label">점수</span>
-      <span id="hud-score-val" class="hud-value">0</span>
-    </div>
     <button id="btn-quit" class="btn btn-ghost btn-small">← 나가기</button>
   </header>
 
   <div class="stage-progress-bar"><div id="stage-progress-fill" class="stage-progress-fill"></div></div>
 
   <div id="board-wrap" class="board-wrap">
-    <svg id="board" viewBox="0 0 900 600" preserveAspectRatio="xMidYMid meet">
+    <svg id="board" viewBox="0 0 1200 600" preserveAspectRatio="xMidYMid meet">
       <g id="layer-target"></g>
       <g id="layer-pieces"></g>
       <g id="layer-toolbar"></g>
@@ -123,18 +119,14 @@
         <div id="completion-retry" class="completion-variant">
           <div class="completion-emoji">🤔</div>
           <div class="completion-title">다시 해보세요!</div>
-          <div class="completion-sub">아직 많이 어긋난 조각이 있어요.</div>
+          <div class="completion-sub">아직 자리를 다 채우지 못했어요.</div>
           <button id="btn-completion-retry-ok" class="btn btn-primary btn-huge">다시 맞춰볼게요</button>
         </div>
         <div id="completion-success" class="completion-variant">
           <div class="completion-emoji">🎉</div>
           <div class="completion-title">훌륭해요!</div>
-          <div id="completion-stars" class="completion-stars"></div>
-          <div id="completion-percent" class="completion-percent">0% 완성</div>
-          <div id="completion-score" class="completion-scoregain">+0점</div>
           <div class="completion-buttons">
             <button id="btn-completion-next" class="btn btn-primary btn-huge">다음 모양</button>
-            <button id="btn-completion-rank" class="btn btn-ghost">🏆 이 모양 랭킹</button>
             <button id="btn-completion-list" class="btn btn-ghost">레벨 선택</button>
           </div>
         </div>
@@ -146,6 +138,7 @@
     <button id="btn-rotate-left" class="btn btn-round" title="왼쪽으로 회전">↺</button>
     <button id="btn-rotate-right" class="btn btn-round" title="오른쪽으로 회전">↻</button>
     <button id="btn-flip" class="btn btn-round" title="뒤집기">⇋</button>
+    <button id="btn-hint" class="btn btn-round btn-hint" title="힌트 (한 조각의 위치를 잠깐 보여줘요)" hidden>?</button>
     <button id="btn-complete" class="btn btn-primary btn-complete">완료</button>
   </div>
 </section>
@@ -155,24 +148,12 @@
   <div class="card">
     <div class="result-emoji">🏆</div>
     <h2>다 완성했어요!</h2>
-    <div class="result-score">총 점수 <span id="result-total-score">0</span>점</div>
-    <table class="result-table" id="result-table"></table>
     <div class="result-buttons">
       <button id="btn-retry" class="btn btn-primary btn-huge">모양 더 고르기</button>
       <button id="btn-to-title" class="btn btn-ghost">처음으로</button>
     </div>
   </div>
 </section>
-
-<!-- 랭킹 모달: 화면(레벨 선택/게임 중) 어디서든 열 수 있도록 화면 밖, body 바로 아래에 둔다 -->
-<div id="ranking-modal" class="ranking-modal">
-  <div class="ranking-card">
-    <div class="ranking-title">🏆 랭킹 <span id="ranking-stage-label" class="diff-tag"></span></div>
-    <ol id="ranking-list" class="ranking-list"></ol>
-    <div id="ranking-empty" class="ranking-empty">아직 기록이 없어요. 첫 번째 주인공이 되어보세요!</div>
-    <button id="btn-ranking-close" class="btn btn-primary">닫기</button>
-  </div>
-</div>
 
 <script src="tangram-data.js"></script>
 <script src="game.js"></script>

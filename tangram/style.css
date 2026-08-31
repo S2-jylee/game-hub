@@ -23,6 +23,14 @@
 
 * { box-sizing: border-box; }
 
+@font-face {
+  font-family: "HunJungleBook";
+  src: url("HunJungleBook-Regular.ttf") format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
 html, body {
   margin: 0;
   padding: 0;
@@ -98,6 +106,12 @@ html, body {
   color: var(--lavender-dark);
 }
 .btn-round:hover { background: #f4eefe; transform: translateY(-2px); }
+.btn-hint {
+  background: var(--yellow);
+  color: white;
+}
+.btn-hint:hover { background: var(--yellow); filter: brightness(1.08); }
+.btn-hint:disabled { opacity: 0.55; cursor: default; transform: none; }
 
 /* ---- Title screen ---- */
 .title-card {
@@ -114,7 +128,7 @@ html, body {
 .ts4 { width: 45px; height: 45px; background: var(--mint); left: calc(50% + 110px); top: -2px; transform: rotate(35deg); animation-delay: 1.2s; }
 @keyframes floaty { 0%, 100% { transform: translateY(0) rotate(var(--r,0)); } 50% { transform: translateY(-12px); } }
 
-h1 { font-family: "Jua", "Gowun Dodum", sans-serif; font-size: 2.6rem; margin: 6px 0 4px; color: var(--pink-dark); }
+h1 { font-family: "HunJungleBook", "Jua", sans-serif; font-size: 2.6rem; margin: 6px 0 4px; color: var(--pink-dark); }
 .subtitle { font-size: 1.1rem; color: var(--text-soft); margin-bottom: 18px; }
 
 /* ---- Card (howto / result) ---- */
@@ -131,7 +145,7 @@ h1 { font-family: "Jua", "Gowun Dodum", sans-serif; font-size: 2.6rem; margin: 6
   overflow-y: auto;
   overflow-x: hidden;
 }
-.card h2 { font-family: "Jua", "Gowun Dodum", sans-serif; color: var(--pink-dark); margin-top: 0; font-size: 1.8rem; }
+.card h2 { font-family: "HunJungleBook", "Jua", sans-serif; color: var(--pink-dark); margin-top: 0; font-size: 1.8rem; }
 
 .howto-list { list-style: none; padding: 0; text-align: left; margin: 20px 0; }
 .howto-list li {
@@ -224,8 +238,8 @@ h1 { font-family: "Jua", "Gowun Dodum", sans-serif; font-size: 2.6rem; margin: 6
 }
 .level-grid-btn:hover { filter: brightness(1.08); transform: translateY(-2px); }
 .level-grid-btn:active { transform: translateY(2px); }
-.level-grid-btn.has-stars {
-  background: linear-gradient(180deg, var(--yellow), var(--peach));
+.level-grid-btn.cleared {
+  background: linear-gradient(180deg, var(--mint), var(--mint-dark));
 }
 .level-grid-btn.locked {
   background: linear-gradient(180deg, #b9b9c2, #9a9aa6);
@@ -237,30 +251,12 @@ h1 { font-family: "Jua", "Gowun Dodum", sans-serif; font-size: 2.6rem; margin: 6
   font-size: 1rem;
   line-height: 1;
 }
-.level-grid-btn .lvl-stars {
-  font-size: 0.6rem;
-  letter-spacing: 1px;
-  color: rgba(255,255,255,0.9);
+.level-grid-btn .lvl-check {
+  font-size: 0.85rem;
+  color: rgba(255,255,255,0.95);
   line-height: 1;
 }
 .level-grid-btn { position: relative; }
-.lvl-trophy {
-  position: absolute;
-  top: 3px;
-  right: 3px;
-  width: 20px;
-  height: 20px;
-  border-radius: 50%;
-  background: #fff;
-  border: 2px solid var(--yellow-dark);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 0.7rem;
-  cursor: pointer;
-  box-shadow: 0 2px 4px rgba(36,27,58,0.18);
-}
-.lvl-trophy:hover { transform: scale(1.1); }
 
 /* ---- HUD ---- */
 .hud {
@@ -288,7 +284,6 @@ h1 { font-family: "Jua", "Gowun Dodum", sans-serif; font-size: 2.6rem; margin: 6
 .hud-name .hud-value { font-size: 1.3rem; color: var(--pink-dark); }
 .hud-stage .hud-value { color: var(--sky-dark); }
 .hud-timer .hud-value { color: var(--lavender-dark); font-variant-numeric: tabular-nums; }
-.hud-score .hud-value { color: var(--mint-dark); }
 
 .stage-progress-bar {
   flex: none;
@@ -332,6 +327,11 @@ h1 { font-family: "Jua", "Gowun Dodum", sans-serif; font-size: 2.6rem; margin: 6
 }
 .piece-poly.dragging { cursor: grabbing; filter: drop-shadow(0 8px 10px rgba(0,0,0,0.35)); }
 .piece-poly.selected { stroke: none; opacity: 1; }
+.piece-poly.snap-pop { animation: snappop 0.22s ease-out; }
+@keyframes snappop {
+  0% { transform: scale(1.18); }
+  100% { transform: scale(1); }
+}
 
 .target-poly {
   fill: rgba(36,27,58,0.06);
@@ -344,6 +344,12 @@ h1 { font-family: "Jua", "Gowun Dodum", sans-serif; font-size: 2.6rem; margin: 6
   stroke: #161616;
   stroke-width: 1;
   stroke-dasharray: none;
+}
+.target-poly.hint-active {
+  fill: rgba(255,196,0,0.28);
+  stroke: var(--yellow-dark);
+  stroke-width: 3;
+  stroke-dasharray: 10 8;
 }
 
 .rotate-handle-line {
@@ -396,71 +402,9 @@ h1 { font-family: "Jua", "Gowun Dodum", sans-serif; font-size: 2.6rem; margin: 6
 .completion-modal.show-retry #completion-retry { display: block; }
 .completion-modal.show-success #completion-success { display: block; }
 
-/* ---- Ranking modal (lives at body level so it can open from any screen) ---- */
-.ranking-modal {
-  position: fixed;
-  inset: 0;
-  display: none;
-  align-items: center;
-  justify-content: center;
-  background: rgba(36, 27, 58, 0.42);
-  z-index: 50;
-}
-.ranking-modal.show { display: flex; }
-.ranking-card {
-  background: white;
-  border: 2px solid #f3eefa;
-  border-radius: 28px;
-  padding: 26px 30px;
-  text-align: center;
-  box-shadow: var(--shadow);
-  animation: clearpop 0.4s cubic-bezier(.2,1.4,.4,1);
-  max-width: 340px;
-  width: 88%;
-}
-.ranking-title {
-  font-family: "Jua", "Gowun Dodum", sans-serif;
-  font-size: 1.3rem;
-  color: var(--pink-dark);
-  margin-bottom: 14px;
-}
-.ranking-list {
-  list-style: none;
-  margin: 0 0 8px;
-  padding: 0;
-  text-align: left;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  max-height: 260px;
-  overflow-y: auto;
-}
-.ranking-row {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  background: #f7f3fe;
-  border-radius: 12px;
-  padding: 8px 14px;
-  font-weight: 700;
-}
-.ranking-row.me { background: #fdeaf3; border: 2px solid var(--pink); }
-.ranking-rank { flex: none; width: 26px; font-weight: 800; color: var(--lavender-dark); }
-.ranking-name { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.ranking-time { flex: none; color: var(--text-soft); font-variant-numeric: tabular-nums; font-size: 0.9rem; }
-.ranking-empty { color: var(--text-soft); font-size: 0.9rem; margin: 10px 0; display: none; }
-.ranking-modal.empty #ranking-empty { display: block; }
-
 .completion-emoji { font-size: 3rem; }
-.completion-title { font-family: "Jua", "Gowun Dodum", sans-serif; font-size: 1.6rem; margin-top: 4px; color: var(--pink-dark); }
+.completion-title { font-family: "HunJungleBook", "Jua", sans-serif; font-size: 1.6rem; margin-top: 4px; color: var(--pink-dark); }
 .completion-sub { font-size: 0.95rem; color: var(--text-soft); margin-top: 8px; }
-
-.completion-stars { font-size: 2.2rem; letter-spacing: 4px; margin: 12px 0 2px; }
-.star-filled { color: var(--yellow-dark); }
-.star-empty { color: #e3e0f2; }
-.result-stars { font-size: 1.1rem; letter-spacing: 1px; white-space: nowrap; }
-.completion-percent { font-size: 1.15rem; font-weight: 700; color: var(--text-dark); }
-.completion-scoregain { font-size: 1.05rem; color: var(--pink-dark); font-weight: 800; margin-top: 2px; }
 .completion-buttons { margin-top: 14px; display: flex; flex-direction: column; align-items: center; gap: 4px; }
 
 .toolbar {
@@ -505,7 +449,6 @@ h1 { font-family: "Jua", "Gowun Dodum", sans-serif; font-size: 2.6rem; margin: 6
 }
 .user-item-btn:hover { background: #efe1fd; transform: translateY(-2px); }
 .user-item-btn:active { transform: scale(0.97); }
-.user-item-stars { font-size: 0.85rem; font-weight: 700; color: var(--yellow-dark); }
 .user-new-row {
   display: flex;
   gap: 8px;
@@ -526,9 +469,5 @@ h1 { font-family: "Jua", "Gowun Dodum", sans-serif; font-size: 2.6rem; margin: 6
 .user-name-input:focus { border-color: var(--lavender-dark); }
 
 /* ---- Result screen ---- */
-.result-emoji { font-size: 3.2rem; }
-.result-score { font-size: 1.4rem; font-weight: 800; color: var(--pink-dark); margin: 10px 0 18px; }
-.result-table { width: 100%; border-collapse: collapse; margin-bottom: 10px; }
-.result-table td, .result-table th { padding: 8px 10px; border-bottom: 1px solid #f3eefa; font-size: 0.95rem; }
-.result-table th { color: var(--text-soft); font-weight: 600; }
+.result-emoji { font-size: 3.2rem; margin-bottom: 10px; }
 .result-buttons { margin-top: 14px; }

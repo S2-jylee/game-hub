@@ -23,6 +23,14 @@
 
 * { box-sizing: border-box; }
 
+@font-face {
+  font-family: "HunJungleBook";
+  src: url("HunJungleBook-Regular.ttf") format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
 html, body {
   margin: 0;
   padding: 0;
@@ -116,7 +124,7 @@ html, body {
 .ts4 { left: calc(50% + 110px); top: -2px; transform: rotate(14deg); animation-delay: 1.2s; }
 @keyframes floaty { 0%, 100% { transform: translateY(0) rotate(var(--r,0)); } 50% { transform: translateY(-12px); } }
 
-h1 { font-family: "Jua", "Gowun Dodum", sans-serif; font-size: 2.6rem; margin: 6px 0 4px; color: var(--pink-dark); }
+h1 { font-family: "HunJungleBook", "Jua", sans-serif; font-size: 2.6rem; margin: 6px 0 4px; color: var(--pink-dark); }
 .subtitle { font-size: 1.1rem; color: var(--text-soft); margin-bottom: 18px; }
 
 /* ---- Card (howto / result) ---- */
@@ -133,7 +141,7 @@ h1 { font-family: "Jua", "Gowun Dodum", sans-serif; font-size: 2.6rem; margin: 6
   overflow-y: auto;
   overflow-x: hidden;
 }
-.card h2 { font-family: "Jua", "Gowun Dodum", sans-serif; color: var(--pink-dark); margin-top: 0; font-size: 1.8rem; }
+.card h2 { font-family: "HunJungleBook", "Jua", sans-serif; color: var(--pink-dark); margin-top: 0; font-size: 1.8rem; }
 
 .howto-list { list-style: none; padding: 0; text-align: left; margin: 20px 0; }
 .howto-list li {
@@ -366,7 +374,7 @@ h1 { font-family: "Jua", "Gowun Dodum", sans-serif; font-size: 2.6rem; margin: 6
 }
 
 .completion-emoji { font-size: 3rem; }
-.completion-title { font-family: "Jua", "Gowun Dodum", sans-serif; font-size: 1.6rem; margin-top: 4px; color: var(--pink-dark); }
+.completion-title { font-family: "HunJungleBook", "Jua", sans-serif; font-size: 1.6rem; margin-top: 4px; color: var(--pink-dark); }
 .completion-stars { font-size: 2.2rem; letter-spacing: 4px; margin: 12px 0 2px; }
 .star-filled { color: var(--yellow-dark); }
 .star-empty { color: #e3e0f2; }
@@ -407,7 +415,7 @@ h1 { font-family: "Jua", "Gowun Dodum", sans-serif; font-size: 2.6rem; margin: 6
   width: 88%;
 }
 .ranking-title {
-  font-family: "Jua", "Gowun Dodum", sans-serif;
+  font-family: "HunJungleBook", "Jua", sans-serif;
   font-size: 1.3rem;
   color: var(--pink-dark);
   margin-bottom: 14px;

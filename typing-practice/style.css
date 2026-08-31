@@ -26,6 +26,14 @@
 
 * { box-sizing: border-box; }
 
+@font-face {
+  font-family: "HunJungleBook";
+  src: url("HunJungleBook-Regular.ttf") format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
 /* 탭/카드 버튼은 눌린(active) 상태를 색으로 이미 보여주기 때문에, 클릭 후 남는 브라우저
    기본 포커스 테두리는 필요 없다. 실제 키보드 Tab 이동 시(:focus-visible)에는 그대로 남겨서
    접근성은 지킨다. */
@@ -81,7 +89,7 @@ header, nav, main, footer {
 }
 
 .app-header h1 {
-  font-family: 'Jua', 'Gowun Dodum', sans-serif;
+  font-family: 'HunJungleBook', 'Jua', sans-serif;
   font-size: 2.2rem;
   color: var(--pink-dark);
   margin: 0;
@@ -103,7 +111,7 @@ header, nav, main, footer {
   background: transparent;
   padding: 12px 22px;
   border-radius: 999px;
-  font-family: 'Pretendard', 'Nunito', 'Gowun Dodum', sans-serif;
+  font-family: 'Pretendard', 'Gowun Dodum', 'Nunito', sans-serif;
   font-weight: 800;
   font-size: 1.05rem;
   color: var(--text-soft);
@@ -434,7 +442,7 @@ body.home-active .home-view { display: block; }
   font-size: 3.2rem;
   font-weight: 800;
   color: #fff;
-  font-family: 'Pretendard', 'Nunito', 'Gowun Dodum', sans-serif;
+  font-family: 'Pretendard', 'Gowun Dodum', 'Nunito', sans-serif;
   transition: background 0.2s;
 }
 .prompt-next-wrap { text-align: center; }
@@ -457,7 +465,7 @@ body.home-active .home-view { display: block; }
   font-weight: 700;
   color: var(--text-soft);
   opacity: 0.9;
-  font-family: 'Pretendard', 'Nunito', 'Gowun Dodum', sans-serif;
+  font-family: 'Pretendard', 'Gowun Dodum', 'Nunito', sans-serif;
 }
 
 .finger-label {
@@ -622,7 +630,7 @@ body.home-active .home-view { display: block; }
   justify-content: center;
   font-weight: 700;
   transition: all 0.08s ease;
-  font-family: 'Pretendard', 'Nunito', 'Gowun Dodum', sans-serif;
+  font-family: 'Pretendard', 'Gowun Dodum', 'Nunito', sans-serif;
   flex: none;
 }
 /* 실제 자판처럼 보이도록 넣은 장식 키(숫자줄/Tab/Caps/Shift 등)는 연습과 무관하니
@@ -1009,7 +1017,7 @@ body.home-active .home-view { display: block; }
   width: 100%;
 }
 .result-card h2 {
-  font-family: 'Jua', 'Gowun Dodum', sans-serif;
+  font-family: 'HunJungleBook', 'Jua', sans-serif;
   color: var(--pink-dark);
   margin: 0 0 18px;
   font-size: 1.6rem;
@@ -1073,7 +1081,7 @@ body.home-active .home-view { display: block; }
 
 .ranking-section { margin: 4px 0 22px; text-align: left; }
 .ranking-title {
-  font-family: 'Jua', 'Gowun Dodum', sans-serif;
+  font-family: 'HunJungleBook', 'Jua', sans-serif;
   font-size: 1rem;
   color: var(--pink-dark);
   text-align: center;
