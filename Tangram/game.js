@@ -368,16 +368,25 @@
 
   function updatePieceTransform(piece) {
     var c = piece.current;
-    // Mirror around the piece's own local centroid (not the shape's raw
-    // origin) so flipping turns it over in place instead of jumping it
-    // sideways by however far the origin happens to sit from center.
-    var mirror = c.flip
-      ? "translate(" + (2 * piece.localCentroid[0] * state.unitScale) + " 0) scale(-1 1)"
-      : "";
-    piece.groupEl.setAttribute(
-      "transform",
-      "translate(" + c.x + " " + c.y + ") rotate(" + c.angleDeg + ") " + mirror
-    );
+    var transform;
+    if (c.flip) {
+      // Mirror across a screen-vertical line through the piece's CURRENT
+      // (already-rotated) centroid, applied after the rotation - so flip
+      // always turns over whatever is on screen right now, instead of
+      // mirroring the pre-rotation shape and then re-applying the old
+      // rotation on top (which made flipping a rotated piece look like it
+      // was flipping some other, unrotated version of it).
+      var rad = c.angleDeg * Math.PI / 180;
+      var lc = piece.localCentroid;
+      var rx = (lc[0] * state.unitScale) * Math.cos(rad) - (lc[1] * state.unitScale) * Math.sin(rad);
+      transform =
+        "translate(" + c.x + " " + c.y + ") " +
+        "translate(" + (2 * rx) + " 0) scale(-1 1) " +
+        "rotate(" + c.angleDeg + ")";
+    } else {
+      transform = "translate(" + c.x + " " + c.y + ") rotate(" + c.angleDeg + ")";
+    }
+    piece.groupEl.setAttribute("transform", transform);
     piece.el.classList.toggle("selected", state.selectedId === piece.id);
     if (state.selectedId === piece.id) updateRotateHandle();
   }
@@ -647,8 +656,12 @@
       effectiveAngle = piece.current.angleDeg;
     } else {
       flipOk = true;
-      var offset = piece.current.flip ? (TD.SHAPE_FLIP_ROTATE_OFFSET[piece.shape] || 0) : 0;
-      effectiveAngle = piece.current.angleDeg + offset;
+      // Flip mirrors across a screen-fixed vertical axis after rotation, so
+      // (unlike a plain rotation) it reverses the angle's sense: flipping a
+      // piece rotated by θ looks the same as rotating an unflipped piece by
+      // (offset - θ), not (θ + offset).
+      var offset = TD.SHAPE_FLIP_ROTATE_OFFSET[piece.shape] || 0;
+      effectiveAngle = piece.current.flip ? (offset - piece.current.angleDeg) : piece.current.angleDeg;
     }
     var angleDiff = angleDiffMod(effectiveAngle, slot.angleDeg, piece.symmetry);
     return { dist: dist, angleDiff: angleDiff, flipOk: flipOk };
