@@ -253,7 +253,7 @@
     });
     var bw = maxX - minX, bh = maxY - minY;
     var areaScale = Math.min(TARGET_AREA_W / bw, TARGET_AREA_H / bh);
-    areaScale = Math.max(38, Math.min(170, areaScale));
+    areaScale = Math.max(38, Math.min(260, areaScale));
     var trayShapes = level.slots.map(function (s) { return TD.SHAPES[s.shape]; });
     var scale = fitTrayScale(trayShapes, areaScale);
     state.unitScale = scale;

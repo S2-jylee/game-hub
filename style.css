@@ -97,14 +97,17 @@ header, main {
 }
 
 .tile-grid {
-  max-width: 680px;
+  max-width: 960px;
   margin: 40px auto 0;
   padding: 0 20px 60px;
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: repeat(3, 1fr);
   gap: 24px;
 }
-@media (max-width: 600px) {
+@media (max-width: 820px) {
+  .tile-grid { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 480px) {
   .tile-grid { grid-template-columns: 1fr; }
 }
 
