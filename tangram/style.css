@@ -384,15 +384,15 @@ h1 { font-family: "Jua", "Gowun Dodum", sans-serif; font-size: 2.6rem; margin: 6
 .completion-modal.show-retry #completion-retry { display: block; }
 .completion-modal.show-success #completion-success { display: block; }
 
-/* ---- Ranking modal ---- */
+/* ---- Ranking modal (lives at body level so it can open from any screen) ---- */
 .ranking-modal {
-  position: absolute;
+  position: fixed;
   inset: 0;
   display: none;
   align-items: center;
   justify-content: center;
   background: rgba(36, 27, 58, 0.42);
-  z-index: 5;
+  z-index: 50;
 }
 .ranking-modal.show { display: flex; }
 .ranking-card {

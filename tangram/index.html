@@ -140,15 +140,6 @@
         </div>
       </div>
     </div>
-
-    <div id="ranking-modal" class="ranking-modal">
-      <div class="ranking-card">
-        <div class="ranking-title">🏆 랭킹 <span id="ranking-stage-label" class="diff-tag"></span></div>
-        <ol id="ranking-list" class="ranking-list"></ol>
-        <div id="ranking-empty" class="ranking-empty">아직 기록이 없어요. 첫 번째 주인공이 되어보세요!</div>
-        <button id="btn-ranking-close" class="btn btn-primary">닫기</button>
-      </div>
-    </div>
   </div>
 
   <div class="toolbar">
@@ -172,6 +163,16 @@
     </div>
   </div>
 </section>
+
+<!-- 랭킹 모달: 화면(레벨 선택/게임 중) 어디서든 열 수 있도록 화면 밖, body 바로 아래에 둔다 -->
+<div id="ranking-modal" class="ranking-modal">
+  <div class="ranking-card">
+    <div class="ranking-title">🏆 랭킹 <span id="ranking-stage-label" class="diff-tag"></span></div>
+    <ol id="ranking-list" class="ranking-list"></ol>
+    <div id="ranking-empty" class="ranking-empty">아직 기록이 없어요. 첫 번째 주인공이 되어보세요!</div>
+    <button id="btn-ranking-close" class="btn btn-primary">닫기</button>
+  </div>
+</div>
 
 <script src="tangram-data.js"></script>
 <script src="game.js"></script>
