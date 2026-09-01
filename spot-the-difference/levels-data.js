@@ -452,6 +452,59 @@
         { x: 279.4, y: 240.6, r: 28 },
         { x: 429.2, y: 422.4, r: 29 }
       ]
+    },
+    // ---- 03 ----
+    {
+      id: "bearpicnic2", name: "떡갈나무 아래 소풍", emoji: "🌳",
+      drawBase: function (g) {},
+      drawLeft: function (g) {
+        E("image", { x: 20.2, y: 0, width: 439.6, height: 480, href: "03-left.png", preserveAspectRatio: "xMidYMid slice" }, g);
+      },
+      drawRight: function (g) {
+        E("image", { x: 20.2, y: 0, width: 439.6, height: 480, href: "03-right.png", preserveAspectRatio: "xMidYMid slice" }, g);
+      },
+      diffs: [
+        { x: 295.0, y: 283.2, r: 28 },
+        { x: 303.7, y: 395.0, r: 32 }
+      ]
+    },
+    // ---- 05 ----
+    {
+      id: "zootiger2", name: "동물원 나들이", emoji: "🐅",
+      drawBase: function (g) {},
+      drawLeft: function (g) {
+        E("image", { x: 20.2, y: 0, width: 439.6, height: 480, href: "05-left.png", preserveAspectRatio: "xMidYMid slice" }, g);
+      },
+      drawRight: function (g) {
+        E("image", { x: 20.2, y: 0, width: 439.6, height: 480, href: "05-right.png", preserveAspectRatio: "xMidYMid slice" }, g);
+      },
+      diffs: [
+        { x: 204.8, y: 77.3, r: 26 },
+        { x: 102.0, y: 275.0, r: 28 },
+        { x: 46.1, y: 296.2, r: 26 },
+        { x: 411.0, y: 335.0, r: 26 },
+        { x: 277.8, y: 360.4, r: 26 }
+      ]
+    },
+    // ---- 12 ----
+    {
+      id: "bearbunny3", name: "예쁜 색연필 소풍", emoji: "🖍️",
+      drawBase: function (g) {},
+      drawLeft: function (g) {
+        E("image", { x: 94.75, y: 0, width: 290.5, height: 480, href: "12-left.png", preserveAspectRatio: "xMidYMid slice" }, g);
+      },
+      drawRight: function (g) {
+        E("image", { x: 94.75, y: 0, width: 290.5, height: 480, href: "12-right.png", preserveAspectRatio: "xMidYMid slice" }, g);
+      },
+      diffs: [
+        { x: 148.75, y: 62.4, r: 26 },
+        { x: 148.75, y: 121.9, r: 26 },
+        { x: 316.05, y: 127.7, r: 26 },
+        { x: 316.05, y: 204.5, r: 26 },
+        { x: 282.15, y: 277.9, r: 26 },
+        { x: 188.25, y: 368.7, r: 26 },
+        { x: 355.65, y: 360.5, r: 26 }
+      ]
     }
   ];
 
