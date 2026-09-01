@@ -298,6 +298,27 @@
         { x: 380, y: 228, r: 34 },
         { x: 55, y: 140, r: 34 }
       ]
+    },
+    // ---------------------------------------------------------------- 7
+    {
+      id: "bagelshop", name: "베이글 데이즈 카페", emoji: "🥯",
+      drawBase: function (g) {},
+      drawLeft: function (g) {
+        E("image", { x: 60, y: 0, width: 360, height: 480, href: "bagel-left.png", preserveAspectRatio: "xMidYMid slice" }, g);
+      },
+      drawRight: function (g) {
+        E("image", { x: 60, y: 0, width: 360, height: 480, href: "bagel-right.png", preserveAspectRatio: "xMidYMid slice" }, g);
+      },
+      diffs: [
+        { x: 161, y: 59, r: 34 },
+        { x: 365, y: 206, r: 36 },
+        { x: 224, y: 248, r: 42 },
+        { x: 203, y: 298, r: 40 },
+        { x: 257, y: 326, r: 40 },
+        { x: 311, y: 323, r: 40 },
+        { x: 150, y: 315, r: 32 },
+        { x: 367, y: 434, r: 42 }
+      ]
     }
   ];
 

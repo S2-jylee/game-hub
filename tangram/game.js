@@ -9,20 +9,16 @@
   // waste space letterboxing top/bottom or left/right.
   var VB_W = 1200, VB_H = 650;
 
-  // Piece tray lives in a column on the right; the target board gets
-  // everything to the left of it.
-  var TRAY_WIDTH = 480;
-  var TRAY_X0 = VB_W - TRAY_WIDTH;
-  var TRAY_MARGIN = 16;
-  var TRAY_GAP = 14;
-  var TRAY_TOP = 20;
-  var TRAY_USABLE_W = TRAY_WIDTH - TRAY_MARGIN * 2;
-  var TARGET_AREA_W = TRAY_X0 - 40;
-  var TARGET_CENTER_X = TRAY_X0 / 2;
-  // Recomputed alongside VB_H in updateViewBoxHeight().
-  var TRAY_USABLE_H = VB_H - TRAY_TOP * 2;
-  var TARGET_AREA_H = VB_H - 40;
-  var TARGET_CENTER_Y = VB_H / 2;
+  // The piece tray goes wherever leaves the target board biggest: a column
+  // on the right, or a strip along the bottom (see chooseLayout). Most
+  // tangram pieces are wider than they are tall, so a handful of them often
+  // pack into a much shallower bottom strip than they would a narrow column
+  // - the fixed COLUMN_WIDTH below is just the column candidate's width.
+  var MARGIN = 16;
+  var TRAY_GAP = 10;
+  var TRAY_PAD = 12;
+  var COLUMN_WIDTH = 460;
+  var SCALE_MIN = 30, SCALE_MAX = 500;
 
   // Within this distance/angle of a slot, a dropped piece snaps into place.
   // The angle tolerance is kept well under one 45-degree rotate step so that
@@ -227,9 +223,6 @@
     if (w > 0 && h > 0) {
       VB_H = Math.max(500, Math.min(900, Math.round(VB_W * h / w)));
     }
-    TRAY_USABLE_H = VB_H - TRAY_TOP * 2;
-    TARGET_AREA_H = VB_H - 40;
-    TARGET_CENTER_Y = VB_H / 2;
     boardSvg.setAttribute("viewBox", "0 0 " + VB_W + " " + VB_H);
   }
 
@@ -252,15 +245,20 @@
       });
     });
     var bw = maxX - minX, bh = maxY - minY;
-    var areaScale = Math.min(TARGET_AREA_W / bw, TARGET_AREA_H / bh);
-    areaScale = Math.max(38, Math.min(260, areaScale));
     var trayShapes = level.slots.map(function (s) { return TD.SHAPES[s.shape]; });
-    var scale = fitTrayScale(trayShapes, areaScale);
+    var layout = chooseLayout(trayShapes, bw, bh);
+    state.layout = layout;
+    var scale = layout.scale;
     state.unitScale = scale;
 
     var cx = (minX + maxX) / 2, cy = (minY + maxY) / 2;
-    state.offsetX = TARGET_CENTER_X - cx * scale;
-    state.offsetY = TARGET_CENTER_Y - cy * scale;
+    if (layout.orientation === "column") {
+      state.offsetX = MARGIN + layout.targetAreaW / 2 - cx * scale;
+      state.offsetY = VB_H / 2 - cy * scale;
+    } else {
+      state.offsetX = VB_W / 2 - cx * scale;
+      state.offsetY = MARGIN + layout.targetAreaH / 2 - cy * scale;
+    }
 
     // Build slots (targets) - identified by SHAPE only, not tied to any one
     // physical piece; matching at completion time pairs pieces to slots by
@@ -322,53 +320,144 @@
   }
 
   // Lays shapes out left-to-right, wrapping into a new row when the next
-  // one wouldn't fit within TRAY_USABLE_W - a plain shelf packer. Used both
-  // to size-check candidate scales (fitTrayScale) and to actually place the
-  // pieces (layoutTray), so what's checked is exactly what's rendered.
-  function packShelves(shapes, scale) {
-    var x = 0, y = 0, rowH = 0;
+  // one wouldn't fit within widthBudget - a plain shelf packer. Used both
+  // to size-check candidate scales (searchColumnLayout/searchRowLayout) and
+  // to actually place the pieces (layoutTray), so what's checked is exactly
+  // what's rendered. Each position remembers which row it's in so a tight
+  // fit can later squeeze rows together (see fitRowsToBudget) without
+  // touching piece size.
+  function packShelves(shapes, scale, widthBudget) {
+    var x = 0, y = 0, rowH = 0, maxX = 0, rowIdx = 0;
+    var rowHeights = [];
     var positions = shapes.map(function (shape) {
       var bb = localBBox(shape);
       var w = bb.w * scale, h = bb.h * scale;
-      if (x > 0 && x + w > TRAY_USABLE_W) { x = 0; y += rowH + TRAY_GAP; rowH = 0; }
-      var pos = { x: x, y: y, w: w, h: h, bb: bb };
+      if (x > 0 && x + w > widthBudget) {
+        rowHeights.push(rowH);
+        x = 0; y += rowH + TRAY_GAP; rowH = 0; rowIdx++;
+      }
+      var pos = { x: x, w: w, h: h, bb: bb, row: rowIdx };
       x += w + TRAY_GAP;
+      maxX = Math.max(maxX, x - TRAY_GAP);
       rowH = Math.max(rowH, h);
       return pos;
     });
-    return { positions: positions, totalHeight: y + rowH };
+    rowHeights.push(rowH);
+    return { positions: positions, rowHeights: rowHeights, totalHeight: y + rowH, totalWidth: maxX };
+  }
+
+  // A young player benefits more from bigger, easier-to-grab pieces than
+  // from every tray row staying perfectly clear of its neighbor, so once
+  // rows can't all fit at the normal gap, this squeezes them together -
+  // capped so no row ever loses more than MAX_ROW_OVERLAP of its own
+  // height under the next one. Returns null if even edge-to-edge (zero
+  // gap) the rows can't fit the budget at all.
+  var MAX_ROW_OVERLAP = 0.35;
+  function fitRowsToBudget(rowHeights, budget) {
+    var n = rowHeights.length;
+    var sumH = 0;
+    for (var i = 0; i < n; i++) sumH += rowHeights[i];
+    if (n <= 1) return sumH <= budget ? [0] : null;
+    var gap = (budget - sumH) / (n - 1);
+    if (gap > TRAY_GAP) gap = TRAY_GAP; // never stretch rows apart beyond the normal gap
+    var avgRowH = sumH / n;
+    if (gap < -MAX_ROW_OVERLAP * avgRowH) return null;
+    var offsets = [0];
+    for (i = 1; i < n; i++) offsets.push(offsets[i - 1] + rowHeights[i - 1] + gap);
+    return offsets;
+  }
+
+  // Candidate layout: tray packed into a narrow column on the right, target
+  // gets the rest of the width at full height.
+  function searchColumnLayout(shapes, bw, bh) {
+    var trayW = COLUMN_WIDTH;
+    var trayUsableW = trayW - TRAY_PAD * 2;
+    var trayUsableH = VB_H - MARGIN * 2;
+    var targetAreaW = VB_W - trayW - MARGIN * 2;
+    var targetAreaH = VB_H - MARGIN * 2;
+    var maxPieceW = 0;
+    shapes.forEach(function (s) { maxPieceW = Math.max(maxPieceW, localBBox(s).w); });
+    var scale = Math.min(SCALE_MAX, trayUsableW / maxPieceW, targetAreaW / bw, targetAreaH / bh);
+    while (scale > SCALE_MIN) {
+      var packed = packShelves(shapes, scale, trayUsableW);
+      if (fitRowsToBudget(packed.rowHeights, trayUsableH)) break;
+      scale -= 1;
+    }
+    scale = Math.max(scale, SCALE_MIN);
+    return {
+      orientation: "column", scale: scale, trayW: trayW, trayUsableW: trayUsableW, trayUsableH: trayUsableH,
+      targetAreaW: targetAreaW, targetAreaH: targetAreaH
+    };
+  }
+
+  // Candidate layout: tray packed into a horizontal strip along the bottom,
+  // target gets full width and whatever height is left above the strip.
+  // Most tangram pieces are individually wider than tall, so several of
+  // them often fit one strip row at a much larger scale than the same
+  // pieces would fit into a narrow column.
+  function searchRowLayout(shapes, bw, bh) {
+    var rowUsableW = VB_W - MARGIN * 2;
+    var targetAreaW = VB_W - MARGIN * 2;
+    var scale = SCALE_MAX;
+    while (scale > SCALE_MIN) {
+      var packed = packShelves(shapes, scale, rowUsableW);
+      var targetAreaH = VB_H - packed.totalHeight - MARGIN * 2;
+      if (targetAreaH > 0 && bw * scale <= targetAreaW && bh * scale <= targetAreaH) {
+        return { orientation: "row", scale: scale, rowUsableW: rowUsableW, targetAreaW: targetAreaW, targetAreaH: targetAreaH };
+      }
+      scale -= 1;
+    }
+    var minPacked = packShelves(shapes, SCALE_MIN, rowUsableW);
+    return {
+      orientation: "row", scale: SCALE_MIN, rowUsableW: rowUsableW, targetAreaW: targetAreaW,
+      targetAreaH: Math.max(1, VB_H - minPacked.totalHeight - MARGIN * 2)
+    };
   }
 
   // The target board and the tray pieces share one scale (they have to line
-  // up 1:1), so a board big enough to want a large scale can leave the tray
-  // too cramped for however many pieces this level has. Shrinks from the
-  // area-based scale only as far as needed for the tray to still fit.
-  function fitTrayScale(shapes, maxScale) {
-    // However roomy the target area allows, no single piece may end up
-    // wider than the tray column itself.
-    var maxPieceW = 0;
-    shapes.forEach(function (shape) { maxPieceW = Math.max(maxPieceW, localBBox(shape).w); });
-    var scale = Math.min(maxScale, TRAY_USABLE_W / maxPieceW);
-    while (scale > 30) {
-      if (packShelves(shapes, scale).totalHeight <= TRAY_USABLE_H) return scale;
-      scale -= 1;
-    }
-    return 30;
+  // up 1:1), so whichever tray orientation lets that shared scale go
+  // largest is the one that makes the whole board (not just the tray)
+  // biggest - important for young players who need big, easy-to-grab
+  // pieces as much as they need a big target.
+  function chooseLayout(shapes, bw, bh) {
+    var column = searchColumnLayout(shapes, bw, bh);
+    var row = searchRowLayout(shapes, bw, bh);
+    return row.scale >= column.scale ? row : column;
   }
 
   function layoutTray() {
+    var layout = state.layout;
     var shapes = state.pieces.map(function (piece) { return piece.localShape; });
-    var packed = packShelves(shapes, state.unitScale);
-    var vOffset = Math.max(0, (TRAY_USABLE_H - packed.totalHeight) / 2);
-    state.pieces.forEach(function (piece, i) {
-      var pos = packed.positions[i];
-      var screenLeft = TRAY_X0 + TRAY_MARGIN + pos.x;
-      var screenTop = TRAY_TOP + vOffset + pos.y;
-      piece.current.x = screenLeft - pos.bb.cx * state.unitScale + pos.w / 2;
-      piece.current.y = screenTop - pos.bb.cy * state.unitScale + pos.h / 2;
-      piece.current.angleDeg = 0;
-      piece.current.flip = false;
-    });
+    if (layout.orientation === "column") {
+      var packed = packShelves(shapes, state.unitScale, layout.trayUsableW);
+      var rowOffsets = fitRowsToBudget(packed.rowHeights, layout.trayUsableH) || [0];
+      var contentH = rowOffsets[rowOffsets.length - 1] + packed.rowHeights[packed.rowHeights.length - 1];
+      var trayX0 = VB_W - layout.trayW;
+      var vOffset = Math.max(0, (layout.trayUsableH - contentH) / 2);
+      state.pieces.forEach(function (piece, i) {
+        var pos = packed.positions[i];
+        var screenLeft = trayX0 + TRAY_PAD + pos.x;
+        var screenTop = MARGIN + vOffset + rowOffsets[pos.row];
+        piece.current.x = screenLeft - pos.bb.cx * state.unitScale + pos.w / 2;
+        piece.current.y = screenTop - pos.bb.cy * state.unitScale + pos.h / 2;
+        piece.current.angleDeg = 0;
+        piece.current.flip = false;
+      });
+    } else {
+      var packedRow = packShelves(shapes, state.unitScale, layout.rowUsableW);
+      var stripTop = VB_H - MARGIN - packedRow.totalHeight;
+      var hOffset = Math.max(0, (layout.rowUsableW - packedRow.totalWidth) / 2);
+      state.pieces.forEach(function (piece, i) {
+        var pos = packedRow.positions[i];
+        var rowY = packedRow.rowHeights.slice(0, pos.row).reduce(function (a, b) { return a + b + TRAY_GAP; }, 0);
+        var screenLeft = MARGIN + hOffset + pos.x;
+        var screenTop = stripTop + rowY;
+        piece.current.x = screenLeft - pos.bb.cx * state.unitScale + pos.w / 2;
+        piece.current.y = screenTop - pos.bb.cy * state.unitScale + pos.h / 2;
+        piece.current.angleDeg = 0;
+        piece.current.flip = false;
+      });
+    }
   }
 
   var targetEls = [];
