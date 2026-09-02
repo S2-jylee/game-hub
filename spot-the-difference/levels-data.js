@@ -18,10 +18,10 @@
       id: "bagelshop", name: "베이글 데이즈 카페", emoji: "🥯",
       drawBase: function (g) {},
       drawLeft: function (g) {
-        E("image", { x: 60, y: 0, width: 360, height: 480, href: "bagel-left.png", preserveAspectRatio: "xMidYMid slice" }, g);
+        E("image", { x: 60, y: 0, width: 360, height: 480, href: "assets/bagel-left.png", preserveAspectRatio: "xMidYMid slice" }, g);
       },
       drawRight: function (g) {
-        E("image", { x: 60, y: 0, width: 360, height: 480, href: "bagel-right.png", preserveAspectRatio: "xMidYMid slice" }, g);
+        E("image", { x: 60, y: 0, width: 360, height: 480, href: "assets/bagel-right.png", preserveAspectRatio: "xMidYMid slice" }, g);
       },
       diffs: [
         { x: 365, y: 206, r: 36 },
@@ -39,10 +39,10 @@
       id: "bearpicnic", name: "곰돌이네 소풍", emoji: "🧺",
       drawBase: function (g) {},
       drawLeft: function (g) {
-        E("image", { x: 60, y: 0, width: 360, height: 480, href: "02-left.png", preserveAspectRatio: "xMidYMid slice" }, g);
+        E("image", { x: 60, y: 0, width: 360, height: 480, href: "assets/02-left.png", preserveAspectRatio: "xMidYMid slice" }, g);
       },
       drawRight: function (g) {
-        E("image", { x: 60, y: 0, width: 360, height: 480, href: "02-right.png", preserveAspectRatio: "xMidYMid slice" }, g);
+        E("image", { x: 60, y: 0, width: 360, height: 480, href: "assets/02-right.png", preserveAspectRatio: "xMidYMid slice" }, g);
       },
       diffs: [
         { x: 281.8, y: 98.6, r: 24 },
@@ -63,10 +63,10 @@
       id: "bearpicnic2", name: "떡갈나무 아래 소풍", emoji: "🌳",
       drawBase: function (g) {},
       drawLeft: function (g) {
-        E("image", { x: 20.2, y: 0, width: 439.6, height: 480, href: "03-left.png", preserveAspectRatio: "xMidYMid slice" }, g);
+        E("image", { x: 20.2, y: 0, width: 439.6, height: 480, href: "assets/03-left.png", preserveAspectRatio: "xMidYMid slice" }, g);
       },
       drawRight: function (g) {
-        E("image", { x: 20.2, y: 0, width: 439.6, height: 480, href: "03-right.png", preserveAspectRatio: "xMidYMid slice" }, g);
+        E("image", { x: 20.2, y: 0, width: 439.6, height: 480, href: "assets/03-right.png", preserveAspectRatio: "xMidYMid slice" }, g);
       },
       diffs: [
         { x: 303.7, y: 395, r: 32 },
@@ -84,10 +84,10 @@
       id: "livingroom1", name: "곰돌이네 거실", emoji: "🛋️",
       drawBase: function (g) {},
       drawLeft: function (g) {
-        E("image", { x: 60, y: 0, width: 360, height: 480, href: "04-left.png", preserveAspectRatio: "xMidYMid slice" }, g);
+        E("image", { x: 60, y: 0, width: 360, height: 480, href: "assets/04-left.png", preserveAspectRatio: "xMidYMid slice" }, g);
       },
       drawRight: function (g) {
-        E("image", { x: 60, y: 0, width: 360, height: 480, href: "04-right.png", preserveAspectRatio: "xMidYMid slice" }, g);
+        E("image", { x: 60, y: 0, width: 360, height: 480, href: "assets/04-right.png", preserveAspectRatio: "xMidYMid slice" }, g);
       },
       diffs: [
         { x: 121.5, y: 89, r: 24 },
@@ -112,10 +112,10 @@
       id: "zootiger2", name: "동물원 나들이", emoji: "🐅",
       drawBase: function (g) {},
       drawLeft: function (g) {
-        E("image", { x: 20.2, y: 0, width: 439.6, height: 480, href: "05-left.png", preserveAspectRatio: "xMidYMid slice" }, g);
+        E("image", { x: 20.2, y: 0, width: 439.6, height: 480, href: "assets/05-left.png", preserveAspectRatio: "xMidYMid slice" }, g);
       },
       drawRight: function (g) {
-        E("image", { x: 20.2, y: 0, width: 439.6, height: 480, href: "05-right.png", preserveAspectRatio: "xMidYMid slice" }, g);
+        E("image", { x: 20.2, y: 0, width: 439.6, height: 480, href: "assets/05-right.png", preserveAspectRatio: "xMidYMid slice" }, g);
       },
       diffs: [
         { x: 204.8, y: 77.3, r: 26 },
@@ -131,10 +131,10 @@
       id: "girlpicnic1", name: "소녀의 책 읽는 소풍", emoji: "📖",
       drawBase: function (g) {},
       drawLeft: function (g) {
-        E("image", { x: 60, y: 0, width: 360, height: 480, href: "06-left.png", preserveAspectRatio: "xMidYMid slice" }, g);
+        E("image", { x: 60, y: 0, width: 360, height: 480, href: "assets/06-left.png", preserveAspectRatio: "xMidYMid slice" }, g);
       },
       drawRight: function (g) {
-        E("image", { x: 60, y: 0, width: 360, height: 480, href: "06-right.png", preserveAspectRatio: "xMidYMid slice" }, g);
+        E("image", { x: 60, y: 0, width: 360, height: 480, href: "assets/06-right.png", preserveAspectRatio: "xMidYMid slice" }, g);
       },
       diffs: [
         { x: 88.8, y: 326.4, r: 26 },
@@ -150,10 +150,10 @@
       id: "gardentea", name: "정원 티타임", emoji: "🍵",
       drawBase: function (g) {},
       drawLeft: function (g) {
-        E("image", { x: 60, y: 0, width: 360, height: 480, href: "07-left.png", preserveAspectRatio: "xMidYMid slice" }, g);
+        E("image", { x: 60, y: 0, width: 360, height: 480, href: "assets/07-left.png", preserveAspectRatio: "xMidYMid slice" }, g);
       },
       drawRight: function (g) {
-        E("image", { x: 60, y: 0, width: 360, height: 480, href: "07-right.png", preserveAspectRatio: "xMidYMid slice" }, g);
+        E("image", { x: 60, y: 0, width: 360, height: 480, href: "assets/07-right.png", preserveAspectRatio: "xMidYMid slice" }, g);
       },
       diffs: [
         { x: 96, y: 432, r: 26 },
@@ -178,10 +178,10 @@
       id: "livingroom2", name: "아늑한 거실", emoji: "🧸",
       drawBase: function (g) {},
       drawLeft: function (g) {
-        E("image", { x: 80, y: 0, width: 320, height: 480, href: "08-left.png", preserveAspectRatio: "xMidYMid slice" }, g);
+        E("image", { x: 80, y: 0, width: 320, height: 480, href: "assets/08-left.png", preserveAspectRatio: "xMidYMid slice" }, g);
       },
       drawRight: function (g) {
-        E("image", { x: 80, y: 0, width: 320, height: 480, href: "08-right.png", preserveAspectRatio: "xMidYMid slice" }, g);
+        E("image", { x: 80, y: 0, width: 320, height: 480, href: "assets/08-right.png", preserveAspectRatio: "xMidYMid slice" }, g);
       },
       diffs: [
         { x: 176, y: 220.8, r: 29 },
@@ -209,10 +209,10 @@
       id: "bearbunnypicnic", name: "곰돌이 토끼 소풍", emoji: "🧺",
       drawBase: function (g) {},
       drawLeft: function (g) {
-        E("image", { x: 94.7, y: 0, width: 290.5, height: 480, href: "09-left.png", preserveAspectRatio: "xMidYMid slice" }, g);
+        E("image", { x: 94.7, y: 0, width: 290.5, height: 480, href: "assets/09-left.png", preserveAspectRatio: "xMidYMid slice" }, g);
       },
       drawRight: function (g) {
-        E("image", { x: 94.7, y: 0, width: 290.5, height: 480, href: "09-right.png", preserveAspectRatio: "xMidYMid slice" }, g);
+        E("image", { x: 94.7, y: 0, width: 290.5, height: 480, href: "assets/09-right.png", preserveAspectRatio: "xMidYMid slice" }, g);
       },
       diffs: [
         { x: 147, y: 129.6, r: 26 },
@@ -235,10 +235,10 @@
       id: "drawingtime", name: "다 같이 그림 그리기", emoji: "🖍️",
       drawBase: function (g) {},
       drawLeft: function (g) {
-        E("image", { x: 60, y: 0, width: 360, height: 480, href: "10-left.png", preserveAspectRatio: "xMidYMid slice" }, g);
+        E("image", { x: 60, y: 0, width: 360, height: 480, href: "assets/10-left.png", preserveAspectRatio: "xMidYMid slice" }, g);
       },
       drawRight: function (g) {
-        E("image", { x: 60, y: 0, width: 360, height: 480, href: "10-right.png", preserveAspectRatio: "xMidYMid slice" }, g);
+        E("image", { x: 60, y: 0, width: 360, height: 480, href: "assets/10-right.png", preserveAspectRatio: "xMidYMid slice" }, g);
       },
       diffs: [
         { x: 184, y: 252, r: 24 },
@@ -258,10 +258,10 @@
       id: "girlbedroom", name: "소녀의 방", emoji: "🐶",
       drawBase: function (g) {},
       drawLeft: function (g) {
-        E("image", { x: 90.1, y: 0, width: 299.9, height: 480, href: "11-left.png", preserveAspectRatio: "xMidYMid slice" }, g);
+        E("image", { x: 90.1, y: 0, width: 299.9, height: 480, href: "assets/11-left.png", preserveAspectRatio: "xMidYMid slice" }, g);
       },
       drawRight: function (g) {
-        E("image", { x: 90.1, y: 0, width: 299.9, height: 480, href: "11-right.png", preserveAspectRatio: "xMidYMid slice" }, g);
+        E("image", { x: 90.1, y: 0, width: 299.9, height: 480, href: "assets/11-right.png", preserveAspectRatio: "xMidYMid slice" }, g);
       },
       diffs: [
         { x: 315, y: 105.6, r: 26 },
@@ -287,10 +287,10 @@
       id: "trainstation", name: "기차역 가족 여행", emoji: "🚂",
       drawBase: function (g) {},
       drawLeft: function (g) {
-        E("image", { x: 20, y: 0, width: 440, height: 480, href: "13-left.png", preserveAspectRatio: "xMidYMid slice" }, g);
+        E("image", { x: 20, y: 0, width: 440, height: 480, href: "assets/13-left.png", preserveAspectRatio: "xMidYMid slice" }, g);
       },
       drawRight: function (g) {
-        E("image", { x: 20, y: 0, width: 440, height: 480, href: "13-right.png", preserveAspectRatio: "xMidYMid slice" }, g);
+        E("image", { x: 20, y: 0, width: 440, height: 480, href: "assets/13-right.png", preserveAspectRatio: "xMidYMid slice" }, g);
       },
       diffs: [
         { x: 402.8, y: 264, r: 26 },
@@ -314,10 +314,10 @@
       id: "nightfeeding", name: "한밤중 우리 아기", emoji: "🍼",
       drawBase: function (g) {},
       drawLeft: function (g) {
-        E("image", { x: 20, y: 0, width: 440, height: 480, href: "14-left.png", preserveAspectRatio: "xMidYMid slice" }, g);
+        E("image", { x: 20, y: 0, width: 440, height: 480, href: "assets/14-left.png", preserveAspectRatio: "xMidYMid slice" }, g);
       },
       drawRight: function (g) {
-        E("image", { x: 20, y: 0, width: 440, height: 480, href: "14-right.png", preserveAspectRatio: "xMidYMid slice" }, g);
+        E("image", { x: 20, y: 0, width: 440, height: 480, href: "assets/14-right.png", preserveAspectRatio: "xMidYMid slice" }, g);
       },
       diffs: [
         { x: 233.4, y: 306.1, r: 24 },
@@ -332,10 +332,10 @@
       id: "forestpicnic", name: "숲속 친구들 소풍", emoji: "🦊",
       drawBase: function (g) {},
       drawLeft: function (g) {
-        E("image", { x: 20, y: 0, width: 440, height: 480, href: "15-left.png", preserveAspectRatio: "xMidYMid slice" }, g);
+        E("image", { x: 20, y: 0, width: 440, height: 480, href: "assets/15-left.png", preserveAspectRatio: "xMidYMid slice" }, g);
       },
       drawRight: function (g) {
-        E("image", { x: 20, y: 0, width: 440, height: 480, href: "15-right.png", preserveAspectRatio: "xMidYMid slice" }, g);
+        E("image", { x: 20, y: 0, width: 440, height: 480, href: "assets/15-right.png", preserveAspectRatio: "xMidYMid slice" }, g);
       },
       diffs: [
         { x: 108.4, y: 88.6, r: 24 },
@@ -350,10 +350,10 @@
       id: "singinggirl", name: "노래하는 소녀", emoji: "🎤",
       drawBase: function (g) {},
       drawLeft: function (g) {
-        E("image", { x: 20, y: 0, width: 440, height: 480, href: "16-left.png", preserveAspectRatio: "xMidYMid slice" }, g);
+        E("image", { x: 20, y: 0, width: 440, height: 480, href: "assets/16-left.png", preserveAspectRatio: "xMidYMid slice" }, g);
       },
       drawRight: function (g) {
-        E("image", { x: 20, y: 0, width: 440, height: 480, href: "16-right.png", preserveAspectRatio: "xMidYMid slice" }, g);
+        E("image", { x: 20, y: 0, width: 440, height: 480, href: "assets/16-right.png", preserveAspectRatio: "xMidYMid slice" }, g);
       },
       diffs: [
         { x: 430.1, y: 124, r: 24 },
@@ -371,10 +371,10 @@
       id: "amusementpark", name: "신나는 놀이공원", emoji: "🎡",
       drawBase: function (g) {},
       drawLeft: function (g) {
-        E("image", { x: 20, y: 0, width: 440, height: 480, href: "19-left.png", preserveAspectRatio: "xMidYMid slice" }, g);
+        E("image", { x: 20, y: 0, width: 440, height: 480, href: "assets/19-left.png", preserveAspectRatio: "xMidYMid slice" }, g);
       },
       drawRight: function (g) {
-        E("image", { x: 20, y: 0, width: 440, height: 480, href: "19-right.png", preserveAspectRatio: "xMidYMid slice" }, g);
+        E("image", { x: 20, y: 0, width: 440, height: 480, href: "assets/19-right.png", preserveAspectRatio: "xMidYMid slice" }, g);
       },
       diffs: [
         { x: 64, y: 177.6, r: 29 },
@@ -397,10 +397,10 @@
       id: "dinoclass1", name: "공룡 친구들 소풍", emoji: "🦕",
       drawBase: function (g) {},
       drawLeft: function (g) {
-        E("image", { x: 20, y: 0, width: 440, height: 480, href: "20-left.png", preserveAspectRatio: "xMidYMid slice" }, g);
+        E("image", { x: 20, y: 0, width: 440, height: 480, href: "assets/20-left.png", preserveAspectRatio: "xMidYMid slice" }, g);
       },
       drawRight: function (g) {
-        E("image", { x: 20, y: 0, width: 440, height: 480, href: "20-right.png", preserveAspectRatio: "xMidYMid slice" }, g);
+        E("image", { x: 20, y: 0, width: 440, height: 480, href: "assets/20-right.png", preserveAspectRatio: "xMidYMid slice" }, g);
       },
       diffs: [
         { x: 350, y: 345.6, r: 26 },
@@ -416,10 +416,10 @@
       id: "classroom1", name: "즐거운 학교 생활", emoji: "🏫",
       drawBase: function (g) {},
       drawLeft: function (g) {
-        E("image", { x: 20, y: 0, width: 440, height: 480, href: "21-left.png", preserveAspectRatio: "xMidYMid slice" }, g);
+        E("image", { x: 20, y: 0, width: 440, height: 480, href: "assets/21-left.png", preserveAspectRatio: "xMidYMid slice" }, g);
       },
       drawRight: function (g) {
-        E("image", { x: 20, y: 0, width: 440, height: 480, href: "21-right.png", preserveAspectRatio: "xMidYMid slice" }, g);
+        E("image", { x: 20, y: 0, width: 440, height: 480, href: "assets/21-right.png", preserveAspectRatio: "xMidYMid slice" }, g);
       },
       diffs: [
         { x: 243.5, y: 58.6, r: 24 },
@@ -443,10 +443,10 @@
       id: "motherdaughter", name: "엄마와 함께 책 읽기", emoji: "📚",
       drawBase: function (g) {},
       drawLeft: function (g) {
-        E("image", { x: 20, y: 0, width: 440, height: 480, href: "22-left.png", preserveAspectRatio: "xMidYMid slice" }, g);
+        E("image", { x: 20, y: 0, width: 440, height: 480, href: "assets/22-left.png", preserveAspectRatio: "xMidYMid slice" }, g);
       },
       drawRight: function (g) {
-        E("image", { x: 20, y: 0, width: 440, height: 480, href: "22-right.png", preserveAspectRatio: "xMidYMid slice" }, g);
+        E("image", { x: 20, y: 0, width: 440, height: 480, href: "assets/22-right.png", preserveAspectRatio: "xMidYMid slice" }, g);
       },
       diffs: [
         { x: 54.4, y: 231.3, r: 28 },
@@ -463,10 +463,10 @@
       id: "dinoclass2", name: "꼬마 공룡 학교", emoji: "🦖",
       drawBase: function (g) {},
       drawLeft: function (g) {
-        E("image", { x: 20, y: 0, width: 440, height: 480, href: "23-left.png", preserveAspectRatio: "xMidYMid slice" }, g);
+        E("image", { x: 20, y: 0, width: 440, height: 480, href: "assets/23-left.png", preserveAspectRatio: "xMidYMid slice" }, g);
       },
       drawRight: function (g) {
-        E("image", { x: 20, y: 0, width: 440, height: 480, href: "23-right.png", preserveAspectRatio: "xMidYMid slice" }, g);
+        E("image", { x: 20, y: 0, width: 440, height: 480, href: "assets/23-right.png", preserveAspectRatio: "xMidYMid slice" }, g);
       },
       diffs: [
         { x: 152, y: 393.6, r: 26 },
@@ -490,10 +490,10 @@
       id: "forestmarket", name: "숲속 열매 시장", emoji: "🦉",
       drawBase: function (g) {},
       drawLeft: function (g) {
-        E("image", { x: 94.7, y: 0, width: 290.7, height: 480, href: "24-left.png", preserveAspectRatio: "xMidYMid slice" }, g);
+        E("image", { x: 94.7, y: 0, width: 290.7, height: 480, href: "assets/24-left.png", preserveAspectRatio: "xMidYMid slice" }, g);
       },
       drawRight: function (g) {
-        E("image", { x: 94.7, y: 0, width: 290.7, height: 480, href: "24-right.png", preserveAspectRatio: "xMidYMid slice" }, g);
+        E("image", { x: 94.7, y: 0, width: 290.7, height: 480, href: "assets/24-right.png", preserveAspectRatio: "xMidYMid slice" }, g);
       },
       diffs: [
         { x: 134.6, y: 439.6, r: 24 },
@@ -515,10 +515,10 @@
       id: "forestfriends", name: "숲속 동물 친구들", emoji: "🌳",
       drawBase: function (g) {},
       drawLeft: function (g) {
-        E("image", { x: 20, y: 0, width: 440, height: 480, href: "25-left.png", preserveAspectRatio: "xMidYMid slice" }, g);
+        E("image", { x: 20, y: 0, width: 440, height: 480, href: "assets/25-left.png", preserveAspectRatio: "xMidYMid slice" }, g);
       },
       drawRight: function (g) {
-        E("image", { x: 20, y: 0, width: 440, height: 480, href: "25-right.png", preserveAspectRatio: "xMidYMid slice" }, g);
+        E("image", { x: 20, y: 0, width: 440, height: 480, href: "assets/25-right.png", preserveAspectRatio: "xMidYMid slice" }, g);
       },
       diffs: [
         { x: 207.2, y: 81.7, r: 24 },
@@ -538,10 +538,10 @@
       id: "dinowater", name: "공룡 물놀이", emoji: "💦",
       drawBase: function (g) {},
       drawLeft: function (g) {
-        E("image", { x: 20, y: 0, width: 440, height: 480, href: "26-left.png", preserveAspectRatio: "xMidYMid slice" }, g);
+        E("image", { x: 20, y: 0, width: 440, height: 480, href: "assets/26-left.png", preserveAspectRatio: "xMidYMid slice" }, g);
       },
       drawRight: function (g) {
-        E("image", { x: 20, y: 0, width: 440, height: 480, href: "26-right.png", preserveAspectRatio: "xMidYMid slice" }, g);
+        E("image", { x: 20, y: 0, width: 440, height: 480, href: "assets/26-right.png", preserveAspectRatio: "xMidYMid slice" }, g);
       },
       diffs: [
         { x: 144.7, y: 393.3, r: 24 },
@@ -558,10 +558,10 @@
       id: "welcomehome", name: "어서오세요, 우리 집", emoji: "🏠",
       drawBase: function (g) {},
       drawLeft: function (g) {
-        E("image", { x: 20, y: 0, width: 440, height: 480, href: "27-left.png", preserveAspectRatio: "xMidYMid slice" }, g);
+        E("image", { x: 20, y: 0, width: 440, height: 480, href: "assets/27-left.png", preserveAspectRatio: "xMidYMid slice" }, g);
       },
       drawRight: function (g) {
-        E("image", { x: 20, y: 0, width: 440, height: 480, href: "27-right.png", preserveAspectRatio: "xMidYMid slice" }, g);
+        E("image", { x: 20, y: 0, width: 440, height: 480, href: "assets/27-right.png", preserveAspectRatio: "xMidYMid slice" }, g);
       },
       diffs: [
         { x: 429.2, y: 422.4, r: 29 },

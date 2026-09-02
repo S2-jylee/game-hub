@@ -1,0 +1,916 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>게임 허브 관리자 도구</title>
+<style>
+  :root {
+    --pink: #ff4fa3;
+    --pink-dark: #d81b7a;
+    --lavender: #a259ff;
+    --lavender-dark: #7c2ce0;
+    --sky: #2e9bff;
+    --sky-dark: #0b7fe0;
+    --yellow: #ffd400;
+    --red: #e63b2e;
+    --green: #0e9b45;
+    --text: #241b3a;
+    --text-soft: #6b5f86;
+    --line: #ece4fa;
+    --card: #ffffff;
+    --bg: #faf7ff;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: "Pretendard", "Malgun Gothic", sans-serif;
+    line-height: 1.5;
+    padding-bottom: 60px;
+  }
+  h1 { font-size: 1.3rem; margin: 0; }
+  header {
+    background: linear-gradient(135deg, var(--pink-dark), var(--lavender-dark));
+    color: #fff;
+    padding: 18px 24px;
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  header .sub { font-size: 0.85rem; opacity: 0.85; }
+
+  /* ---- Tool switcher ---- */
+  .tool-nav {
+    display: flex;
+    gap: 8px;
+    max-width: 1100px;
+    margin: 16px auto 0;
+    padding: 0 20px;
+  }
+  .tool-nav-btn {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    border: none;
+    background: #fff;
+    border: 1px solid var(--line);
+    color: var(--text-soft);
+    font-family: inherit;
+    font-weight: 700;
+    font-size: 0.95rem;
+    padding: 14px 16px;
+    border-radius: 14px 14px 0 0;
+    cursor: pointer;
+    transition: background 0.12s ease, color 0.12s ease;
+  }
+  .tool-nav-btn:hover { background: #f7f2ff; }
+  .tool-nav-btn.active {
+    background: var(--card);
+    color: var(--pink-dark);
+    border-bottom-color: var(--card);
+    box-shadow: 0 -2px 10px rgba(36,27,58,0.06);
+  }
+
+  main {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 20px;
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-top: none;
+    border-radius: 0 0 16px 16px;
+  }
+
+  .tool-panel { display: none; flex-direction: column; gap: 20px; }
+  .tool-panel.active { display: flex; }
+
+  .card {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    padding: 18px 20px;
+    box-shadow: 0 1px 2px rgba(36,27,58,0.04), 0 8px 20px -14px rgba(36,27,58,0.25);
+  }
+  .card h2 { font-size: 1rem; margin: 0 0 12px; color: var(--pink-dark); }
+
+  .row { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; }
+  .field { display: flex; flex-direction: column; gap: 4px; }
+  .field label { font-size: 0.78rem; color: var(--text-soft); font-weight: 600; }
+  input[type="text"], input[type="number"] {
+    font-family: inherit;
+    font-size: 0.92rem;
+    padding: 8px 11px;
+    border-radius: 9px;
+    border: 1px solid var(--line);
+    background: #fff;
+    color: var(--text);
+  }
+  input[type="text"]:focus, input[type="number"]:focus { outline: 2px solid var(--lavender); outline-offset: 1px; }
+  #f-id { width: 150px; }
+  #f-name { width: 200px; }
+  #f-emoji { width: 70px; text-align: center; font-size: 1.1rem; }
+
+  .mode-toggle { display: flex; gap: 6px; background: #f4eefd; padding: 4px; border-radius: 999px; }
+  .mode-toggle button {
+    border: none; background: transparent; padding: 7px 14px; border-radius: 999px;
+    font-family: inherit; font-weight: 700; font-size: 0.82rem; color: var(--text-soft); cursor: pointer;
+  }
+  .mode-toggle button.active { background: #fff; color: var(--pink-dark); box-shadow: 0 1px 3px rgba(36,27,58,0.15); }
+
+  .filepick {
+    display: block;
+    border: 2px dashed var(--line);
+    border-radius: 12px;
+    padding: 20px;
+    text-align: center;
+    color: var(--text-soft);
+    font-size: 0.88rem;
+    cursor: pointer;
+    background: #fbf9ff;
+  }
+  .filepick:hover { border-color: var(--lavender); color: var(--lavender-dark); }
+  .filepick input { display: none; }
+  .filepick.small { padding: 12px; }
+
+  .split-inputs { display: none; gap: 14px; }
+  .split-inputs.show { display: flex; flex-wrap: wrap; }
+  .split-inputs .filepick { flex: 1; min-width: 220px; }
+
+  .frames {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+    margin-top: 14px;
+  }
+  .frame {
+    position: relative;
+    aspect-ratio: 1;
+    border-radius: 12px;
+    overflow: hidden;
+    background: #f4eefd repeating-linear-gradient(45deg, #efe7fc 0 10px, #f4eefd 10px 20px);
+    border: 1px solid var(--line);
+    cursor: crosshair;
+  }
+  .frame .panel { position: absolute; inset: 0; overflow: hidden; }
+  .frame .panel img { position: absolute; top: 0; height: 100%; }
+  .frame .side-tag {
+    position: absolute; top: 8px; left: 8px;
+    font-size: 0.7rem; font-weight: 700; letter-spacing: 0.03em;
+    color: var(--text); background: rgba(255,255,255,0.85);
+    padding: 3px 8px; border-radius: 6px; pointer-events: none;
+  }
+  .pin {
+    position: absolute;
+    transform: translate(-50%, -50%);
+    width: 30px; height: 30px;
+    border-radius: 50%;
+    background: color-mix(in srgb, var(--red) 22%, transparent);
+    border: 2px solid var(--red);
+    color: var(--red);
+    font-weight: 800;
+    font-size: 12px;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+  }
+  .pin:hover { background: color-mix(in srgb, var(--red) 40%, transparent); }
+
+  .diff-list { list-style: none; margin: 14px 0 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+  .diff-list li {
+    display: flex; align-items: center; gap: 10px;
+    background: #fbf9ff; border: 1px solid var(--line); border-radius: 10px; padding: 8px 10px;
+  }
+  .diff-list .num {
+    flex: none; width: 24px; height: 24px; border-radius: 50%;
+    background: var(--red); color: #fff; font-weight: 800; font-size: 12px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .diff-list input[type="text"] { flex: 1; }
+  .diff-list .radius { width: 64px; }
+  .diff-list button.del {
+    flex: none; border: none; background: none; color: var(--text-soft);
+    font-size: 1.1rem; cursor: pointer; padding: 2px 6px; border-radius: 6px;
+  }
+  .diff-list button.del:hover { background: #ffe3e0; color: var(--red); }
+  .empty-hint { color: var(--text-soft); font-size: 0.85rem; padding: 6px 2px; }
+
+  .btn {
+    font-family: inherit;
+    border: none; border-radius: 999px;
+    padding: 10px 18px; font-weight: 800; font-size: 0.86rem;
+    cursor: pointer;
+  }
+  .btn-primary { background: linear-gradient(135deg, var(--pink-dark), var(--lavender-dark)); color: #fff; }
+  .btn-primary:hover { filter: brightness(1.06); }
+  .btn-ghost { background: #f4eefd; color: var(--text); }
+  .btn-ghost:hover { background: #e9defb; }
+  .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+  .btn.copied { background: var(--green); color: #fff; }
+  .btn-small { padding: 7px 13px; font-size: 0.78rem; }
+
+  pre#code-out, pre#pz-code-out {
+    background: #241b3a;
+    color: #e6dcff;
+    border-radius: 12px;
+    padding: 16px;
+    font-family: "Consolas", "Menlo", monospace;
+    font-size: 0.82rem;
+    overflow-x: auto;
+    white-space: pre;
+    margin: 12px 0 0;
+  }
+
+  .meta-note { font-size: 0.8rem; color: var(--text-soft); margin-top: 8px; }
+  .meta-note code { background: #f4eefd; padding: 1px 6px; border-radius: 5px; }
+  .layout-info {
+    font-size: 0.76rem;
+    color: var(--text-soft);
+    font-family: "Consolas", "Menlo", monospace;
+    margin-top: 6px;
+  }
+  .diff-tag {
+    display: inline-block;
+    font-size: 0.72rem;
+    font-weight: 700;
+    background: #f0e9fb;
+    color: var(--lavender-dark);
+    border-radius: 999px;
+    padding: 3px 11px;
+    vertical-align: middle;
+  }
+
+  /* ---- Puzzle admin: uploaded-image queue ---- */
+  .pz-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+    gap: 16px;
+    margin-top: 14px;
+  }
+  .pz-card {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    background: #fbf9ff;
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 12px;
+  }
+  .pz-thumb {
+    width: 100%;
+    aspect-ratio: 1;
+    border-radius: 10px;
+    overflow: hidden;
+    background: #f4eefd repeating-linear-gradient(45deg, #efe7fc 0 10px, #f4eefd 10px 20px);
+  }
+  .pz-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .pz-fields { display: flex; flex-direction: column; gap: 6px; }
+  .pz-fields .field { gap: 2px; }
+  .pz-fields input { width: 100%; }
+  .pz-fields input.pz-emoji { text-align: center; }
+  .pz-card .row { gap: 6px; flex-wrap: nowrap; }
+  .pz-card .row .btn { flex: 1; white-space: nowrap; padding-left: 8px; padding-right: 8px; }
+  .pz-remove:hover { background: #ffe3e0; color: var(--red); }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>🛠️ 게임 허브 관리자 도구</h1>
+  <span class="sub">틀린그림찾기와 직소 퍼즐, 두 게임의 레벨을 여기서 만들어요.</span>
+</header>
+
+<nav class="tool-nav">
+  <button type="button" class="tool-nav-btn active" data-tool="diff">🖍️ 틀린그림찾기</button>
+  <button type="button" class="tool-nav-btn" data-tool="puzzle">🧩 직소 퍼즐</button>
+</nav>
+
+<main>
+
+  <!-- ============================= 틀린그림찾기 도구 ============================= -->
+  <div id="tool-diff" class="tool-panel active">
+
+    <section class="card">
+      <h2>1. 레벨 정보</h2>
+      <div class="row">
+        <div class="field">
+          <label for="f-id">번호 / id</label>
+          <input type="text" id="f-id" placeholder="예: 28">
+        </div>
+        <div class="field">
+          <label for="f-name">레벨 이름</label>
+          <input type="text" id="f-name" placeholder="예: 신나는 캠핑">
+        </div>
+        <div class="field">
+          <label for="f-emoji">이모지</label>
+          <input type="text" id="f-emoji" placeholder="🏕️">
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>2. 이미지 불러오기</h2>
+      <div class="mode-toggle">
+        <button type="button" id="mode-single" class="active">한 장 (좌우 통합)</button>
+        <button type="button" id="mode-double">두 장 (이미 분리됨)</button>
+      </div>
+
+      <div id="single-pick" style="margin-top:12px;">
+        <label class="filepick" for="file-single">
+          <input type="file" id="file-single" accept="image/*">
+          📁 좌우가 한 장에 붙어있는 원본 이미지를 선택하세요 (가운데서 정확히 반으로 나눠요)
+        </label>
+      </div>
+
+      <div id="double-pick" class="split-inputs">
+        <label class="filepick small" for="file-left">
+          <input type="file" id="file-left" accept="image/*">
+          📁 왼쪽 이미지
+        </label>
+        <label class="filepick small" for="file-right">
+          <input type="file" id="file-right" accept="image/*">
+          📁 오른쪽 이미지
+        </label>
+      </div>
+
+      <div class="layout-info" id="layout-info"></div>
+    </section>
+
+    <section class="card" id="mark-section" style="display:none;">
+      <h2>3. 다른 곳 표시하기 — 이미지를 클릭하면 번호가 찍혀요 (핀을 다시 누르면 삭제)</h2>
+      <div class="frames">
+        <div class="frame" id="frame-left" data-side="left">
+          <div class="panel"><img id="img-left" alt=""></div>
+          <span class="side-tag">왼쪽</span>
+        </div>
+        <div class="frame" id="frame-right" data-side="right">
+          <div class="panel"><img id="img-right" alt=""></div>
+          <span class="side-tag">오른쪽</span>
+        </div>
+      </div>
+
+      <ol class="diff-list" id="diff-list"></ol>
+      <p class="empty-hint" id="empty-hint">아직 표시한 곳이 없어요. 위 그림을 클릭해보세요.</p>
+    </section>
+
+    <section class="card" id="output-section" style="display:none;">
+      <h2>4. 결과</h2>
+      <div class="row">
+        <button type="button" class="btn btn-primary" id="btn-copy-code">코드 복사</button>
+        <button type="button" class="btn btn-ghost" id="btn-save-left">왼쪽 이미지 저장</button>
+        <button type="button" class="btn btn-ghost" id="btn-save-right">오른쪽 이미지 저장</button>
+        <button type="button" class="btn btn-ghost" id="btn-reset">전체 초기화</button>
+      </div>
+      <pre id="code-out"></pre>
+      <p class="meta-note">이미지 저장 버튼을 누르면 <b id="fname-hint">xx-left.png / xx-right.png</b> 이름으로 다운로드돼요. spot-the-difference/assets 폴더에 넣고, 위 코드를 levels-data.js에 붙여넣으면 끝!</p>
+    </section>
+
+  </div>
+
+  <!-- ============================= 직소 퍼즐 도구 ============================= -->
+  <div id="tool-puzzle" class="tool-panel">
+
+    <section class="card">
+      <h2>1. 이미지 업로드</h2>
+      <label class="filepick" for="pz-file-input">
+        <input type="file" id="pz-file-input" accept="image/*" multiple>
+        📁 퍼즐로 만들 이미지를 골라주세요 (여러 장을 한 번에 올려도 돼요)
+      </label>
+      <p class="meta-note">게임 안에서는 정사각형(480×480) 틀에 가운데를 기준으로 꽉 채워서 보여줘요. 아래 미리보기가 실제로 잘리는 모습이에요.</p>
+    </section>
+
+    <section class="card" id="pz-list-section" style="display:none;">
+      <h2>2. 그림 목록 <span id="pz-count-badge" class="diff-tag"></span></h2>
+      <div class="pz-grid" id="pz-grid"></div>
+    </section>
+
+    <section class="card" id="pz-output-section" style="display:none;">
+      <h2>3. 결과</h2>
+      <div class="row">
+        <button type="button" class="btn btn-primary" id="pz-btn-copy">코드 복사</button>
+        <button type="button" class="btn btn-ghost" id="pz-btn-download-all">이미지 전체 저장</button>
+        <button type="button" class="btn btn-ghost" id="pz-btn-clear">전체 초기화</button>
+      </div>
+      <pre id="pz-code-out"></pre>
+      <p class="meta-note">이미지 저장으로 받은 파일들을 <b>puzzle/assets</b> 폴더에 넣고, 위 코드를 <b>puzzle-data.js</b>의 <code>LEVELS</code> 배열 안에 붙여넣으면 끝!</p>
+    </section>
+
+  </div>
+
+</main>
+
+<script>
+(function () {
+  "use strict";
+
+  // ---- Shared helpers (used by both tools) --------------------------------
+  window.copyText = function (text, btn) {
+    var done = function () {
+      var original = btn.textContent;
+      btn.classList.add("copied");
+      btn.textContent = "복사됨!";
+      setTimeout(function () { btn.classList.remove("copied"); btn.textContent = original; }, 1300);
+    };
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(done).catch(function () { window.fallbackCopy(text, done); });
+    } else { window.fallbackCopy(text, done); }
+  };
+  window.fallbackCopy = function (text, done) {
+    try {
+      var ta = document.createElement("textarea");
+      ta.value = text; ta.style.position = "fixed"; ta.style.opacity = "0";
+      document.body.appendChild(ta); ta.focus(); ta.select();
+      document.execCommand("copy"); document.body.removeChild(ta);
+      done();
+    } catch (e) { /* ignore */ }
+  };
+  window.downloadCanvas = function (canvas, filename, mime, quality) {
+    canvas.toBlob(function (blob) {
+      var url = URL.createObjectURL(blob);
+      var a = document.createElement("a");
+      a.href = url; a.download = filename;
+      document.body.appendChild(a); a.click(); document.body.removeChild(a);
+      setTimeout(function () { URL.revokeObjectURL(url); }, 2000);
+    }, mime || "image/png", quality);
+  };
+  window.loadImageFile = function (file) {
+    return new Promise(function (resolve, reject) {
+      var reader = new FileReader();
+      reader.onload = function () {
+        var img = new Image();
+        img.onload = function () { resolve(img); };
+        img.onerror = reject;
+        img.src = reader.result;
+      };
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+  };
+
+  // ---- Tool switcher --------------------------------------------------
+  var navBtns = document.querySelectorAll(".tool-nav-btn");
+  var panels = { diff: document.getElementById("tool-diff"), puzzle: document.getElementById("tool-puzzle") };
+  Array.prototype.forEach.call(navBtns, function (btn) {
+    btn.addEventListener("click", function () {
+      Array.prototype.forEach.call(navBtns, function (b) { b.classList.toggle("active", b === btn); });
+      var tool = btn.dataset.tool;
+      Object.keys(panels).forEach(function (k) { panels[k].classList.toggle("active", k === tool); });
+    });
+  });
+})();
+</script>
+
+<script>
+// ============================= 틀린그림찾기 도구 로직 =============================
+(function () {
+  "use strict";
+
+  var state = {
+    mode: "single",
+    leftCanvas: null, rightCanvas: null,
+    halfW: 0, halfH: 0,
+    diffs: [] // {x, y, r, desc}
+  };
+
+  var els = {
+    id: document.getElementById("f-id"),
+    name: document.getElementById("f-name"),
+    emoji: document.getElementById("f-emoji"),
+    modeSingle: document.getElementById("mode-single"),
+    modeDouble: document.getElementById("mode-double"),
+    singlePick: document.getElementById("single-pick"),
+    doublePick: document.getElementById("double-pick"),
+    fileSingle: document.getElementById("file-single"),
+    fileLeft: document.getElementById("file-left"),
+    fileRight: document.getElementById("file-right"),
+    layoutInfo: document.getElementById("layout-info"),
+    markSection: document.getElementById("mark-section"),
+    outputSection: document.getElementById("output-section"),
+    frameLeft: document.getElementById("frame-left"),
+    frameRight: document.getElementById("frame-right"),
+    imgLeft: document.getElementById("img-left"),
+    imgRight: document.getElementById("img-right"),
+    diffList: document.getElementById("diff-list"),
+    emptyHint: document.getElementById("empty-hint"),
+    codeOut: document.getElementById("code-out"),
+    fnameHint: document.getElementById("fname-hint"),
+  };
+
+  function setMode(mode) {
+    state.mode = mode;
+    els.modeSingle.classList.toggle("active", mode === "single");
+    els.modeDouble.classList.toggle("active", mode === "double");
+    els.singlePick.style.display = mode === "single" ? "" : "none";
+    els.doublePick.classList.toggle("show", mode === "double");
+  }
+  els.modeSingle.addEventListener("click", function () { setMode("single"); });
+  els.modeDouble.addEventListener("click", function () { setMode("double"); });
+
+  function canvasFrom(img, sx, sy, sw, sh) {
+    var c = document.createElement("canvas");
+    c.width = sw; c.height = sh;
+    var ctx = c.getContext("2d");
+    ctx.drawImage(img, sx, sy, sw, sh, 0, 0, sw, sh);
+    return c;
+  }
+
+  function afterImagesLoaded() {
+    state.halfW = state.leftCanvas.width;
+    state.halfH = state.leftCanvas.height;
+    els.imgLeft.src = state.leftCanvas.toDataURL("image/png");
+    els.imgRight.src = state.rightCanvas.toDataURL("image/png");
+
+    var layout = computeLayout(state.halfW, state.halfH);
+    var pct = { left: (layout.offsetX / 480 * 100).toFixed(3), width: (layout.renderedW / 480 * 100).toFixed(3) };
+    els.imgLeft.style.left = pct.left + "%";
+    els.imgLeft.style.width = pct.width + "%";
+    els.imgRight.style.left = pct.left + "%";
+    els.imgRight.style.width = pct.width + "%";
+
+    els.layoutInfo.textContent = "원본 크기: " + state.halfW + " x " + state.halfH +
+      "px  →  x: " + layout.offsetX.toFixed(1) + ", width: " + layout.renderedW.toFixed(1) + ", height: 480";
+
+    state.diffs = [];
+    renderDiffs();
+    els.markSection.style.display = "";
+    els.outputSection.style.display = "";
+    updateOutput();
+  }
+
+  els.fileSingle.addEventListener("change", function () {
+    var file = this.files[0];
+    if (!file) return;
+    window.loadImageFile(file).then(function (img) {
+      var half = Math.floor(img.width / 2);
+      state.leftCanvas = canvasFrom(img, 0, 0, half, img.height);
+      state.rightCanvas = canvasFrom(img, half, 0, img.width - half, img.height);
+      if (!els.id.value) {
+        var base = file.name.replace(/\.[^.]+$/, "");
+        els.id.value = base;
+      }
+      afterImagesLoaded();
+    });
+  });
+
+  var doubleLoaded = { left: null, right: null };
+  function tryDoubleReady() {
+    if (doubleLoaded.left && doubleLoaded.right) {
+      state.leftCanvas = canvasFrom(doubleLoaded.left, 0, 0, doubleLoaded.left.width, doubleLoaded.left.height);
+      state.rightCanvas = canvasFrom(doubleLoaded.right, 0, 0, doubleLoaded.right.width, doubleLoaded.right.height);
+      afterImagesLoaded();
+    }
+  }
+  els.fileLeft.addEventListener("change", function () {
+    var file = this.files[0]; if (!file) return;
+    window.loadImageFile(file).then(function (img) { doubleLoaded.left = img; tryDoubleReady(); });
+  });
+  els.fileRight.addEventListener("change", function () {
+    var file = this.files[0]; if (!file) return;
+    window.loadImageFile(file).then(function (img) { doubleLoaded.right = img; tryDoubleReady(); });
+  });
+
+  function computeLayout(halfW, halfH) {
+    var scale = 480 / halfH;
+    var renderedW = halfW * scale;
+    var offsetX = (480 - renderedW) / 2;
+    return { scale: scale, offsetX: offsetX, renderedW: renderedW };
+  }
+
+  function renderDiffs() {
+    [els.frameLeft, els.frameRight].forEach(function (frame) {
+      var pins = frame.querySelectorAll(".pin");
+      pins.forEach(function (p) { p.remove(); });
+      state.diffs.forEach(function (d, i) {
+        var el = document.createElement("span");
+        el.className = "pin";
+        el.style.left = (d.x / 480 * 100) + "%";
+        el.style.top = (d.y / 480 * 100) + "%";
+        el.textContent = String(i + 1);
+        el.title = "누르면 삭제";
+        el.addEventListener("click", function (e) {
+          e.stopPropagation();
+          state.diffs.splice(i, 1);
+          renderDiffs();
+        });
+        frame.appendChild(el);
+      });
+    });
+
+    els.diffList.innerHTML = "";
+    els.emptyHint.style.display = state.diffs.length ? "none" : "";
+    state.diffs.forEach(function (d, i) {
+      var li = document.createElement("li");
+
+      var num = document.createElement("span");
+      num.className = "num";
+      num.textContent = String(i + 1);
+
+      var descInput = document.createElement("input");
+      descInput.type = "text";
+      descInput.placeholder = "이 차이점 설명 (예: 모자 색)";
+      descInput.value = d.desc || "";
+      descInput.dataset.idx = String(i);
+      descInput.addEventListener("input", function () {
+        state.diffs[i].desc = this.value;
+        updateOutput();
+      });
+
+      var radiusInput = document.createElement("input");
+      radiusInput.type = "number";
+      radiusInput.className = "radius";
+      radiusInput.min = "16"; radiusInput.max = "80";
+      radiusInput.value = d.r;
+      radiusInput.title = "클릭 인식 반경";
+      radiusInput.addEventListener("input", function () {
+        state.diffs[i].r = parseFloat(this.value) || 28;
+        updateOutput();
+      });
+
+      var del = document.createElement("button");
+      del.type = "button";
+      del.className = "del";
+      del.textContent = "✕";
+      del.addEventListener("click", function () {
+        state.diffs.splice(i, 1);
+        renderDiffs();
+      });
+
+      li.appendChild(num);
+      li.appendChild(descInput);
+      li.appendChild(radiusInput);
+      li.appendChild(del);
+      els.diffList.appendChild(li);
+    });
+
+    updateOutput();
+
+    // focus the newest description field so labeling is fast
+    if (state.diffs.length) {
+      var inputs = els.diffList.querySelectorAll("input[type=text]");
+      var last = inputs[inputs.length - 1];
+      if (last && !last.value) last.focus({ preventScroll: true });
+    }
+  }
+
+  [els.frameLeft, els.frameRight].forEach(function (frame) {
+    frame.addEventListener("click", function (e) {
+      if (e.target.classList.contains("pin")) return;
+      var rect = frame.getBoundingClientRect();
+      var x = Math.round((e.clientX - rect.left) / rect.width * 480 * 10) / 10;
+      var y = Math.round((e.clientY - rect.top) / rect.height * 480 * 10) / 10;
+      state.diffs.push({ x: x, y: y, r: 28, desc: "" });
+      renderDiffs();
+    });
+  });
+
+  function jsIdFromField() {
+    var raw = (els.id.value || "level").trim();
+    var safe = raw.replace(/[^a-zA-Z0-9가-힣_]/g, "");
+    return safe || "level";
+  }
+
+  function fileBase() {
+    var raw = (els.id.value || "level").trim();
+    return raw.replace(/[^a-zA-Z0-9_-]/g, "") || "level";
+  }
+
+  function updateOutput() {
+    if (!state.leftCanvas) return;
+    var idField = els.id.value.trim() || "레벨id";
+    var name = els.name.value.trim() || "레벨 이름";
+    var emoji = els.emoji.value.trim() || "🖼️";
+    var base = fileBase();
+    var layout = computeLayout(state.halfW, state.halfH);
+    var ox = layout.offsetX.toFixed(1);
+    var ow = layout.renderedW.toFixed(1);
+
+    var lines = [];
+    lines.push("// ---- " + idField + " ----");
+    lines.push("{");
+    lines.push('  id: "' + jsIdFromField() + '", name: "' + name.replace(/"/g, '\\"') + '", emoji: "' + emoji + '",');
+    lines.push("  drawBase: function (g) {},");
+    lines.push("  drawLeft: function (g) {");
+    lines.push('    E("image", { x: ' + ox + ', y: 0, width: ' + ow + ', height: 480, href: "assets/' + base + '-left.png", preserveAspectRatio: "xMidYMid slice" }, g);');
+    lines.push("  },");
+    lines.push("  drawRight: function (g) {");
+    lines.push('    E("image", { x: ' + ox + ', y: 0, width: ' + ow + ', height: 480, href: "assets/' + base + '-right.png", preserveAspectRatio: "xMidYMid slice" }, g);');
+    lines.push("  },");
+    lines.push("  diffs: [");
+    state.diffs.forEach(function (d, i) {
+      var comma = i < state.diffs.length - 1 ? "," : "";
+      var comment = d.desc ? " // " + d.desc : "";
+      lines.push("    { x: " + d.x + ", y: " + d.y + ", r: " + d.r + " }" + comma + comment);
+    });
+    lines.push("  ]");
+    lines.push("}");
+
+    els.codeOut.textContent = lines.join("\n");
+    els.fnameHint.textContent = base + "-left.png / " + base + "-right.png";
+  }
+
+  [els.id, els.name, els.emoji].forEach(function (el) {
+    el.addEventListener("input", updateOutput);
+  });
+
+  document.getElementById("btn-copy-code").addEventListener("click", function (e) {
+    window.copyText(els.codeOut.textContent, e.currentTarget);
+  });
+
+  document.getElementById("btn-save-left").addEventListener("click", function () {
+    if (!state.leftCanvas) return;
+    window.downloadCanvas(state.leftCanvas, fileBase() + "-left.png");
+  });
+  document.getElementById("btn-save-right").addEventListener("click", function () {
+    if (!state.rightCanvas) return;
+    window.downloadCanvas(state.rightCanvas, fileBase() + "-right.png");
+  });
+
+  document.getElementById("btn-reset").addEventListener("click", function () {
+    if (!confirm("표시한 내용을 전부 지울까요?")) return;
+    state.diffs = [];
+    renderDiffs();
+  });
+})();
+</script>
+
+<script>
+// ============================= 직소 퍼즐 도구 로직 =============================
+(function () {
+  "use strict";
+
+  var MAX_DIM = 1200; // downscale huge photos before export, keeps file size sane
+  var items = []; // {id, name, emoji, canvas}
+
+  var els = {
+    fileInput: document.getElementById("pz-file-input"),
+    listSection: document.getElementById("pz-list-section"),
+    grid: document.getElementById("pz-grid"),
+    countBadge: document.getElementById("pz-count-badge"),
+    outputSection: document.getElementById("pz-output-section"),
+    codeOut: document.getElementById("pz-code-out"),
+  };
+
+  function downscaledCanvas(img) {
+    var w = img.width, h = img.height;
+    var scale = Math.min(1, MAX_DIM / Math.max(w, h));
+    var cw = Math.max(1, Math.round(w * scale));
+    var ch = Math.max(1, Math.round(h * scale));
+    var c = document.createElement("canvas");
+    c.width = cw; c.height = ch;
+    c.getContext("2d").drawImage(img, 0, 0, cw, ch);
+    return c;
+  }
+
+  function slugBase(filename) {
+    var base = filename.replace(/\.[^.]+$/, "").trim();
+    var slug = base.replace(/\s+/g, "-").replace(/["\\/:*?<>|]/g, "");
+    return slug || "image";
+  }
+
+  function humanName(filename) {
+    var base = filename.replace(/\.[^.]+$/, "").replace(/[-_]+/g, " ").trim();
+    return base || "새 그림";
+  }
+
+  function uniqueId(base) {
+    var id = base, n = 2;
+    while (items.some(function (it) { return it.id === id; })) { id = base + "-" + n; n++; }
+    return id;
+  }
+
+  function addItem(filename, img) {
+    var canvas = downscaledCanvas(img);
+    var id = uniqueId(slugBase(filename));
+    items.push({ id: id, name: humanName(filename), emoji: "🖼️", canvas: canvas });
+  }
+
+  function escStr(s) { return String(s).replace(/\\/g, "\\\\").replace(/"/g, '\\"'); }
+
+  function renderGrid() {
+    var has = items.length > 0;
+    els.listSection.style.display = has ? "" : "none";
+    els.outputSection.style.display = has ? "" : "none";
+    els.countBadge.textContent = has ? items.length + "장" : "";
+    els.grid.innerHTML = "";
+
+    items.forEach(function (it, i) {
+      var card = document.createElement("div");
+      card.className = "pz-card";
+
+      var thumb = document.createElement("div");
+      thumb.className = "pz-thumb";
+      var img = document.createElement("img");
+      img.src = it.canvas.toDataURL("image/jpeg", 0.85);
+      thumb.appendChild(img);
+
+      var fields = document.createElement("div");
+      fields.className = "pz-fields";
+
+      function makeField(labelText, value, cls, onInput) {
+        var wrap = document.createElement("div");
+        wrap.className = "field";
+        var label = document.createElement("label");
+        label.textContent = labelText;
+        var input = document.createElement("input");
+        input.type = "text";
+        input.className = cls;
+        input.value = value;
+        input.addEventListener("input", function () { onInput(this.value); updateOutput(); });
+        wrap.appendChild(label);
+        wrap.appendChild(input);
+        fields.appendChild(wrap);
+        return input;
+      }
+      makeField("id (파일명)", it.id, "pz-id", function (v) { it.id = v; });
+      makeField("이름", it.name, "pz-name", function (v) { it.name = v; });
+      makeField("이모지", it.emoji, "pz-emoji", function (v) { it.emoji = v; });
+
+      var row = document.createElement("div");
+      row.className = "row";
+
+      var saveBtn = document.createElement("button");
+      saveBtn.type = "button";
+      saveBtn.className = "btn btn-ghost btn-small";
+      saveBtn.textContent = "저장";
+      saveBtn.addEventListener("click", function () {
+        window.downloadCanvas(it.canvas, (it.id || "image") + ".jpg", "image/jpeg", 0.9);
+      });
+
+      var removeBtn = document.createElement("button");
+      removeBtn.type = "button";
+      removeBtn.className = "btn btn-ghost btn-small pz-remove";
+      removeBtn.textContent = "삭제";
+      removeBtn.addEventListener("click", function () {
+        items.splice(i, 1);
+        renderGrid();
+      });
+
+      row.appendChild(saveBtn);
+      row.appendChild(removeBtn);
+
+      card.appendChild(thumb);
+      card.appendChild(fields);
+      card.appendChild(row);
+      els.grid.appendChild(card);
+    });
+
+    updateOutput();
+  }
+
+  function updateOutput() {
+    if (!items.length) { els.codeOut.textContent = ""; return; }
+    var lines = [];
+    items.forEach(function (it, i) {
+      var id = it.id || "image";
+      var name = it.name || "새 그림";
+      var emoji = it.emoji || "🖼️";
+      lines.push("  {");
+      lines.push('    id: "' + escStr(id) + '", name: "' + escStr(name) + '", emoji: "' + emoji + '",');
+      lines.push("    draw: function (g) {");
+      lines.push('      E("image", { x: 0, y: 0, width: 480, height: 480, href: "assets/' + escStr(id) + '.jpg", preserveAspectRatio: "xMidYMid slice" }, g);');
+      lines.push("    }");
+      lines.push("  }" + (i < items.length - 1 ? "," : ""));
+    });
+    els.codeOut.textContent = lines.join("\n");
+  }
+
+  els.fileInput.addEventListener("change", function () {
+    var files = Array.prototype.slice.call(this.files || []);
+    if (!files.length) return;
+    files.reduce(function (p, file) {
+      return p.then(function () {
+        return window.loadImageFile(file).then(function (img) {
+          addItem(file.name, img);
+        });
+      });
+    }, Promise.resolve()).then(function () {
+      renderGrid();
+      els.fileInput.value = "";
+    });
+  });
+
+  document.getElementById("pz-btn-copy").addEventListener("click", function (e) {
+    window.copyText(els.codeOut.textContent, e.currentTarget);
+  });
+
+  document.getElementById("pz-btn-download-all").addEventListener("click", function () {
+    items.forEach(function (it, i) {
+      setTimeout(function () {
+        window.downloadCanvas(it.canvas, (it.id || "image") + ".jpg", "image/jpeg", 0.9);
+      }, i * 250);
+    });
+  });
+
+  document.getElementById("pz-btn-clear").addEventListener("click", function () {
+    if (!items.length) return;
+    if (!confirm("올린 그림을 전부 지울까요?")) return;
+    items = [];
+    renderGrid();
+  });
+})();
+</script>
+</body>
+</html>
