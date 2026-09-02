@@ -39,6 +39,7 @@
       <li><span class="ico">❤️</span><span class="howto-text">에너지는 하트 <b>5개</b>! 틀릴 때마다 하나씩 줄어들어요.</span></li>
       <li><span class="ico">🧨</span><span class="howto-text">위쪽 심지가 타들어가요. 다 타면 <b>펑!</b> 게임이 끝나요. 한 판 클리어하면 <b>+15초</b>, 틀리면 <b>-5초</b>예요.</span></li>
       <li><span class="ico">💡</span><span class="howto-text">힌트는 <b>3번</b>! 아직 못 찾은 곳이 반짝반짝 알려줘요.</span></li>
+      <li><span class="ico">🔒</span><span class="howto-text"><b>정답보기</b>는 어른을 위한 버튼이에요. 곱셈 문제를 풀어야 열려요.</span></li>
     </ul>
     <button id="btn-howto-back" class="btn btn-primary btn-huge">알겠어요!</button>
   </div>
@@ -59,6 +60,7 @@
       <span class="hud-label">찾은 개수</span>
       <span id="hud-progress-val" class="hud-value">0 / 5</span>
     </div>
+    <button id="btn-answer" class="btn btn-answer" type="button">🔒 정답보기</button>
     <button id="btn-hint" class="btn btn-hint" type="button">💡 힌트 <span id="hint-count">3</span></button>
     <button id="btn-quit" class="btn btn-ghost btn-small">← 나가기</button>
   </header>
@@ -105,6 +107,20 @@
     </div>
   </div>
 </section>
+
+<!-- 보호자 확인 / 비밀번호 모달 -->
+<div id="gate-modal" class="gate-modal">
+  <div class="gate-card">
+    <button type="button" id="gate-close" class="gate-close" aria-label="닫기">✕</button>
+    <div id="gate-body"></div>
+  </div>
+</div>
+
+<!-- 정답 표시중 배너 -->
+<div id="answer-banner" class="answer-banner">
+  <span>🔓 정답 위치가 표시되고 있어요!</span>
+  <button type="button" id="btn-hide-answer" class="btn btn-primary btn-small">닫기</button>
+</div>
 
 <script src="levels-data.js"></script>
 <script src="game.js"></script>

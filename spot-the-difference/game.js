@@ -36,6 +36,13 @@
   var stageName = document.getElementById("stage-name");
   var roundToast = document.getElementById("round-toast");
 
+  var answerBtn = document.getElementById("btn-answer");
+  var gateModal = document.getElementById("gate-modal");
+  var gateBody = document.getElementById("gate-body");
+  var gateClose = document.getElementById("gate-close");
+  var answerBanner = document.getElementById("answer-banner");
+  var btnHideAnswer = document.getElementById("btn-hide-answer");
+
   var panelLeft = document.getElementById("panel-left");
   var panelRight = document.getElementById("panel-right");
   var gLeft = document.getElementById("g-left");
@@ -237,12 +244,144 @@
     return e;
   }
 
+  // ---- Answer gate (parental multiply-question / PIN lock) ----------------
+  var PIN_KEY = "spotdiff_answer_pin";
+
+  function getSavedPin() {
+    try { return localStorage.getItem(PIN_KEY); } catch (e) { return null; }
+  }
+  function savePin(pin) {
+    try { localStorage.setItem(PIN_KEY, pin); } catch (e) { /* ignore */ }
+  }
+
+  function openGate() {
+    if (!state.playing || !state.level) return;
+    gateModal.classList.add("show");
+    var pin = getSavedPin();
+    if (pin) renderPinEntry(pin); else renderMultiplyChallenge();
+  }
+  function closeGate() {
+    gateModal.classList.remove("show");
+    gateBody.innerHTML = "";
+  }
+
+  function digitsOnly(input, max) {
+    input.addEventListener("input", function () {
+      this.value = this.value.replace(/\D/g, "").slice(0, max);
+    });
+  }
+  function onEnter(input, fn) {
+    input.addEventListener("keydown", function (e) { if (e.key === "Enter") fn(); });
+  }
+
+  function renderMultiplyChallenge() {
+    var a = 2 + Math.floor(Math.random() * 8);
+    var b = 2 + Math.floor(Math.random() * 8);
+    gateBody.innerHTML =
+      '<p class="gate-title">🔒 보호자 확인</p>' +
+      '<p class="gate-desc">정답을 보려면 문제를 풀어주세요</p>' +
+      '<div class="gate-problem">' + a + ' &times; ' + b + ' = ?</div>' +
+      '<input type="number" id="gate-input" class="gate-input" inputmode="numeric" autocomplete="off" placeholder="정답 입력">' +
+      '<p class="gate-error" id="gate-error" hidden>다시 확인해주세요!</p>' +
+      '<button type="button" class="btn btn-primary gate-submit" id="gate-submit">확인</button>';
+    var input = document.getElementById("gate-input");
+    var errEl = document.getElementById("gate-error");
+    input.focus();
+    function submit() {
+      if (parseInt(input.value, 10) === a * b) {
+        renderSetPassword();
+      } else {
+        errEl.hidden = false;
+        setTimeout(renderMultiplyChallenge, 900);
+      }
+    }
+    document.getElementById("gate-submit").addEventListener("click", submit);
+    onEnter(input, submit);
+  }
+
+  function renderSetPassword() {
+    gateBody.innerHTML =
+      '<p class="gate-title">🔑 비밀번호를 설정해주세요</p>' +
+      '<p class="gate-desc">앞으로 정답을 볼 때 쓸 숫자 4자리를 정해주세요</p>' +
+      '<input type="password" id="gate-pin-input" class="gate-input gate-pin-input" inputmode="numeric" autocomplete="off" placeholder="••••">' +
+      '<p class="gate-error" id="gate-error" hidden>숫자 4자리를 입력해주세요</p>' +
+      '<button type="button" class="btn btn-primary gate-submit" id="gate-submit">설정하고 정답 보기</button>';
+    var input = document.getElementById("gate-pin-input");
+    var errEl = document.getElementById("gate-error");
+    digitsOnly(input, 4);
+    input.focus();
+    function submit() {
+      var val = input.value;
+      if (!/^\d{4}$/.test(val)) {
+        errEl.hidden = false;
+        input.value = "";
+        input.focus();
+        return;
+      }
+      savePin(val);
+      closeGate();
+      revealAnswer();
+    }
+    document.getElementById("gate-submit").addEventListener("click", submit);
+    onEnter(input, submit);
+  }
+
+  function renderPinEntry(savedPin) {
+    gateBody.innerHTML =
+      '<p class="gate-title">🔒 비밀번호 입력</p>' +
+      '<p class="gate-desc">정답을 보려면 비밀번호 4자리를 입력해주세요</p>' +
+      '<input type="password" id="gate-pin-input" class="gate-input gate-pin-input" inputmode="numeric" autocomplete="off" placeholder="••••">' +
+      '<p class="gate-error" id="gate-error" hidden>비밀번호가 달라요</p>' +
+      '<button type="button" class="btn btn-primary gate-submit" id="gate-submit">확인</button>';
+    var input = document.getElementById("gate-pin-input");
+    var errEl = document.getElementById("gate-error");
+    digitsOnly(input, 4);
+    input.focus();
+    function submit() {
+      if (input.value === savedPin) {
+        closeGate();
+        revealAnswer();
+      } else {
+        errEl.hidden = false;
+        input.value = "";
+        input.focus();
+      }
+    }
+    document.getElementById("gate-submit").addEventListener("click", submit);
+    onEnter(input, submit);
+  }
+
+  function drawAnswerMark(overlay, d) {
+    E(overlay, "circle", { cx: d.x, cy: d.y, r: (d.r || 30) * 0.9, class: "answer-mark" });
+  }
+  function clearAnswerMarks() {
+    Array.prototype.forEach.call(document.querySelectorAll(".answer-mark"), function (el) { el.remove(); });
+  }
+  function revealAnswer() {
+    if (!state.level) return;
+    clearAnswerMarks();
+    state.level.diffs.forEach(function (d) {
+      drawAnswerMark(overlayLeft, d);
+      drawAnswerMark(overlayRight, d);
+    });
+    answerBanner.classList.add("show");
+  }
+  function hideAnswer() {
+    clearAnswerMarks();
+    answerBanner.classList.remove("show");
+  }
+
+  answerBtn.addEventListener("click", openGate);
+  gateClose.addEventListener("click", closeGate);
+  btnHideAnswer.addEventListener("click", hideAnswer);
+
   // ---- Round flow -------------------------------------------------------
   function startRound() {
     state.level = nextLevel();
     state.diffsFound = state.level.diffs.map(function () { return false; });
     state.foundCount = 0;
     state.locked = false;
+    hideAnswer();
     renderLevel();
     updateProgress();
     hudRoundVal.textContent = state.round + 1;
@@ -384,6 +523,8 @@
     state.playing = false;
     state.locked = true;
     stopTimer();
+    closeGate();
+    hideAnswer();
     var titleEl = document.getElementById("result-title");
     var reasonEl = document.getElementById("result-reason");
     var emojiEl = document.getElementById("result-emoji");
@@ -407,6 +548,8 @@
     state.playing = false;
     state.locked = true;
     stopTimer();
+    closeGate();
+    hideAnswer();
     showScreen("title");
   }
 
