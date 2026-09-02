@@ -111,6 +111,17 @@
     color: var(--text);
   }
   input[type="text"]:focus, input[type="number"]:focus { outline: 2px solid var(--lavender); outline-offset: 1px; }
+  select {
+    font-family: inherit;
+    font-size: 0.92rem;
+    padding: 8px 11px;
+    border-radius: 9px;
+    border: 1px solid var(--line);
+    background: #fff;
+    color: var(--text);
+  }
+  select:focus { outline: 2px solid var(--lavender); outline-offset: 1px; }
+  #edit-level-select { width: 100%; max-width: 420px; }
   #f-id { width: 150px; }
   #f-name { width: 200px; }
   #f-emoji { width: 70px; text-align: center; font-size: 1.1rem; }
@@ -312,12 +323,14 @@
 
     <section class="card">
       <h2>0. 기존 레벨 수정하기 (선택)</h2>
-      <p class="meta-note"><b>levels-data.js</b>에서 고치고 싶은 레벨의 코드 덩어리를 통째로 복사해서 아래에 붙여넣고 "불러오기"를 누르세요. 번호·이름·이모지·기존에 표시된 위치가 그대로 채워져요. 그다음 2번에서 <b>"두 장 (이미 분리됨)"</b>을 고르고, 그 레벨의 원본 이미지 두 장(<b>spot-the-difference/assets</b> 폴더에 있어요)을 올리면 기존 표시가 그림 위에 그대로 나타나요. 새 레벨을 만들 때는 이 칸을 그냥 비워두면 돼요.</p>
-      <textarea id="paste-existing" rows="6" placeholder='{&#10;  id: "02", name: "곰돌이네 소풍", emoji: "🧺",&#10;  ...&#10;  diffs: [&#10;    { x: 281.8, y: 98.6, r: 24 }&#10;  ]&#10;}'></textarea>
-      <div class="row" style="margin-top:8px;">
-        <button type="button" class="btn btn-ghost" id="btn-load-existing">불러오기</button>
-        <span class="meta-note" id="load-status"></span>
+      <p class="meta-note">아래에서 고치고 싶은 레벨을 고르면 이미지와 기존에 표시된 위치가 자동으로 불러와져요. 그림을 클릭해서 위치를 새로 추가하거나, 핀을 눌러서 삭제하면 돼요. 다 고쳤으면 "4. 결과"의 코드를 복사해서 <b>levels-data.js</b>의 그 레벨 부분과 통째로 바꿔치기하면 끝! 새 레벨을 만들 때는 이 칸을 그냥 "새 레벨 만들기"로 둬요.</p>
+      <div class="field">
+        <label for="edit-level-select">수정할 레벨 고르기</label>
+        <select id="edit-level-select">
+          <option value="">— 새 레벨 만들기 —</option>
+        </select>
       </div>
+      <span class="meta-note" id="load-status"></span>
     </section>
 
     <section class="card">
@@ -338,7 +351,7 @@
       </div>
     </section>
 
-    <section class="card">
+    <section class="card" id="image-load-section">
       <h2>2. 이미지 불러오기</h2>
       <div class="mode-toggle">
         <button type="button" id="mode-single" class="active">한 장 (좌우 통합)</button>
@@ -498,6 +511,7 @@
 })();
 </script>
 
+<script src="../spot-the-difference/levels-data.js"></script>
 <script>
 // ============================= 틀린그림찾기 도구 로직 =============================
 (function () {
@@ -507,11 +521,13 @@
     mode: "single",
     leftCanvas: null, rightCanvas: null,
     halfW: 0, halfH: 0,
+    ox: 0, ow: 480, // layout of the image within the 480x480 stage; set on image load
+    imagesReady: false,
+    libraryMode: false, // true when images came from an existing level (no re-save needed)
     diffs: [] // {x, y, r, desc}
   };
 
-  var pendingDiffs = null; // diffs parsed from pasted existing code, applied on next image load
-  var loadedFileBase = null; // asset filename base parsed from pasted existing code (keeps save filenames matching the original files)
+  var loadedFileBase = null; // asset filename base of the picked level (keeps save filenames matching the original files)
 
   var els = {
     id: document.getElementById("f-id"),
@@ -525,6 +541,7 @@
     fileLeft: document.getElementById("file-left"),
     fileRight: document.getElementById("file-right"),
     layoutInfo: document.getElementById("layout-info"),
+    imageLoadSection: document.getElementById("image-load-section"),
     markSection: document.getElementById("mark-section"),
     outputSection: document.getElementById("output-section"),
     frameLeft: document.getElementById("frame-left"),
@@ -535,62 +552,117 @@
     emptyHint: document.getElementById("empty-hint"),
     codeOut: document.getElementById("code-out"),
     fnameHint: document.getElementById("fname-hint"),
-    pasteExisting: document.getElementById("paste-existing"),
-    btnLoadExisting: document.getElementById("btn-load-existing"),
+    editLevelSelect: document.getElementById("edit-level-select"),
     loadStatus: document.getElementById("load-status"),
+    btnSaveLeft: document.getElementById("btn-save-left"),
+    btnSaveRight: document.getElementById("btn-save-right"),
   };
 
-  function parseExistingCode(text) {
-    var result = { id: "", name: "", emoji: "", hrefBase: "", diffs: null };
-    var idM = text.match(/id:\s*"([^"]*)"/);
-    var nameM = text.match(/name:\s*"([^"]*)"/);
-    var emojiM = text.match(/emoji:\s*"([^"]*)"/);
-    if (idM) result.id = idM[1];
-    if (nameM) result.name = nameM[1];
-    if (emojiM) result.emoji = emojiM[1];
+  // ---- library picker: reads levels straight from spot-the-difference/levels-data.js ----
+  // (reads the href/x/width straight out of drawLeft/drawRight's source text instead of
+  // actually calling them, so we never trigger a real - and wrongly-pathed - image fetch)
+  var libraryLevels = (window.FindData && window.FindData.LEVELS) || [];
 
-    var hrefM = text.match(/href:\s*"assets\/([^"]+?)-left\.[a-zA-Z]+"/);
-    if (hrefM) result.hrefBase = hrefM[1];
-
-    var diffsBlockM = text.match(/diffs:\s*\[([\s\S]*?)\]/);
-    if (diffsBlockM) {
-      result.diffs = [];
-      var re = /\{\s*x:\s*(-?[\d.]+)\s*,\s*y:\s*(-?[\d.]+)\s*,\s*r:\s*(-?[\d.]+)\s*\}\s*,?[ \t]*(?:\/\/\s*(.*))?/g;
-      var m;
-      while ((m = re.exec(diffsBlockM[1]))) {
-        result.diffs.push({
-          x: parseFloat(m[1]),
-          y: parseFloat(m[2]),
-          r: parseFloat(m[3]),
-          desc: (m[4] || "").trim()
-        });
-      }
-    }
-    return result;
+  function extractLevelInfo(level) {
+    var srcL = level.drawLeft.toString();
+    var srcR = level.drawRight.toString();
+    var mL = srcL.match(/x:\s*([\d.]+)\s*,\s*y:\s*0\s*,\s*width:\s*([\d.]+)\s*,\s*height:\s*480\s*,\s*href:\s*"([^"]+)"/);
+    var mR = srcR.match(/href:\s*"([^"]+)"/);
+    return {
+      ox: mL ? parseFloat(mL[1]) : 0,
+      ow: mL ? parseFloat(mL[2]) : 480,
+      hrefLeft: mL ? mL[3] : "",
+      hrefRight: mR ? mR[1] : ""
+    };
   }
 
-  els.btnLoadExisting.addEventListener("click", function () {
-    var text = els.pasteExisting.value;
-    if (!text.trim()) {
-      els.loadStatus.className = "err";
-      els.loadStatus.textContent = "붙여넣은 코드가 없어요.";
-      return;
-    }
-    var parsed = parseExistingCode(text);
-    if (!parsed.diffs) {
-      els.loadStatus.className = "err";
-      els.loadStatus.textContent = "코드를 알아볼 수 없어요. diffs: [ ... ] 부분이 포함된 코드인지 확인해주세요.";
-      return;
-    }
-    if (parsed.id) els.id.value = parsed.id;
-    if (parsed.name) els.name.value = parsed.name;
-    if (parsed.emoji) els.emoji.value = parsed.emoji;
-    loadedFileBase = parsed.hrefBase || null;
-    pendingDiffs = parsed.diffs;
-    setMode("double");
+  function libraryNumberFor(info, index) {
+    var m = info.hrefLeft.match(/assets\/([^/]+?)-left\.\w+$/);
+    var base = m ? m[1] : "";
+    if (/^\d+$/.test(base)) return base.length < 2 ? "0" + base : base;
+    return index === 0 ? "01" : String(index + 1);
+  }
+
+  libraryLevels.forEach(function (level, index) {
+    var info = extractLevelInfo(level);
+    var opt = document.createElement("option");
+    opt.value = String(index);
+    opt.textContent = libraryNumberFor(info, index) + ". " + level.emoji + " " + level.name;
+    els.editLevelSelect.appendChild(opt);
+  });
+
+  function setSaveButtonsEnabled(enabled) {
+    els.btnSaveLeft.disabled = !enabled;
+    els.btnSaveRight.disabled = !enabled;
+    els.btnSaveLeft.title = enabled ? "" : "이미 assets 폴더에 있는 이미지라 다시 저장할 필요 없어요.";
+    els.btnSaveRight.title = els.btnSaveLeft.title;
+  }
+
+  function resetToNewLevel() {
+    els.id.value = "";
+    els.name.value = "";
+    els.emoji.value = "";
+    state.leftCanvas = null;
+    state.rightCanvas = null;
+    state.imagesReady = false;
+    state.libraryMode = false;
+    state.diffs = [];
+    loadedFileBase = null;
+    els.imgLeft.src = "";
+    els.imgRight.src = "";
+    els.layoutInfo.textContent = "";
+    els.imageLoadSection.style.display = "";
+    els.markSection.style.display = "none";
+    els.outputSection.style.display = "none";
+    setSaveButtonsEnabled(true);
+    els.loadStatus.className = "";
+    els.loadStatus.textContent = "";
+    setMode("single");
+  }
+
+  function loadFromLibrary(level) {
+    var info = extractLevelInfo(level);
+    var hrefM = info.hrefLeft.match(/^assets\/(.+)-left\.(\w+)$/);
+
+    els.id.value = level.id;
+    els.name.value = level.name;
+    els.emoji.value = level.emoji;
+    loadedFileBase = hrefM ? hrefM[1] : null;
+
+    state.ox = info.ox;
+    state.ow = info.ow;
+    state.leftCanvas = null;
+    state.rightCanvas = null;
+    state.imagesReady = true;
+    state.libraryMode = true;
+
+    var pct = { left: (info.ox / 480 * 100).toFixed(3), width: (info.ow / 480 * 100).toFixed(3) };
+    els.imgLeft.src = "../spot-the-difference/" + info.hrefLeft;
+    els.imgRight.src = "../spot-the-difference/" + info.hrefRight;
+    els.imgLeft.style.left = pct.left + "%";
+    els.imgLeft.style.width = pct.width + "%";
+    els.imgRight.style.left = pct.left + "%";
+    els.imgRight.style.width = pct.width + "%";
+    els.layoutInfo.textContent = "x: " + info.ox.toFixed(1) + ", width: " + info.ow.toFixed(1) + ", height: 480 (assets 폴더의 원본 이미지를 그대로 불러왔어요)";
+
+    state.diffs = (level.diffs || []).map(function (d) { return { x: d.x, y: d.y, r: d.r, desc: "" }; });
+    renderDiffs();
+
+    els.imageLoadSection.style.display = "none";
+    els.markSection.style.display = "";
+    els.outputSection.style.display = "";
+    setSaveButtonsEnabled(false);
     els.loadStatus.className = "ok";
-    els.loadStatus.textContent = "불러왔어요! (기존 표시 " + parsed.diffs.length + "개) 이제 2번에서 이 레벨의 이미지 두 장을 올려주세요" +
-      (loadedFileBase ? " (" + loadedFileBase + "-left." + (text.match(/href:\s*"assets\/[^"]+?-left\.([a-zA-Z]+)"/) || [,"png"])[1] + " 등)." : ".");
+    els.loadStatus.textContent = "불러왔어요! (표시 " + state.diffs.length + "개) 아래에서 위치를 고치고, 다 되면 코드를 복사하세요.";
+    updateOutput();
+  }
+
+  els.editLevelSelect.addEventListener("change", function () {
+    var idx = this.value;
+    if (idx === "") { resetToNewLevel(); return; }
+    var level = libraryLevels[parseInt(idx, 10)];
+    if (!level) return;
+    loadFromLibrary(level);
   });
 
   function setMode(mode) {
@@ -618,6 +690,10 @@
     els.imgRight.src = state.rightCanvas.toDataURL("image/png");
 
     var layout = computeLayout(state.halfW, state.halfH);
+    state.ox = layout.offsetX;
+    state.ow = layout.renderedW;
+    state.imagesReady = true;
+    state.libraryMode = false;
     var pct = { left: (layout.offsetX / 480 * 100).toFixed(3), width: (layout.renderedW / 480 * 100).toFixed(3) };
     els.imgLeft.style.left = pct.left + "%";
     els.imgLeft.style.width = pct.width + "%";
@@ -627,8 +703,8 @@
     els.layoutInfo.textContent = "원본 크기: " + state.halfW + " x " + state.halfH +
       "px  →  x: " + layout.offsetX.toFixed(1) + ", width: " + layout.renderedW.toFixed(1) + ", height: 480";
 
-    state.diffs = pendingDiffs ? pendingDiffs.slice() : [];
-    pendingDiffs = null;
+    state.diffs = [];
+    setSaveButtonsEnabled(true);
     renderDiffs();
     els.markSection.style.display = "";
     els.outputSection.style.display = "";
@@ -774,14 +850,13 @@
   }
 
   function updateOutput() {
-    if (!state.leftCanvas) return;
+    if (!state.imagesReady) return;
     var idField = els.id.value.trim() || "레벨id";
     var name = els.name.value.trim() || "레벨 이름";
     var emoji = els.emoji.value.trim() || "🖼️";
     var base = fileBase();
-    var layout = computeLayout(state.halfW, state.halfH);
-    var ox = layout.offsetX.toFixed(1);
-    var ow = layout.renderedW.toFixed(1);
+    var ox = state.ox.toFixed(1);
+    var ow = state.ow.toFixed(1);
 
     var lines = [];
     lines.push("// ---- " + idField + " ----");
@@ -825,13 +900,8 @@
   });
 
   document.getElementById("btn-reset").addEventListener("click", function () {
-    if (!confirm("표시한 내용을 전부 지울까요?")) return;
+    if (!confirm("표시한 위치를 전부 지울까요? (이미지·번호·이름은 그대로 남아요)")) return;
     state.diffs = [];
-    loadedFileBase = null;
-    pendingDiffs = null;
-    els.pasteExisting.value = "";
-    els.loadStatus.className = "";
-    els.loadStatus.textContent = "";
     renderDiffs();
   });
 })();
