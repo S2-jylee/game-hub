@@ -511,7 +511,7 @@
 })();
 </script>
 
-<script src="../spot-the-difference/levels-data.js"></script>
+<script src="https://find-hidden-picture.vercel.app/levels-data.js"></script>
 <script>
 // ============================= 틀린그림찾기 도구 로직 =============================
 (function () {
@@ -637,8 +637,8 @@
     state.libraryMode = true;
 
     var pct = { left: (info.ox / 480 * 100).toFixed(3), width: (info.ow / 480 * 100).toFixed(3) };
-    els.imgLeft.src = "../spot-the-difference/" + info.hrefLeft;
-    els.imgRight.src = "../spot-the-difference/" + info.hrefRight;
+    els.imgLeft.src = "https://find-hidden-picture.vercel.app/" + info.hrefLeft;
+    els.imgRight.src = "https://find-hidden-picture.vercel.app/" + info.hrefRight;
     els.imgLeft.style.left = pct.left + "%";
     els.imgLeft.style.width = pct.width + "%";
     els.imgRight.style.left = pct.left + "%";

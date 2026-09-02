@@ -390,7 +390,7 @@
 
 <footer>레벨과 좌표는 spot-the-difference/levels-data.js를 그때그때 직접 불러와서 보여줘요 (새 레벨을 추가하면 자동으로 여기도 나타나요). 표시한 내용은 이 브라우저에만 저장되며, "결과 복사" 전까지는 저에게 전달되지 않아요.</footer>
 
-<script src="../spot-the-difference/levels-data.js"></script>
+<script src="https://find-hidden-picture.vercel.app/levels-data.js"></script>
 <script>
 (function () {
   "use strict";
@@ -436,7 +436,7 @@
       return '<span class="pin" data-idx="' + i + '" style="left:' + l + '%;top:' + t + '%;width:' + s + '%;height:' + s + '%;">' + (i + 1) + '</span>';
     }).join("");
     var tag = side === "left" ? "왼쪽" : "오른쪽";
-    return '<div class="frame" data-level="' + id + '"><div class="panel"><img src="../spot-the-difference/' + href + '" alt="" style="left:' + leftPct + '%;width:' + widthPct + '%;"></div><div class="pins">' + pinsHtml + '</div><div class="candidates" data-level="' + id + '"></div><span class="side-tag">' + tag + '</span></div>';
+    return '<div class="frame" data-level="' + id + '"><div class="panel"><img src="https://find-hidden-picture.vercel.app/' + href + '" alt="" style="left:' + leftPct + '%;width:' + widthPct + '%;"></div><div class="pins">' + pinsHtml + '</div><div class="candidates" data-level="' + id + '"></div><span class="side-tag">' + tag + '</span></div>';
   }
 
   function legendHtml(diffs) {
