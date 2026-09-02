@@ -226,6 +226,22 @@
 
   .meta-note { font-size: 0.8rem; color: var(--text-soft); margin-top: 8px; }
   .meta-note code { background: #f4eefd; padding: 1px 6px; border-radius: 5px; }
+
+  textarea#paste-existing {
+    width: 100%;
+    font-family: "Consolas", "Menlo", monospace;
+    font-size: 0.78rem;
+    padding: 10px 12px;
+    border-radius: 10px;
+    border: 1px solid var(--line);
+    background: #fbf9ff;
+    color: var(--text);
+    resize: vertical;
+  }
+  textarea#paste-existing:focus { outline: 2px solid var(--lavender); outline-offset: 1px; }
+  #load-status { font-size: 0.8rem; color: var(--text-soft); }
+  #load-status.ok { color: var(--green); font-weight: 700; }
+  #load-status.err { color: var(--red); font-weight: 700; }
   .layout-info {
     font-size: 0.76rem;
     color: var(--text-soft);
@@ -280,11 +296,11 @@
 
 <header>
   <h1>🛠️ 게임 허브 관리자 도구</h1>
-  <span class="sub">틀린그림찾기와 직소 퍼즐, 두 게임의 레벨을 여기서 만들어요.</span>
+  <span class="sub">틀린그림찾기와 직소 퍼즐, 두 게임의 레벨을 여기서 만들고 고쳐요.</span>
 </header>
 
 <nav class="tool-nav">
-  <button type="button" class="tool-nav-btn active" data-tool="diff">🖍️ 틀린그림찾기</button>
+  <button type="button" class="tool-nav-btn active" data-tool="diff">🖍️ 틀린그림찾기 (만들기·수정)</button>
   <button type="button" class="tool-nav-btn" data-tool="puzzle">🧩 직소 퍼즐</button>
 </nav>
 
@@ -292,6 +308,16 @@
 
   <!-- ============================= 틀린그림찾기 도구 ============================= -->
   <div id="tool-diff" class="tool-panel active">
+
+    <section class="card">
+      <h2>0. 기존 레벨 수정하기 (선택)</h2>
+      <p class="meta-note"><b>levels-data.js</b>에서 고치고 싶은 레벨의 코드 덩어리를 통째로 복사해서 아래에 붙여넣고 "불러오기"를 누르세요. 번호·이름·이모지·기존에 표시된 위치가 그대로 채워져요. 그다음 2번에서 <b>"두 장 (이미 분리됨)"</b>을 고르고, 그 레벨의 원본 이미지 두 장(<b>spot-the-difference/assets</b> 폴더에 있어요)을 올리면 기존 표시가 그림 위에 그대로 나타나요. 새 레벨을 만들 때는 이 칸을 그냥 비워두면 돼요.</p>
+      <textarea id="paste-existing" rows="6" placeholder='{&#10;  id: "02", name: "곰돌이네 소풍", emoji: "🧺",&#10;  ...&#10;  diffs: [&#10;    { x: 281.8, y: 98.6, r: 24 }&#10;  ]&#10;}'></textarea>
+      <div class="row" style="margin-top:8px;">
+        <button type="button" class="btn btn-ghost" id="btn-load-existing">불러오기</button>
+        <span class="meta-note" id="load-status"></span>
+      </div>
+    </section>
 
     <section class="card">
       <h2>1. 레벨 정보</h2>
@@ -365,7 +391,7 @@
         <button type="button" class="btn btn-ghost" id="btn-reset">전체 초기화</button>
       </div>
       <pre id="code-out"></pre>
-      <p class="meta-note">이미지 저장 버튼을 누르면 <b id="fname-hint">xx-left.png / xx-right.png</b> 이름으로 다운로드돼요. spot-the-difference/assets 폴더에 넣고, 위 코드를 levels-data.js에 붙여넣으면 끝!</p>
+      <p class="meta-note">이미지 저장 버튼을 누르면 <b id="fname-hint">xx-left.png / xx-right.png</b> 이름으로 다운로드돼요. spot-the-difference/assets 폴더에 넣으세요. 새 레벨이면 위 코드를 levels-data.js의 LEVELS 배열에 추가하고, 기존 레벨을 고친 거면 그 레벨의 코드 덩어리를 위 코드로 통째로 바꿔치기하면 끝!</p>
     </section>
 
   </div>
@@ -475,6 +501,9 @@
     diffs: [] // {x, y, r, desc}
   };
 
+  var pendingDiffs = null; // diffs parsed from pasted existing code, applied on next image load
+  var loadedFileBase = null; // asset filename base parsed from pasted existing code (keeps save filenames matching the original files)
+
   var els = {
     id: document.getElementById("f-id"),
     name: document.getElementById("f-name"),
@@ -497,7 +526,63 @@
     emptyHint: document.getElementById("empty-hint"),
     codeOut: document.getElementById("code-out"),
     fnameHint: document.getElementById("fname-hint"),
+    pasteExisting: document.getElementById("paste-existing"),
+    btnLoadExisting: document.getElementById("btn-load-existing"),
+    loadStatus: document.getElementById("load-status"),
   };
+
+  function parseExistingCode(text) {
+    var result = { id: "", name: "", emoji: "", hrefBase: "", diffs: null };
+    var idM = text.match(/id:\s*"([^"]*)"/);
+    var nameM = text.match(/name:\s*"([^"]*)"/);
+    var emojiM = text.match(/emoji:\s*"([^"]*)"/);
+    if (idM) result.id = idM[1];
+    if (nameM) result.name = nameM[1];
+    if (emojiM) result.emoji = emojiM[1];
+
+    var hrefM = text.match(/href:\s*"assets\/([^"]+?)-left\.[a-zA-Z]+"/);
+    if (hrefM) result.hrefBase = hrefM[1];
+
+    var diffsBlockM = text.match(/diffs:\s*\[([\s\S]*?)\]/);
+    if (diffsBlockM) {
+      result.diffs = [];
+      var re = /\{\s*x:\s*(-?[\d.]+)\s*,\s*y:\s*(-?[\d.]+)\s*,\s*r:\s*(-?[\d.]+)\s*\}\s*,?[ \t]*(?:\/\/\s*(.*))?/g;
+      var m;
+      while ((m = re.exec(diffsBlockM[1]))) {
+        result.diffs.push({
+          x: parseFloat(m[1]),
+          y: parseFloat(m[2]),
+          r: parseFloat(m[3]),
+          desc: (m[4] || "").trim()
+        });
+      }
+    }
+    return result;
+  }
+
+  els.btnLoadExisting.addEventListener("click", function () {
+    var text = els.pasteExisting.value;
+    if (!text.trim()) {
+      els.loadStatus.className = "err";
+      els.loadStatus.textContent = "붙여넣은 코드가 없어요.";
+      return;
+    }
+    var parsed = parseExistingCode(text);
+    if (!parsed.diffs) {
+      els.loadStatus.className = "err";
+      els.loadStatus.textContent = "코드를 알아볼 수 없어요. diffs: [ ... ] 부분이 포함된 코드인지 확인해주세요.";
+      return;
+    }
+    if (parsed.id) els.id.value = parsed.id;
+    if (parsed.name) els.name.value = parsed.name;
+    if (parsed.emoji) els.emoji.value = parsed.emoji;
+    loadedFileBase = parsed.hrefBase || null;
+    pendingDiffs = parsed.diffs;
+    setMode("double");
+    els.loadStatus.className = "ok";
+    els.loadStatus.textContent = "불러왔어요! (기존 표시 " + parsed.diffs.length + "개) 이제 2번에서 이 레벨의 이미지 두 장을 올려주세요" +
+      (loadedFileBase ? " (" + loadedFileBase + "-left." + (text.match(/href:\s*"assets\/[^"]+?-left\.([a-zA-Z]+)"/) || [,"png"])[1] + " 등)." : ".");
+  });
 
   function setMode(mode) {
     state.mode = mode;
@@ -533,7 +618,8 @@
     els.layoutInfo.textContent = "원본 크기: " + state.halfW + " x " + state.halfH +
       "px  →  x: " + layout.offsetX.toFixed(1) + ", width: " + layout.renderedW.toFixed(1) + ", height: 480";
 
-    state.diffs = [];
+    state.diffs = pendingDiffs ? pendingDiffs.slice() : [];
+    pendingDiffs = null;
     renderDiffs();
     els.markSection.style.display = "";
     els.outputSection.style.display = "";
@@ -673,6 +759,7 @@
   }
 
   function fileBase() {
+    if (loadedFileBase) return loadedFileBase;
     var raw = (els.id.value || "level").trim();
     return raw.replace(/[^a-zA-Z0-9_-]/g, "") || "level";
   }
@@ -731,6 +818,11 @@
   document.getElementById("btn-reset").addEventListener("click", function () {
     if (!confirm("표시한 내용을 전부 지울까요?")) return;
     state.diffs = [];
+    loadedFileBase = null;
+    pendingDiffs = null;
+    els.pasteExisting.value = "";
+    els.loadStatus.className = "";
+    els.loadStatus.textContent = "";
     renderDiffs();
   });
 })();
