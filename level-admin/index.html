@@ -302,6 +302,7 @@
 <nav class="tool-nav">
   <button type="button" class="tool-nav-btn active" data-tool="diff">🖍️ 틀린그림찾기 (만들기·수정)</button>
   <button type="button" class="tool-nav-btn" data-tool="puzzle">🧩 직소 퍼즐</button>
+  <button type="button" class="tool-nav-btn" data-tool="reference">📋 틀린그림 대조표</button>
 </nav>
 
 <main>
@@ -426,6 +427,14 @@
 
   </div>
 
+  <!-- ============================= 틀린그림 대조표 (QA 참고용) ============================= -->
+  <div id="tool-reference" class="tool-panel">
+    <section class="card" style="padding:0; overflow:hidden;">
+      <iframe src="reference.html" title="틀린그림 대조표" style="display:block; width:100%; height:85vh; border:none;"></iframe>
+    </section>
+    <p class="meta-note">레벨을 만들 때 좌표를 확인/보정하려고 만들었던 참고용 대조표예요. 그림을 클릭하면 후보 위치를 추가하고, 기존 핀을 누르면 삭제 표시가 돼요. 다만 이 대조표는 마지막 전체 좌표 정리 이후로 갱신되지 않아서, 실제 배포된 levels-data.js와 다를 수 있어요.</p>
+  </div>
+
 </main>
 
 <script>
@@ -478,7 +487,7 @@
 
   // ---- Tool switcher --------------------------------------------------
   var navBtns = document.querySelectorAll(".tool-nav-btn");
-  var panels = { diff: document.getElementById("tool-diff"), puzzle: document.getElementById("tool-puzzle") };
+  var panels = { diff: document.getElementById("tool-diff"), puzzle: document.getElementById("tool-puzzle"), reference: document.getElementById("tool-reference") };
   Array.prototype.forEach.call(navBtns, function (btn) {
     btn.addEventListener("click", function () {
       Array.prototype.forEach.call(navBtns, function (b) { b.classList.toggle("active", b === btn); });
