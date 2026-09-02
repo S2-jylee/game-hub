@@ -11,48 +11,18 @@
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Karla:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
 <style>
   :root {
-    --paper: #f6f1e6;
-    --paper-raise: #fffdf7;
-    --ink: #2b2318;
-    --ink-soft: #766a55;
-    --ink-faint: #a8987a;
-    --line: #ddd0b4;
-    --accent: #d8432c;
-    --accent-soft: #f4ded8;
-    --accent-2: #2f6f62;
-    --accent-2-soft: #dbe9e3;
-    --shadow: 0 1px 2px rgba(43,35,24,0.06), 0 8px 20px -12px rgba(43,35,24,0.22);
+    --paper: #faf7ff;
+    --paper-raise: #ffffff;
+    --ink: #241b3a;
+    --ink-soft: #6b5f86;
+    --ink-faint: #9b8fb8;
+    --line: #ece4fa;
+    --accent: #e63b2e;
+    --accent-soft: #fbe3e0;
+    --accent-2: #0e9b45;
+    --accent-2-soft: #ddf3e3;
+    --shadow: 0 1px 2px rgba(36,27,58,0.06), 0 8px 20px -14px rgba(36,27,58,0.25);
     color-scheme: light;
-  }
-  @media (prefers-color-scheme: dark) {
-    :root:not([data-theme="light"]) {
-      --paper: #1b170f;
-      --paper-raise: #242016;
-      --ink: #ece3d2;
-      --ink-soft: #b3a488;
-      --ink-faint: #7d7159;
-      --line: #3a3222;
-      --accent: #ff6a4d;
-      --accent-soft: #3a251e;
-      --accent-2: #5cb6a2;
-      --accent-2-soft: #1f332d;
-      --shadow: 0 1px 2px rgba(0,0,0,0.4), 0 8px 24px -12px rgba(0,0,0,0.55);
-      color-scheme: dark;
-    }
-  }
-  :root[data-theme="dark"] {
-    --paper: #1b170f;
-    --paper-raise: #242016;
-    --ink: #ece3d2;
-    --ink-soft: #b3a488;
-    --ink-faint: #7d7159;
-    --line: #3a3222;
-    --accent: #ff6a4d;
-    --accent-soft: #3a251e;
-    --accent-2: #5cb6a2;
-    --accent-2-soft: #1f332d;
-    --shadow: 0 1px 2px rgba(0,0,0,0.4), 0 8px 24px -12px rgba(0,0,0,0.55);
-    color-scheme: dark;
   }
 
   * { box-sizing: border-box; }
@@ -304,8 +274,6 @@
     cursor: pointer;
     pointer-events: auto;
   }
-  :root:not([data-theme="light"]) .candidate-pin { color: var(--paper); }
-  :root[data-theme="dark"] .candidate-pin { color: var(--paper); }
   .frame[data-armed] { cursor: crosshair; }
 
   .report-row {
