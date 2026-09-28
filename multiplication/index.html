@@ -333,9 +333,9 @@ button{font-family:inherit;font-weight:inherit;color:inherit;cursor:pointer;bord
   };
 
   const TOTAL = 10;       // 한 판 문제 수
-  const RUN_STAGES = 5;   // 펭귄 달리기 스테이지 수
+  const RUN_STAGES = 10;  // 펭귄 달리기 스테이지 수
   const PER_STAGE = 10;   // 스테이지마다 문제 수
-  const STAGE_TIME = [7, 5.8, 4.8, 4, 3.3]; // 스테이지별 허들이 다가오는 시간(초)
+  const STAGE_TIME = [5, 4.4, 3.9, 3.5, 3.1, 2.8, 2.5, 2.25, 2.05, 1.9]; // 스테이지별 허들이 다가오는 시간(초)
   const TIME = 10;        // 도전 모드 제한 시간(초)
   const LIVES = 3;
   const COLORS = ['#ff7eb6', '#ffbe0b', '#60a5fa', '#34d399', '#a78bfa', '#ff9f43'];
@@ -345,10 +345,10 @@ button{font-family:inherit;font-weight:inherit;color:inherit;cursor:pointer;bord
   const MODE_NAME = { practice: '연습 놀이', challenge: '도전 놀이', penguin: '펭귄 달리기' };
   const CHEER = ['괜찮아, 다시 골라봐!', '아깝다! 한 번 더!', '틀려도 괜찮아 😊'];
   const STICKERS = ['🐶','🐱','🐼','🦊','🐸','🐵','🐯','🦁','🐨','🐷','🐹','🐧','🦄','🐙','🦖','🐳','🦋','🐞','🐢','🦒','🦔','🐬','🦩','🐿️'];
-  // 숫자 끝소리 받침 여부 (일,삼,육,칠,팔 → 받침 있음)
-  const BATCHIM = { 1: true, 2: false, 3: true, 4: false, 5: false, 6: true, 7: true, 8: true, 9: false };
-  const eun = n => BATCHIM[n] ? '은' : '는';
-  const eul = n => BATCHIM[n] ? '을' : '를';
+  // 숫자 끝자리 받침 여부 (영/십,일,삼,육,칠,팔 → 받침 있음)
+  const BATCHIM = { 0: true, 1: true, 2: false, 3: true, 4: false, 5: false, 6: true, 7: true, 8: true, 9: false };
+  const eun = n => BATCHIM[n % 10] ? '은' : '는';
+  const eul = n => BATCHIM[n % 10] ? '을' : '를';
 
   const state = {
     dans: new Set(store.get('ggd_dans', [2])),
@@ -892,7 +892,7 @@ button{font-family:inherit;font-weight:inherit;color:inherit;cursor:pointer;bord
     }
     if (run.fallT > 0) dir = 0;
     run.dir = dir;
-    run.px = Math.max(-0.82, Math.min(0.82, run.px + dir * 1.9 * dt));
+    run.px = Math.max(-0.82, Math.min(0.82, run.px + dir * (1.9 + run.stage * 0.15) * dt));
     run.lean += (dir * 0.22 - run.lean) * Math.min(1, dt * 10);
     $('#padL').classList.toggle('on', dir < -0.1);
     $('#padR').classList.toggle('on', dir > 0.1);
