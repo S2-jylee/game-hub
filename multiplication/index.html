@@ -779,8 +779,12 @@ button{font-family:inherit;font-weight:inherit;color:inherit;cursor:pointer;bord
     keys: { l: false, r: false }, gates: [], jumpT: 0, fallT: 0
   };
 
+  // 음원 끝 약 5초가 무음이라, 소리가 끝나는 지점에서 곡 처음으로 바로 돌아가요
+  const BGM_START = 0.23, BGM_END = 175.8;
   const bgm = new Audio('penguin-bgm.mp3');
   bgm.loop = true; bgm.volume = 0.35;
+  function loopBgm() { if (bgm.currentTime >= BGM_END) bgm.currentTime = BGM_START; }
+  bgm.addEventListener('timeupdate', loopBgm);
 
   function resizeRun() {
     const r = $('#runField').getBoundingClientRect();
@@ -809,7 +813,7 @@ button{font-family:inherit;font-weight:inherit;color:inherit;cursor:pointer;bord
     Object.assign(run, { active: true, dist: 0, px: 0, lean: 0, dir: 0, target: null, gates: [], jumpT: 0, fallT: 0, stage: 0, banner: null });
     run.keys.l = run.keys.r = false;
     run.tok++;
-    if (state.sound) { bgm.currentTime = 0; bgm.play().catch(() => {}); }
+    if (state.sound) { bgm.currentTime = BGM_START; bgm.play().catch(() => {}); }
     $('#runMsg').textContent = '◀ ▶ 로 움직여서 정답 허들로 가자! 🐧';
     nextRunQuestion();
     run.last = performance.now();
@@ -909,6 +913,7 @@ button{font-family:inherit;font-weight:inherit;color:inherit;cursor:pointer;bord
     if (run.banner && (run.banner.t -= dt) <= 0) run.banner = null;
 
     drawRun(now / 1000);
+    loopBgm(); // timeupdate보다 촘촘하게 확인해서 이음새를 매끄럽게
     run.raf = requestAnimationFrame(runFrame);
   }
 
