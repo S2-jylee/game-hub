@@ -330,6 +330,9 @@ button{font-family:inherit;color:inherit;cursor:pointer;border:0}
   };
 
   const TOTAL = 10;       // 한 판 문제 수
+  const RUN_STAGES = 5;   // 펭귄 달리기 스테이지 수
+  const PER_STAGE = 4;    // 스테이지마다 문제 수
+  const STAGE_TIME = [7, 5.8, 4.8, 4, 3.3]; // 스테이지별 허들이 다가오는 시간(초)
   const TIME = 10;        // 도전 모드 제한 시간(초)
   const LIVES = 3;
   const COLORS = ['#ff7eb6', '#ffbe0b', '#60a5fa', '#34d399', '#a78bfa', '#ff9f43'];
@@ -531,13 +534,13 @@ button{font-family:inherit;color:inherit;cursor:pointer;border:0}
     const pool = [];
     state.dans.forEach(a => { for (let b = 1; b <= 9; b++) pool.push([a, b]); });
     let qs = [];
-    while (qs.length < TOTAL) {
+    while (qs.length < state.total) {
       const next = shuffle(pool.slice());
       // 같은 문제가 연달아 나오지 않게
       if (qs.length && pool.length > 1 && next[0].join() === qs[qs.length - 1].join()) next.push(next.shift());
       qs = qs.concat(next);
     }
-    return qs.slice(0, TOTAL);
+    return qs.slice(0, state.total);
   }
 
   function makeChoices(a, b, count = 4) {
@@ -551,6 +554,7 @@ button{font-family:inherit;color:inherit;cursor:pointer;border:0}
 
   function startGame() {
     speak(''); // iOS 등에서 음성 권한 깨우기
+    state.total = state.mode === 'penguin' ? RUN_STAGES * PER_STAGE : TOTAL;
     Object.assign(state, {
       qs: buildQuestions(), i: 0, score: 0, lives: LIVES, combo: 0,
       correct: 0, wrong: [], locked: false
@@ -579,7 +583,7 @@ button{font-family:inherit;color:inherit;cursor:pointer;border:0}
   function talk(text) { $('#talk').textContent = text; }
 
   function nextQuestion() {
-    if (state.i >= TOTAL || (state.mode === 'challenge' && state.lives <= 0)) return finish();
+    if (state.i >= state.total || (state.mode === 'challenge' && state.lives <= 0)) return finish();
     const [a, b] = state.qs[state.i];
     state.cur = { a, b, ans: a * b };
     state.missedThis = false;
@@ -588,8 +592,8 @@ button{font-family:inherit;color:inherit;cursor:pointer;border:0}
     $('#qa').textContent = a; $('#qb').textContent = b;
     const qm = $('#qans'); qm.textContent = '?'; qm.className = 'q-mark';
     $('#hint').textContent = '';
-    $('#progressFill').style.width = (state.i / TOTAL * 100) + '%';
-    $('#progressText').textContent = `${state.i + 1} / ${TOTAL}`;
+    $('#progressFill').style.width = (state.i / state.total * 100) + '%';
+    $('#progressText').textContent = `${state.i + 1} / ${state.total}`;
 
     const box = $('#balloons'); box.innerHTML = '';
     const offset = rand(0, COLORS.length - 1);
@@ -716,7 +720,7 @@ button{font-family:inherit;color:inherit;cursor:pointer;border:0}
   function finish() {
     stopTimer(); stopRun();
     $('#progressFill').style.width = '100%';
-    const ratio = state.correct / TOTAL;
+    const ratio = state.correct / state.total;
     const stars = ratio >= 0.9 ? 3 : ratio >= 0.6 ? 2 : 1;
     const titles = { 3: '완벽해요! 🏆', 2: '아주 잘했어요! 🎉', 1: '잘했어요! 다음엔 더 잘할 수 있어 💪' };
     $('#resultTitle').textContent = (state.mode !== 'practice' && state.lives <= 0) ? '하트를 다 썼어요! 다시 도전! 💪' : titles[stars];
@@ -728,7 +732,8 @@ button{font-family:inherit;color:inherit;cursor:pointer;border:0}
     const isRecord = state.score > best;
     if (isRecord) store.set(bestKey, state.score);
     $('#resultCard').innerHTML =
-      `맞힌 문제 <b>${state.correct}</b> / ${TOTAL}<br>` +
+      (state.mode === 'penguin' ? `도착한 스테이지 <b>${Math.min(RUN_STAGES, run.stage + 1)}</b> / ${RUN_STAGES}<br>` : '') +
+      `맞힌 문제 <b>${state.correct}</b> / ${state.total}<br>` +
       `점수 <b>${state.score}</b>점 ${isRecord && state.score > 0 ? '<span class="record">🎊 최고 기록!</span>' : ''}<br>` +
       `<small style="color:var(--muted)">${MODE_NAME[state.mode]} 최고 점수: ${Math.max(best, state.score)}점</small>`;
 
@@ -795,7 +800,7 @@ button{font-family:inherit;color:inherit;cursor:pointer;border:0}
     renderHearts();
     show('#run');
     resizeRun();
-    Object.assign(run, { active: true, dist: 0, px: 0, lean: 0, dir: 0, target: null, gates: [], jumpT: 0, fallT: 0 });
+    Object.assign(run, { active: true, dist: 0, px: 0, lean: 0, dir: 0, target: null, gates: [], jumpT: 0, fallT: 0, stage: 0, banner: null });
     run.keys.l = run.keys.r = false;
     run.tok++;
     $('#runMsg').textContent = '◀ ▶ 로 움직여서 정답 허들로 가자! 🐧';
@@ -810,15 +815,21 @@ button{font-family:inherit;color:inherit;cursor:pointer;border:0}
   }
 
   function nextRunQuestion() {
-    if (state.i >= TOTAL || state.lives <= 0) return finish();
+    if (state.i >= state.total || state.lives <= 0) return finish();
     const [a, b] = state.qs[state.i];
     state.cur = { a, b, ans: a * b };
     $('#rqa').textContent = a; $('#rqb').textContent = b;
     const qm = $('#rqans'); qm.textContent = '?'; qm.className = 'q-mark';
-    $('#runProgress').style.width = (state.i / TOTAL * 100) + '%';
-    $('#runProgressText').textContent = `${state.i + 1} / ${TOTAL}`;
-    // 뒤로 갈수록 조금씩 빨라짐 (7초 → 4.2초)
-    run.speed = Z_SPAWN / Math.max(4.2, 7 - state.i * 0.3);
+    $('#runProgress').style.width = (state.i / state.total * 100) + '%';
+    // 스테이지가 올라갈수록 허들이 빨리 다가옴
+    const stage = Math.floor(state.i / PER_STAGE);
+    if (stage !== run.stage || state.i === 0) {
+      run.stage = stage;
+      run.banner = { text: stage === 0 ? '스테이지 1 출발! 🐧' : `스테이지 ${stage + 1}! 더 빨라져요 🚀`, t: 1.8 };
+      if (stage > 0) { sfx.win(); $('#runMsg').textContent = `🎉 스테이지 ${stage}${eul(stage)} 통과했어요!`; }
+    }
+    $('#runProgressText').textContent = `스테이지 ${stage + 1} / ${RUN_STAGES}  ·  ${state.i + 1} / ${state.total}`;
+    run.speed = Z_SPAWN / STAGE_TIME[stage];
     run.gates.push({ z: Z_SPAWN, vals: makeChoices(a, b, 3), ans: a * b, done: false, pick: -1, ok: false });
     speak(`${a} 곱하기 ${b}`);
   }
@@ -887,6 +898,7 @@ button{font-family:inherit;color:inherit;cursor:pointer;border:0}
     run.gates = run.gates.filter(gt => gt.z > -CAM * 0.7);
     run.jumpT = Math.max(0, run.jumpT - dt);
     run.fallT = Math.max(0, run.fallT - dt);
+    if (run.banner && (run.banner.t -= dt) <= 0) run.banner = null;
 
     drawRun(now / 1000);
     run.raf = requestAnimationFrame(runFrame);
@@ -958,6 +970,22 @@ button{font-family:inherit;color:inherit;cursor:pointer;border:0}
     far.forEach(gt => drawGate(g, gt));
     drawPenguin(g, t);
     near.forEach(gt => drawGate(g, gt));
+    if (run.banner) drawBanner(g, run.banner);
+  }
+
+  function drawBanner(g, bn) {
+    const fs = Math.min(g.W * 0.07, 34);
+    ctx.save();
+    ctx.globalAlpha = Math.min(1, bn.t / 0.3, (1.8 - bn.t) / 0.2 + 0.2);
+    ctx.font = `${fs}px Jua, sans-serif`;
+    const w = ctx.measureText(bn.text).width + fs * 1.4, h = fs * 1.9;
+    const x = g.cx - w / 2, y = g.hy * 0.55;
+    roundRect(x, y, w, h, h / 2);
+    ctx.fillStyle = '#ffffff'; ctx.fill();
+    ctx.lineWidth = 4; ctx.strokeStyle = '#ff9f43'; ctx.stroke();
+    ctx.fillStyle = '#3b2d5c'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText(bn.text, g.cx, y + h / 2 + fs * 0.05);
+    ctx.restore();
   }
 
   function roundRect(x, y, w, h, r) {
