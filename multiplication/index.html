@@ -565,7 +565,7 @@ button{font-family:inherit;color:inherit;cursor:pointer;border:0}
 
     const q = `${a} 곱하기 ${b}${eun(b)}?`;
     talk(q + ' 🎈 풍선을 터뜨려!');
-    speak(q);
+    speak(`${a} 곱하기 ${b}`);
     if (state.mode === 'challenge') startTimer();
   }
 
