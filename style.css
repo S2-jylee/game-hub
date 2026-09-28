@@ -165,6 +165,9 @@ header, main {
 .tile-findhidden { background: var(--peach); }
 .tile-findhidden .tile-emoji { color: var(--peach-dark); }
 
+.tile-multiplication { background: var(--red); }
+.tile-multiplication .tile-emoji { color: var(--red-dark); }
+
 /* ---- Game screen (top nav + embedded game) ---- */
 #game-screen {
   display: none;

@@ -6,7 +6,8 @@
     typing: "https://typing-practice-izqt.vercel.app/",
     memory: "https://memory-virid-five.vercel.app",
     puzzle: "https://puzzle-lyart-one.vercel.app",
-    findhidden: "https://find-hidden-picture.vercel.app"
+    findhidden: "https://find-hidden-picture.vercel.app",
+    multiplication: "multiplication/index.html"
   };
 
   var homeScreen = document.getElementById("home-screen");
