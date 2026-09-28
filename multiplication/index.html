@@ -620,7 +620,6 @@ button{font-family:inherit;color:inherit;cursor:pointer;border:0}
       const qm = $('#qans'); qm.textContent = ans; qm.className = 'q-mark ok';
       animate(buddy, 'jump');
       talk(pick(PRAISE));
-      speak(`${a} 곱하기 ${b}${eun(b)} ${ans}`);
       showCombo();
       setTimeout(() => { state.i++; nextQuestion(); }, 1500);
       return;
