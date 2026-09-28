@@ -70,9 +70,9 @@ button{font-family:inherit;color:inherit;cursor:pointer;border:0}
 .buddy-pick{display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap}
 .buddy-pick button{font-size:26px;width:44px;height:44px;border-radius:50%;background:#f1edff}
 .buddy-pick button.on{background:#ffe7f2;box-shadow:0 0 0 3px var(--pink)}
-.modes{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
-.mode{border-radius:16px;padding:8px 8px;font-size:18px;background:#f1edff;line-height:1.3}
-.mode small{display:block;font-size:13px;color:var(--muted)}
+.modes{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px}
+.mode{border-radius:16px;padding:8px 4px;font-size:17px;background:#f1edff;line-height:1.3;word-break:keep-all}
+.mode small{display:block;font-size:12px;color:var(--muted)}
 .mode.on{background:#d9fbe9;box-shadow:0 0 0 3px var(--green)}
 .big-btn{width:100%;height:54px;border-radius:20px;font-size:26px;color:#fff;background:linear-gradient(#ff8fc2,#ff5d9e);animation:wiggle 2.5s ease-in-out infinite}
 .big-btn:active{transform:translateY(2px)}
@@ -98,7 +98,7 @@ button{font-family:inherit;color:inherit;cursor:pointer;border:0}
 .bars{width:100%;margin:8px 0 2px}
 .bar{height:12px;background:rgba(255,255,255,.7);border-radius:10px;overflow:hidden;margin-bottom:6px}
 .bar > div{height:100%;border-radius:10px;transition:width .35s ease}
-#progressFill{background:linear-gradient(90deg,var(--green),#7ee8b8)}
+#progressFill,#runProgress{background:linear-gradient(90deg,var(--green),#7ee8b8)}
 #timerFill{background:linear-gradient(90deg,var(--orange),var(--yellow));transition:none}
 #timerFill.hurry{background:var(--red)}
 .bar-label{font-size:15px;color:var(--muted);text-align:right;margin-top:-2px}
@@ -115,6 +115,16 @@ button{font-family:inherit;color:inherit;cursor:pointer;border:0}
 .hint{min-height:26px;font-size:18px;color:var(--muted);margin-top:4px;text-align:center}
 .combo{min-height:26px;font-size:20px;color:var(--orange)}
 .combo.show{animation:bump .5s ease}
+
+/* ---------- 펭귄 달리기 ---------- */
+.run-q{font-size:clamp(34px,9vw,50px);margin:4px 0 0}
+.run-msg{min-height:26px;font-size:18px;margin-top:4px;text-align:center}
+.run-field{flex:1;width:100%;min-height:240px;position:relative;margin-top:6px;border-radius:24px;overflow:hidden;touch-action:none;cursor:pointer}
+#runCanvas{position:absolute;inset:0;width:100%;height:100%;display:block}
+.run-pad{position:absolute;bottom:12px;width:58px;height:58px;border-radius:50%;background:rgba(255,255,255,.6);display:flex;align-items:center;justify-content:center;font-size:24px;color:var(--ink);pointer-events:none;transition:transform .1s,background .1s}
+.run-pad.left{left:12px}
+.run-pad.right{right:12px}
+.run-pad.on{background:#fff;transform:scale(.9)}
 
 .balloons{flex:1;width:100%;display:grid;grid-template-columns:repeat(4,1fr);gap:12px;align-items:center;justify-items:center;padding:6px 0 56px;min-height:200px}
 .balloon{--c:#ff7eb6;position:relative;width:min(96px,40vw);aspect-ratio:5/6;
@@ -218,6 +228,7 @@ button{font-family:inherit;color:inherit;cursor:pointer;border:0}
       <div class="modes">
         <button class="mode on" data-mode="practice">🌱 연습 놀이<small>천천히, 틀려도 다시!</small></button>
         <button class="mode" data-mode="challenge">⏱️ 도전 놀이<small>10초 안에! 하트 3개</small></button>
+        <button class="mode" data-mode="penguin">🐧 펭귄 달리기<small>정답 허들로 쌩쌩!</small></button>
       </div>
 
       <button class="big-btn" id="startBtn">시작! 🚀</button>
@@ -258,6 +269,29 @@ button{font-family:inherit;color:inherit;cursor:pointer;border:0}
     <div class="hint" id="hint"></div>
     <div class="combo" id="combo"></div>
     <div class="balloons" id="balloons"></div>
+  </section>
+
+  <!-- 펭귄 달리기 화면 -->
+  <section id="run" class="screen hidden">
+    <div class="hud">
+      <button class="icon-btn" id="runQuit" title="처음으로">🏠</button>
+      <div id="runHearts"></div>
+      <div class="score" id="runScoreBox">⭐ <span id="runScore">0</span></div>
+    </div>
+    <div class="bars">
+      <div class="bar"><div id="runProgress" style="width:0"></div></div>
+      <div class="bar-label" id="runProgressText">1 / 10</div>
+    </div>
+    <div class="question run-q">
+      <span class="n" id="rqa">2</span><span class="x">×</span><span class="n" id="rqb">3</span>
+      <span class="x">=</span><span class="q-mark" id="rqans">?</span>
+    </div>
+    <div class="run-msg" id="runMsg"></div>
+    <div class="run-field" id="runField">
+      <canvas id="runCanvas"></canvas>
+      <div class="run-pad left" id="padL">◀</div>
+      <div class="run-pad right" id="padR">▶</div>
+    </div>
   </section>
 
   <!-- 결과 화면 -->
@@ -302,6 +336,7 @@ button{font-family:inherit;color:inherit;cursor:pointer;border:0}
   const CARD_BG = ['#ffe7f2', '#fff4cc', '#e1efff', '#dcfaec', '#efe9ff', '#ffecd9'];
   const BUDDIES = ['🐰', '🐻', '🐥', '🐶', '🐱', '🐼'];
   const PRAISE = ['딩동댕! 🔔', '잘했어! 🎉', '최고야! 👍', '우와, 천재다! 🌟', '멋져요! 💖', '정답이야! 🍭'];
+  const MODE_NAME = { practice: '연습 놀이', challenge: '도전 놀이', penguin: '펭귄 달리기' };
   const CHEER = ['괜찮아, 다시 골라봐!', '아깝다! 한 번 더!', '틀려도 괜찮아 😊'];
   const STICKERS = ['🐶','🐱','🐼','🦊','🐸','🐵','🐯','🦁','🐨','🐷','🐹','🐧','🦄','🐙','🦖','🐳','🦋','🐞','🐢','🦒','🦔','🐬','🦩','🐿️'];
   // 숫자 끝소리 받침 여부 (일,삼,육,칠,팔 → 받침 있음)
@@ -360,7 +395,9 @@ button{font-family:inherit;color:inherit;cursor:pointer;border:0}
   /* ---------- 효과 ---------- */
   function burst(el) {
     const r = el.getBoundingClientRect();
-    const cx = r.left + r.width / 2, cy = r.top + r.height / 2;
+    burstAt(r.left + r.width / 2, r.top + r.height / 2);
+  }
+  function burstAt(cx, cy) {
     const bits = ['⭐', '✨', '💖', '🎈', '🌟', '🍬'];
     for (let k = 0; k < 14; k++) {
       const p = document.createElement('div');
@@ -377,9 +414,12 @@ button{font-family:inherit;color:inherit;cursor:pointer;border:0}
   }
   function floatText(el, text) {
     const r = el.getBoundingClientRect();
+    floatAt(r.left + r.width / 2, r.top, text);
+  }
+  function floatAt(x, y, text) {
     const f = document.createElement('div');
     f.className = 'float-text'; f.textContent = text;
-    f.style.left = r.left + r.width / 2 + 'px'; f.style.top = r.top + 'px';
+    f.style.left = x + 'px'; f.style.top = y + 'px';
     document.body.appendChild(f);
     setTimeout(() => f.remove(), 1000);
   }
@@ -484,7 +524,7 @@ button{font-family:inherit;color:inherit;cursor:pointer;border:0}
 
   /* ---------- 게임 ---------- */
   function show(id) {
-    ['#home', '#game', '#result'].forEach(s => $(s).classList.toggle('hidden', s !== id));
+    ['#home', '#game', '#run', '#result'].forEach(s => $(s).classList.toggle('hidden', s !== id));
   }
 
   function buildQuestions() {
@@ -500,12 +540,12 @@ button{font-family:inherit;color:inherit;cursor:pointer;border:0}
     return qs.slice(0, TOTAL);
   }
 
-  function makeChoices(a, b) {
+  function makeChoices(a, b, count = 4) {
     const ans = a * b;
     const set = new Set([ans]);
     const near = shuffle([a * (b + 1), a * (b - 1), (a + 1) * b, (a - 1) * b, ans + 1, ans - 1, ans + 2, ans - 2, ans + 10, ans - 10]);
-    for (const n of near) { if (set.size >= 4) break; if (n > 0) set.add(n); }
-    while (set.size < 4) set.add(ans + rand(3, 12));
+    for (const n of near) { if (set.size >= count) break; if (n > 0) set.add(n); }
+    while (set.size < count) set.add(ans + rand(3, 12));
     return shuffle([...set]);
   }
 
@@ -516,6 +556,8 @@ button{font-family:inherit;color:inherit;cursor:pointer;border:0}
       correct: 0, wrong: [], locked: false
     });
     $('#score').textContent = '0';
+    $('#runScore').textContent = '0';
+    if (state.mode === 'penguin') return startRun();
     $('#timerBar').classList.toggle('hidden', state.mode !== 'challenge');
     renderHearts();
     show('#game');
@@ -523,7 +565,7 @@ button{font-family:inherit;color:inherit;cursor:pointer;border:0}
   }
 
   function renderHearts(justLost) {
-    const h = $('#hearts');
+    const h = $(state.mode === 'penguin' ? '#runHearts' : '#hearts');
     if (state.mode === 'practice') { h.className = 'practice-tag'; h.textContent = '🌱 연습 놀이'; return; }
     h.className = 'hearts';
     let html = '';
@@ -593,8 +635,8 @@ button{font-family:inherit;color:inherit;cursor:pointer;border:0}
 
   function bumpScore(gain) {
     state.score += gain;
-    $('#score').textContent = state.score;
-    animate($('#scoreBox'), 'bump');
+    $('#score').textContent = $('#runScore').textContent = state.score;
+    animate($(state.mode === 'penguin' ? '#runScoreBox' : '#scoreBox'), 'bump');
   }
 
   function showCombo() {
@@ -672,12 +714,12 @@ button{font-family:inherit;color:inherit;cursor:pointer;border:0}
   }
 
   function finish() {
-    stopTimer();
+    stopTimer(); stopRun();
     $('#progressFill').style.width = '100%';
     const ratio = state.correct / TOTAL;
     const stars = ratio >= 0.9 ? 3 : ratio >= 0.6 ? 2 : 1;
     const titles = { 3: '완벽해요! 🏆', 2: '아주 잘했어요! 🎉', 1: '잘했어요! 다음엔 더 잘할 수 있어 💪' };
-    $('#resultTitle').textContent = (state.mode === 'challenge' && state.lives <= 0) ? '하트를 다 썼어요! 다시 도전! 💪' : titles[stars];
+    $('#resultTitle').textContent = (state.mode !== 'practice' && state.lives <= 0) ? '하트를 다 썼어요! 다시 도전! 💪' : titles[stars];
     $('#stars').innerHTML = [1, 2, 3].map(k =>
       `<span class="${k <= stars ? '' : 'dim'}" style="animation-delay:${k * 0.25}s">⭐</span>`).join('');
 
@@ -688,7 +730,7 @@ button{font-family:inherit;color:inherit;cursor:pointer;border:0}
     $('#resultCard').innerHTML =
       `맞힌 문제 <b>${state.correct}</b> / ${TOTAL}<br>` +
       `점수 <b>${state.score}</b>점 ${isRecord && state.score > 0 ? '<span class="record">🎊 최고 기록!</span>' : ''}<br>` +
-      `<small style="color:var(--muted)">${state.mode === 'practice' ? '연습' : '도전'} 놀이 최고 점수: ${Math.max(best, state.score)}점</small>`;
+      `<small style="color:var(--muted)">${MODE_NAME[state.mode]} 최고 점수: ${Math.max(best, state.score)}점</small>`;
 
     // 스티커 보상
     const ns = $('#newSticker');
@@ -709,12 +751,295 @@ button{font-family:inherit;color:inherit;cursor:pointer;border:0}
       rv.innerHTML = '<div class="label" style="text-align:center">💯 틀린 문제가 하나도 없어요!</div>';
     }
 
+    $('#resultBuddy').textContent = state.mode === 'penguin' ? '🐧' : state.buddy;
     show('#result');
     sfx.win();
     speak(stars === 3 ? '완벽해요! 최고야!' : '잘했어요!');
     confetti(stars * 15);
     renderStickers();
   }
+
+  /* ---------- 펭귄 달리기 ---------- */
+  const Z_SPAWN = 60;     // 허들이 처음 나타나는 거리
+  const CAM = 18;         // 원근감 (작을수록 강함)
+  const LANE_X = [-2 / 3, 0, 2 / 3];
+  const canvas = $('#runCanvas');
+  const ctx = canvas.getContext('2d');
+  const run = {
+    W: 0, H: 0, raf: 0, last: 0, active: false, tok: 0,
+    dist: 0, speed: 8, px: 0, lean: 0, dir: 0, target: null,
+    keys: { l: false, r: false }, gates: [], jumpT: 0, fallT: 0
+  };
+
+  function resizeRun() {
+    const r = $('#runField').getBoundingClientRect();
+    const dpr = window.devicePixelRatio || 1;
+    run.W = r.width; run.H = r.height;
+    canvas.width = Math.round(r.width * dpr); canvas.height = Math.round(r.height * dpr);
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  }
+  window.addEventListener('resize', () => { if (run.active) resizeRun(); });
+
+  // 화면 좌표 계산: x(-1~1 길 폭), z(앞쪽 거리), h(높이)
+  function geo() {
+    const { W, H } = run;
+    return { W, H, cx: W / 2, hy: H * 0.26, gy: H * 0.8, R: Math.min(W * 0.4, H * 0.62) };
+  }
+  function proj(g, x, z, h = 0) {
+    const s = CAM / (CAM + z);
+    return { x: g.cx + x * s * g.R, y: g.hy + (g.gy - g.hy) * s - h * s * g.R, s };
+  }
+  const laneOf = x => x < -1 / 3 ? 0 : x > 1 / 3 ? 2 : 1;
+
+  function startRun() {
+    renderHearts();
+    show('#run');
+    resizeRun();
+    Object.assign(run, { active: true, dist: 0, px: 0, lean: 0, dir: 0, target: null, gates: [], jumpT: 0, fallT: 0 });
+    run.keys.l = run.keys.r = false;
+    run.tok++;
+    $('#runMsg').textContent = '◀ ▶ 로 움직여서 정답 허들로 가자! 🐧';
+    nextRunQuestion();
+    run.last = performance.now();
+    cancelAnimationFrame(run.raf);
+    run.raf = requestAnimationFrame(runFrame);
+  }
+  function stopRun() {
+    run.active = false; run.tok++;
+    cancelAnimationFrame(run.raf);
+  }
+
+  function nextRunQuestion() {
+    if (state.i >= TOTAL || state.lives <= 0) return finish();
+    const [a, b] = state.qs[state.i];
+    state.cur = { a, b, ans: a * b };
+    $('#rqa').textContent = a; $('#rqb').textContent = b;
+    const qm = $('#rqans'); qm.textContent = '?'; qm.className = 'q-mark';
+    $('#runProgress').style.width = (state.i / TOTAL * 100) + '%';
+    $('#runProgressText').textContent = `${state.i + 1} / ${TOTAL}`;
+    // 뒤로 갈수록 조금씩 빨라짐 (7초 → 4.2초)
+    run.speed = Z_SPAWN / Math.max(4.2, 7 - state.i * 0.3);
+    run.gates.push({ z: Z_SPAWN, vals: makeChoices(a, b, 3), ans: a * b, done: false, pick: -1, ok: false });
+    speak(`${a} 곱하기 ${b}`);
+  }
+
+  function judgeGate(gate) {
+    gate.done = true;
+    const lane = laneOf(run.px);
+    const { a, b, ans } = state.cur;
+    gate.pick = lane;
+    gate.ok = gate.vals[lane] === ans;
+    const qm = $('#rqans'); qm.textContent = ans;
+    const g = geo(), p = proj(g, run.px, 0), r = canvas.getBoundingClientRect();
+    const sx = r.left + p.x, sy = r.top + p.y - g.R * 0.25;
+    let delay;
+    if (gate.ok) {
+      state.correct++; state.combo++;
+      const gain = 10 + Math.min(state.combo - 1, 5) * 2;
+      sfx.pop(); sfx.correct();
+      burstAt(sx, sy); floatAt(sx, sy - 30, '+' + gain);
+      bumpScore(gain);
+      qm.className = 'q-mark ok';
+      run.jumpT = 0.55;
+      $('#runMsg').textContent = pick(PRAISE) + (state.combo >= 2 ? `  🔥 ${state.combo}연속!` : '');
+      delay = 900;
+    } else {
+      sfx.wrong();
+      state.combo = 0;
+      state.wrong.push({ a, b, ans });
+      state.lives--;
+      renderHearts(true);
+      qm.className = 'q-mark reveal';
+      run.fallT = 0.9;
+      $('#runMsg').textContent = `앗! ${a} × ${b} = ${ans} 이야!`;
+      delay = 1700;
+    }
+    const tok = run.tok;
+    setTimeout(() => { if (tok !== run.tok) return; state.i++; nextRunQuestion(); }, delay);
+  }
+
+  function runFrame(now) {
+    if (!run.active) return;
+    const dt = Math.min(0.05, (now - run.last) / 1000);
+    run.last = now;
+
+    // 펭귄 움직이기
+    let dir = (run.keys.r ? 1 : 0) - (run.keys.l ? 1 : 0);
+    if (dir) run.target = null;
+    else if (run.target != null) {
+      const d = run.target - run.px;
+      if (Math.abs(d) < 0.02) run.target = null;
+      else dir = Math.max(-1, Math.min(1, d * 8));
+    }
+    if (run.fallT > 0) dir = 0;
+    run.dir = dir;
+    run.px = Math.max(-0.82, Math.min(0.82, run.px + dir * 1.9 * dt));
+    run.lean += (dir * 0.22 - run.lean) * Math.min(1, dt * 10);
+    $('#padL').classList.toggle('on', dir < -0.1);
+    $('#padR').classList.toggle('on', dir > 0.1);
+
+    // 앞으로 달리기
+    run.dist += run.speed * dt;
+    run.gates.forEach(gt => {
+      gt.z -= run.speed * dt;
+      if (!gt.done && gt.z <= 0) judgeGate(gt);
+    });
+    run.gates = run.gates.filter(gt => gt.z > -CAM * 0.7);
+    run.jumpT = Math.max(0, run.jumpT - dt);
+    run.fallT = Math.max(0, run.fallT - dt);
+
+    drawRun(now / 1000);
+    run.raf = requestAnimationFrame(runFrame);
+  }
+
+  const PEAKS = [[0.06, 0.1, 0.16], [0.2, 0.17, 0.2], [0.36, 0.08, 0.14], [0.66, 0.12, 0.18], [0.82, 0.19, 0.22], [0.97, 0.09, 0.14]];
+  function drawRun(t) {
+    const g = geo(), { W, H, cx, hy, gy, R } = g;
+    ctx.clearRect(0, 0, W, H);
+
+    // 하늘
+    const sky = ctx.createLinearGradient(0, 0, 0, hy);
+    sky.addColorStop(0, '#7cc8ff'); sky.addColorStop(1, '#e3f5ff');
+    ctx.fillStyle = sky; ctx.fillRect(0, 0, W, hy + 1);
+
+    // 빙산
+    PEAKS.forEach(([fx, fh, fw]) => {
+      const x = fx * W, top = hy - fh * H, half = fw * W / 2;
+      ctx.fillStyle = '#ffffff';
+      ctx.beginPath(); ctx.moveTo(x - half, hy); ctx.lineTo(x, top); ctx.lineTo(x + half, hy); ctx.fill();
+      ctx.fillStyle = '#cfe8fb';
+      ctx.beginPath(); ctx.moveTo(x, top); ctx.lineTo(x + half, hy); ctx.lineTo(x + half * 0.2, hy); ctx.fill();
+    });
+
+    // 눈밭과 얼음길
+    ctx.fillStyle = '#f5fbff'; ctx.fillRect(0, hy, W, H - hy);
+    const sb = (H - hy) / (gy - hy);
+    ctx.fillStyle = '#d6ecff';
+    ctx.beginPath(); ctx.moveTo(cx, hy);
+    ctx.lineTo(cx + 1.05 * sb * R, H); ctx.lineTo(cx - 1.05 * sb * R, H); ctx.closePath(); ctx.fill();
+    ctx.strokeStyle = '#9fd0f5'; ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.moveTo(cx, hy); ctx.lineTo(cx + 1.05 * sb * R, H);
+    ctx.moveTo(cx, hy); ctx.lineTo(cx - 1.05 * sb * R, H);
+    ctx.stroke();
+
+    // 칸 나누는 점선 (달리는 느낌)
+    ctx.strokeStyle = '#b3d9f7'; ctx.lineCap = 'round';
+    const off = run.dist % 6;
+    for (let k = -2; k < 12; k++) {
+      const z = k * 6 - off;
+      if (z < -CAM * 0.6) continue;
+      [-1 / 3, 1 / 3].forEach(x => {
+        const p1 = proj(g, x, z), p2 = proj(g, x, z + 2.4);
+        ctx.lineWidth = Math.max(1, 6 * p1.s);
+        ctx.beginPath(); ctx.moveTo(p1.x, p1.y); ctx.lineTo(p2.x, p2.y); ctx.stroke();
+      });
+    }
+
+    // 길가 깃발 (먼 것부터)
+    const foff = run.dist % 10;
+    for (let k = 7; k >= 0; k--) {
+      const z = k * 10 - foff;
+      if (z < -CAM * 0.5) continue;
+      const idx = Math.floor((run.dist + z) / 10);
+      [-1.25, 1.25].forEach((x, side) => {
+        const b = proj(g, x, z), tp = proj(g, x, z, 0.38);
+        ctx.strokeStyle = '#6b5f86'; ctx.lineWidth = Math.max(1, 5 * b.s);
+        ctx.beginPath(); ctx.moveTo(b.x, b.y); ctx.lineTo(tp.x, tp.y); ctx.stroke();
+        const fl = proj(g, x + (side ? -0.16 : 0.16), z, 0.3);
+        ctx.fillStyle = (idx + side) % 2 ? '#ff5d73' : '#60a5fa';
+        ctx.beginPath(); ctx.moveTo(tp.x, tp.y); ctx.lineTo(fl.x, fl.y); ctx.lineTo(tp.x, (tp.y + b.y) / 2 - (b.y - tp.y) * 0.25); ctx.fill();
+      });
+    }
+
+    // 허들: 펭귄보다 먼 것 → 펭귄 → 지나간 것
+    const far = run.gates.filter(gt => gt.z >= 0).sort((a, b) => b.z - a.z);
+    const near = run.gates.filter(gt => gt.z < 0);
+    far.forEach(gt => drawGate(g, gt));
+    drawPenguin(g, t);
+    near.forEach(gt => drawGate(g, gt));
+  }
+
+  function roundRect(x, y, w, h, r) {
+    ctx.beginPath();
+    ctx.moveTo(x + r, y); ctx.arcTo(x + w, y, x + w, y + h, r); ctx.arcTo(x + w, y + h, x, y + h, r);
+    ctx.arcTo(x, y + h, x, y, r); ctx.arcTo(x, y, x + w, y, r); ctx.closePath();
+  }
+
+  function drawGate(g, gt) {
+    ctx.save();
+    ctx.globalAlpha = Math.min(1, (Z_SPAWN - gt.z) / 10 + 0.15);
+    LANE_X.forEach((c, i) => {
+      if (gt.done && gt.ok && gt.pick === i) return; // 정답 허들은 부서짐
+      // 기둥
+      ctx.strokeStyle = '#6b5f86';
+      [c - 0.22, c + 0.22].forEach(x => {
+        const b = proj(g, x, gt.z), tp = proj(g, x, gt.z, 0.16);
+        ctx.lineWidth = Math.max(1.5, 7 * b.s);
+        ctx.beginPath(); ctx.moveTo(b.x, b.y); ctx.lineTo(tp.x, tp.y); ctx.stroke();
+      });
+      // 판
+      const tl = proj(g, c - 0.29, gt.z, 0.46), br = proj(g, c + 0.29, gt.z, 0.14);
+      const w = br.x - tl.x, h = br.y - tl.y;
+      roundRect(tl.x, tl.y, w, h, Math.min(w, h) * 0.22);
+      const isAns = gt.vals[i] === gt.ans;
+      ctx.fillStyle = gt.done && !gt.ok && i === gt.pick ? '#b9b3c9' : COLORS[(i * 2) % COLORS.length];
+      ctx.fill();
+      ctx.lineWidth = Math.max(1.5, (gt.done && isAns ? 14 : 6) * tl.s);
+      ctx.strokeStyle = gt.done && isAns ? '#34d399' : '#ffffff';
+      ctx.stroke();
+      ctx.fillStyle = '#ffffff';
+      ctx.font = `${Math.max(8, h * 0.66)}px Jua, sans-serif`;
+      ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.fillText(gt.vals[i], tl.x + w / 2, tl.y + h / 2 + h * 0.04);
+    });
+    ctx.restore();
+  }
+
+  function drawPenguin(g, t) {
+    const p = proj(g, run.px, 0);
+    const size = Math.min(g.R * 0.42, (g.gy - g.hy) * 0.5);
+    let y = p.y, rot = run.lean + Math.sin(t * 14) * 0.09;
+    if (run.jumpT > 0) y -= Math.sin(Math.PI * (1 - run.jumpT / 0.55)) * g.R * 0.28;
+    if (run.fallT > 0) {
+      const k = 1 - run.fallT / 0.9;
+      rot = Math.sin(k * Math.PI * 4) * 0.5 * (1 - k);
+    }
+    ctx.save();
+    ctx.translate(p.x, y + size * 0.1);
+    ctx.rotate(rot);
+    ctx.font = `${size}px "Segoe UI Emoji","Apple Color Emoji","Noto Color Emoji",sans-serif`;
+    ctx.textAlign = 'center'; ctx.textBaseline = 'bottom';
+    ctx.fillText('🐧', 0, 0);
+    if (run.fallT > 0) { ctx.font = `${size * 0.4}px sans-serif`; ctx.fillText('💫', 0, -size * 0.85); }
+    ctx.restore();
+  }
+
+  // 터치·마우스: 누른 곳으로 펭귄이 따라가요
+  const field = $('#runField');
+  function aim(e) {
+    const g = geo(), r = field.getBoundingClientRect();
+    run.target = Math.max(-0.82, Math.min(0.82, (e.clientX - r.left - g.cx) / g.R));
+  }
+  field.addEventListener('pointerdown', e => { field.setPointerCapture(e.pointerId); aim(e); });
+  field.addEventListener('pointermove', e => { if (field.hasPointerCapture(e.pointerId)) aim(e); });
+
+  // 키보드: ← → 또는 A D
+  const RUN_KEYS = { ArrowLeft: 'l', a: 'l', A: 'l', ArrowRight: 'r', d: 'r', D: 'r' };
+  document.addEventListener('keydown', e => {
+    if (!run.active || !RUN_KEYS[e.key]) return;
+    run.keys[RUN_KEYS[e.key]] = true; e.preventDefault();
+  });
+  document.addEventListener('keyup', e => {
+    if (RUN_KEYS[e.key]) run.keys[RUN_KEYS[e.key]] = false;
+  });
+  window.addEventListener('blur', () => { run.keys.l = run.keys.r = false; });
+
+  $('#runQuit').onclick = () => {
+    stopRun();
+    if ('speechSynthesis' in window) speechSynthesis.cancel();
+    show('#home');
+  };
 
   $('#startBtn').onclick = startGame;
   $('#againBtn').onclick = startGame;
