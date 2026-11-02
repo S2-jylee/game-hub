@@ -166,7 +166,16 @@
     background: #f4eefd repeating-linear-gradient(45deg, #efe7fc 0 10px, #f4eefd 10px 20px);
     border: 1px solid var(--line);
     cursor: crosshair;
+    touch-action: none;
+    user-select: none;
+    -webkit-user-select: none;
   }
+  .area-svg { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+  .area-saved { fill: color-mix(in srgb, var(--red) 22%, transparent); stroke: var(--red); stroke-width: 2; }
+  .area-live { fill: rgba(255, 255, 255, 0.28); stroke: var(--red); stroke-width: 3; stroke-linejoin: round; }
+  .pen-note { color: var(--text-soft); font-size: 0.85rem; margin: 10px 2px 0; }
+  .pen-note.nudge { color: var(--red); font-weight: 800; }
+  .diff-list .area-tag { flex: none; width: 64px; font-size: 0.72rem; font-weight: 800; color: var(--text-soft); text-align: center; }
   .frame .panel { position: absolute; inset: 0; overflow: hidden; }
   .frame .panel img { position: absolute; top: 0; height: 100%; }
   .frame .side-tag {
@@ -323,7 +332,7 @@
 
     <section class="card">
       <h2>0. 기존 레벨 수정하기 (선택)</h2>
-      <p class="meta-note">아래에서 고치고 싶은 레벨을 고르면 이미지와 기존에 표시된 위치가 자동으로 불러와져요. 그림을 클릭해서 위치를 새로 추가하거나, 핀을 눌러서 삭제하면 돼요. 다 고쳤으면 "4. 결과"의 코드를 복사해서 <b>levels-data.js</b>의 그 레벨 부분과 통째로 바꿔치기하면 끝! 새 레벨을 만들 때는 이 칸을 그냥 "새 레벨 만들기"로 둬요.</p>
+      <p class="meta-note">아래에서 고치고 싶은 레벨을 고르면 이미지와 기존에 표시된 위치가 자동으로 불러와져요. 그림 위에 펜으로 영역을 둘러 그려서 새로 추가하거나, 핀을 눌러서 삭제하면 돼요. 다 고쳤으면 "4. 결과"의 코드를 복사해서 <b>levels-data.js</b>의 그 레벨 부분과 통째로 바꿔치기하면 끝! 새 레벨을 만들 때는 이 칸을 그냥 "새 레벨 만들기"로 둬요.</p>
       <div class="field">
         <label for="edit-level-select">수정할 레벨 고르기</label>
         <select id="edit-level-select">
@@ -380,7 +389,7 @@
     </section>
 
     <section class="card" id="mark-section" style="display:none;">
-      <h2>3. 다른 곳 표시하기 — 이미지를 클릭하면 번호가 찍혀요 (핀을 다시 누르면 삭제)</h2>
+      <h2>3. 다른 곳 표시하기 — 정답으로 인정할 곳을 펜으로 둘러 그려요 (핀을 누르면 삭제)</h2>
       <div class="frames">
         <div class="frame" id="frame-left" data-side="left">
           <div class="panel"><img id="img-left" alt=""></div>
@@ -391,9 +400,10 @@
           <span class="side-tag">오른쪽</span>
         </div>
       </div>
+      <p class="pen-note" id="pen-note">누른 채로 끌어서 영역을 둘러 그리면 시작점과 끝점이 자동으로 이어져요. 그린 영역 안은 모두 정답이에요.</p>
 
       <ol class="diff-list" id="diff-list"></ol>
-      <p class="empty-hint" id="empty-hint">아직 표시한 곳이 없어요. 위 그림을 클릭해보세요.</p>
+      <p class="empty-hint" id="empty-hint">아직 표시한 곳이 없어요. 위 그림에 영역을 그려보세요.</p>
     </section>
 
     <section class="card" id="output-section" style="display:none;">
@@ -512,6 +522,7 @@
 </script>
 
 <script src="https://find-hidden-picture.vercel.app/levels-data.js"></script>
+<script src="area-draw.js"></script>
 <script>
 // ============================= 틀린그림찾기 도구 로직 =============================
 (function () {
@@ -524,7 +535,7 @@
     ox: 0, ow: 480, // layout of the image within the 480x480 stage; set on image load
     imagesReady: false,
     libraryMode: false, // true when images came from an existing level (no re-save needed)
-    diffs: [] // {x, y, r, desc}
+    diffs: [] // {x, y, r, desc, area?}
   };
 
   var loadedFileBase = null; // asset filename base of the picked level (keeps save filenames matching the original files)
@@ -645,7 +656,7 @@
     els.imgRight.style.width = pct.width + "%";
     els.layoutInfo.textContent = "x: " + info.ox.toFixed(1) + ", width: " + info.ow.toFixed(1) + ", height: 480 (assets 폴더의 원본 이미지를 그대로 불러왔어요)";
 
-    state.diffs = (level.diffs || []).map(function (d) { return { x: d.x, y: d.y, r: d.r, desc: "" }; });
+    state.diffs = (level.diffs || []).map(function (d) { return { x: d.x, y: d.y, r: d.r, area: d.area, desc: "" }; });
     renderDiffs();
 
     els.imageLoadSection.style.display = "none";
@@ -752,20 +763,19 @@
 
   function renderDiffs() {
     [els.frameLeft, els.frameRight].forEach(function (frame) {
-      var pins = frame.querySelectorAll(".pin");
+      var pins = frame.querySelectorAll(".pin, .area-svg");
       pins.forEach(function (p) { p.remove(); });
+      var svg = window.AreaDraw.makeSvg();
+      frame.appendChild(svg);
       state.diffs.forEach(function (d, i) {
+        if (d.area) window.AreaDraw.addPolygon(svg, d.area, "area-saved");
         var el = document.createElement("span");
         el.className = "pin";
+        el.dataset.idx = String(i);
         el.style.left = (d.x / 480 * 100) + "%";
         el.style.top = (d.y / 480 * 100) + "%";
         el.textContent = String(i + 1);
         el.title = "누르면 삭제";
-        el.addEventListener("click", function (e) {
-          e.stopPropagation();
-          state.diffs.splice(i, 1);
-          renderDiffs();
-        });
         frame.appendChild(el);
       });
     });
@@ -789,16 +799,23 @@
         updateOutput();
       });
 
-      var radiusInput = document.createElement("input");
-      radiusInput.type = "number";
-      radiusInput.className = "radius";
-      radiusInput.min = "16"; radiusInput.max = "80";
-      radiusInput.value = d.r;
-      radiusInput.title = "클릭 인식 반경";
-      radiusInput.addEventListener("input", function () {
-        state.diffs[i].r = parseFloat(this.value) || 28;
-        updateOutput();
-      });
+      var radiusInput;
+      if (d.area) {
+        radiusInput = document.createElement("span");
+        radiusInput.className = "area-tag";
+        radiusInput.textContent = "✏️ 그린 영역";
+      } else {
+        radiusInput = document.createElement("input");
+        radiusInput.type = "number";
+        radiusInput.className = "radius";
+        radiusInput.min = "16"; radiusInput.max = "80";
+        radiusInput.value = d.r;
+        radiusInput.title = "클릭 인식 반경";
+        radiusInput.addEventListener("input", function () {
+          state.diffs[i].r = parseFloat(this.value) || 28;
+          updateOutput();
+        });
+      }
 
       var del = document.createElement("button");
       del.type = "button";
@@ -826,14 +843,28 @@
     }
   }
 
+  var penNote = document.getElementById("pen-note");
+  var penNoteTimer = null;
+  function nudgePenNote() {
+    penNote.classList.add("nudge");
+    clearTimeout(penNoteTimer);
+    penNoteTimer = setTimeout(function () { penNote.classList.remove("nudge"); }, 2000);
+  }
+
   [els.frameLeft, els.frameRight].forEach(function (frame) {
-    frame.addEventListener("click", function (e) {
-      if (e.target.classList.contains("pin")) return;
-      var rect = frame.getBoundingClientRect();
-      var x = Math.round((e.clientX - rect.left) / rect.width * 480 * 10) / 10;
-      var y = Math.round((e.clientY - rect.top) / rect.height * 480 * 10) / 10;
-      state.diffs.push({ x: x, y: y, r: 28, desc: "" });
-      renderDiffs();
+    window.AreaDraw.attach(frame, {
+      peers: function () { return [els.frameLeft, els.frameRight]; },
+      onDraw: function (shape) {
+        shape.desc = "";
+        state.diffs.push(shape);
+        renderDiffs();
+      },
+      onTap: function (target) {
+        if (!target.classList.contains("pin")) { nudgePenNote(); return; }
+        state.diffs.splice(parseInt(target.dataset.idx, 10), 1);
+        renderDiffs();
+      },
+      onTooSmall: nudgePenNote
     });
   });
 
@@ -873,7 +904,7 @@
     state.diffs.forEach(function (d, i) {
       var comma = i < state.diffs.length - 1 ? "," : "";
       var comment = d.desc ? " // " + d.desc : "";
-      lines.push("    { x: " + d.x + ", y: " + d.y + ", r: " + d.r + " }" + comma + comment);
+      lines.push("    " + window.AreaDraw.code(d) + comma + comment);
     });
     lines.push("  ]");
     lines.push("}");

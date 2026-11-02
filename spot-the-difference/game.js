@@ -216,7 +216,11 @@
   }
 
   // ---- Marks -----------------------------------------------------------
+  function areaPoints(d) {
+    return d.area.map(function (p) { return p[0] + "," + p[1]; }).join(" ");
+  }
   function drawCircleMark(overlay, d) {
+    if (d.area) { E(overlay, "polygon", { points: areaPoints(d), class: "mark-circle" }); return; }
     var r = (d.r || 34) * 0.72;
     var c = E(overlay, "circle", { cx: d.x, cy: d.y, r: r, class: "mark-circle" });
     var c2 = E(overlay, "circle", { cx: d.x + 2, cy: d.y - 1, r: r * 0.82, class: "mark-circle" });
@@ -234,7 +238,9 @@
     }, X_MARK_LIFETIME);
   }
   function drawHintMark(overlay, d) {
-    var el = E(overlay, "circle", { cx: d.x, cy: d.y, r: (d.r || 34) * 0.85, class: "hint-mark" });
+    var el = d.area
+      ? E(overlay, "polygon", { points: areaPoints(d), class: "hint-mark" })
+      : E(overlay, "circle", { cx: d.x, cy: d.y, r: (d.r || 34) * 0.85, class: "hint-mark" });
     setTimeout(function () { el.parentNode && el.parentNode.removeChild(el); }, HINT_DURATION);
   }
   function E(parent, tag, attrs) {
@@ -352,6 +358,7 @@
   }
 
   function drawAnswerMark(overlay, d) {
+    if (d.area) { E(overlay, "polygon", { points: areaPoints(d), class: "answer-mark" }); return; }
     E(overlay, "circle", { cx: d.x, cy: d.y, r: (d.r || 30) * 0.9, class: "answer-mark" });
   }
   function clearAnswerMarks() {
@@ -443,6 +450,29 @@
     return { x: x, y: y };
   }
 
+  // 펜으로 그린 영역(area) 안이거나 테두리에서 AREA_MARGIN 이내면 정답. 없으면 기존 원 판정.
+  var AREA_MARGIN = 6;
+  function isInsideArea(area, p) {
+    var winding = 0;
+    for (var i = 0; i < area.length; i++) {
+      var a = area[i], b = area[(i + 1) % area.length];
+      var abx = b[0] - a[0], aby = b[1] - a[1];
+      var len = abx * abx + aby * aby;
+      var t = len ? Math.max(0, Math.min(1, ((p.x - a[0]) * abx + (p.y - a[1]) * aby) / len)) : 0;
+      var ex = p.x - (a[0] + t * abx), ey = p.y - (a[1] + t * aby);
+      if (ex * ex + ey * ey <= AREA_MARGIN * AREA_MARGIN) return true;
+      var cross = abx * (p.y - a[1]) - aby * (p.x - a[0]);
+      if (a[1] <= p.y) { if (b[1] > p.y && cross > 0) winding++; }
+      else if (b[1] <= p.y && cross < 0) winding--;
+    }
+    return winding !== 0;
+  }
+  function isHit(d, p) {
+    if (d.area) return isInsideArea(d.area, p);
+    var dx = p.x - d.x, dy = p.y - d.y;
+    return dx * dx + dy * dy <= d.r * d.r;
+  }
+
   function onPanelDown(panel, evt) {
     if (!state.playing || state.locked) return;
     evt.preventDefault();
@@ -451,9 +481,7 @@
     var hit = -1;
     for (var i = 0; i < diffs.length; i++) {
       if (state.diffsFound[i]) continue;
-      var d = diffs[i];
-      var dx = p.x - d.x, dy = p.y - d.y;
-      if (dx * dx + dy * dy <= d.r * d.r) { hit = i; break; }
+      if (isHit(diffs[i], p)) { hit = i; break; }
     }
     if (hit >= 0) {
       correctHit(hit);

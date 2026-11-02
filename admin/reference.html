@@ -164,7 +164,17 @@
     overflow: hidden;
     background: var(--paper);
     border: 1px solid var(--line);
+    cursor: crosshair;
+    touch-action: none;
+    user-select: none;
+    -webkit-user-select: none;
   }
+  .area-svg { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+  .area-saved { fill: color-mix(in srgb, var(--accent) 20%, transparent); stroke: var(--accent); stroke-width: 2; }
+  .area-saved.flagged { fill: none; stroke: var(--ink-faint); stroke-dasharray: 5 4; }
+  .area-new { fill: color-mix(in srgb, var(--accent-2) 30%, transparent); stroke: var(--accent-2); stroke-width: 2; stroke-dasharray: 6 4; }
+  .area-live { fill: rgba(255, 255, 255, 0.28); stroke: var(--accent-2); stroke-width: 3; stroke-linejoin: round; }
+  .hint-row.nudge { color: var(--accent); font-weight: 700; }
   .panel { position: absolute; inset: 0; overflow: hidden; }
   .panel img { position: absolute; top: 0; height: 100%; object-fit: cover; }
   .pins { position: absolute; inset: 0; pointer-events: none; }
@@ -372,11 +382,11 @@
   <p></p>
   <div class="howto">
     <span class="pin-demo">3</span>
-    <div><b>빨간 번호 핀</b>이 게임이 정답으로 인식하는 정확한 지점이에요. 핀에서 살짝 벗어난 곳을 눌렀다면 클릭이 안 맞은 것이고요. <b>그 핀 자체가 틀렸다면</b> (엉뚱한 곳을 가리키고 있다면) 핀이나 아래 설명 목록의 해당 줄을 눌러보세요 — 빗금 표시로 "삭제 요청"이 돼요. 삭제 요청된 핀은 더 이상 클릭에 반응하지 않으니, 바로 그 자리 근처를 다시 눌러서 올바른 위치에 파란 점을 새로 찍으면 돼요. 삭제 요청을 취소하고 싶으면 아래 설명 목록의 줄을 다시 눌러주세요 (핀이 아니라 목록 줄이에요).</div>
+    <div><b>빨간 번호 핀</b>과 그 원(또는 그린 영역)이 게임이 정답으로 인식하는 범위예요. 범위에서 살짝 벗어난 곳을 눌렀다면 클릭이 안 맞은 것이고요. <b>범위가 좁거나 틀렸다면</b> 핀이나 아래 설명 목록의 해당 줄을 눌러보세요 — 빗금 표시로 "삭제 요청"이 돼요. 그다음 올바른 범위를 펜으로 둘러 그리면 파란 영역이 새로 생겨요. 삭제 요청을 취소하고 싶으면 아래 설명 목록의 줄을 다시 눌러주세요 (핀이 아니라 목록 줄이에요).</div>
   </div>
   <div class="howto">
     <span class="pin-demo" style="border-color:var(--accent-2);color:var(--accent-2);border-style:dashed;">+</span>
-    <div><b>빨간 핀이 없는데 진짜 다른 점을 찾으셨다면</b>, 이미지에서 그 위치를 그냥 눌러보세요. 파란 점(선택하신 위치)이 찍혀요. 잘못 찍었으면 그 점을 다시 눌러서 지우면 돼요. 다 표시하셨으면 화면 오른쪽 아래 <b>"결과 복사"</b> 버튼으로 전체 목록을 복사해서 저한테 붙여넣어 주세요 — 어느 레벨의 어디인지 정확히 알 수 있어서 바로 좌표를 추가해드릴 수 있어요.</div>
+    <div><b>빨간 핀이 없는데 진짜 다른 점을 찾으셨다면</b>, 이미지에서 정답으로 인정할 곳을 누른 채로 끌어서 둘러 그려보세요. 시작점과 끝점이 자동으로 이어지고, 그 안이 모두 정답 범위가 돼요. 잘못 그렸으면 영역의 파란 글자 핀을 눌러서 지우면 돼요. 다 표시하셨으면 화면 오른쪽 아래 <b>"결과 복사"</b> 버튼으로 전체 목록을 복사해서 저한테 붙여넣어 주세요 — 어느 레벨의 어디인지 정확히 알 수 있어서 바로 좌표를 추가해드릴 수 있어요.</div>
   </div>
 </div>
 
@@ -391,6 +401,7 @@
 <footer>레벨과 좌표는 spot-the-difference/levels-data.js를 그때그때 직접 불러와서 보여줘요 (새 레벨을 추가하면 자동으로 여기도 나타나요). 표시한 내용은 이 브라우저에만 저장되며, "결과 복사" 전까지는 저에게 전달되지 않아요.</footer>
 
 <script src="https://find-hidden-picture.vercel.app/levels-data.js"></script>
+<script src="area-draw.js"></script>
 <script>
 (function () {
   "use strict";
@@ -429,19 +440,26 @@
     var href = side === "left" ? info.hrefLeft : info.hrefRight;
     var leftPct = (info.ox / 480 * 100).toFixed(3);
     var widthPct = (info.ow / 480 * 100).toFixed(3);
+    var areasHtml = "";
     var pinsHtml = diffs.map(function (d, i) {
       var l = (d.x / 480 * 100).toFixed(2);
       var t = (d.y / 480 * 100).toFixed(2);
       var s = (2 * d.r / 480 * 100).toFixed(2);
+      // 그린 영역은 영역 자체를 보여주고, 핀은 번호만 작게
+      if (d.area) {
+        areasHtml += '<polygon class="area-saved" data-idx="' + i + '" points="' + window.AreaDraw.pointsAttr(d.area) + '"></polygon>';
+        return '<span class="pin" data-idx="' + i + '" style="left:' + l + '%;top:' + t + '%;">' + (i + 1) + '</span>';
+      }
       return '<span class="pin" data-idx="' + i + '" style="left:' + l + '%;top:' + t + '%;width:' + s + '%;height:' + s + '%;">' + (i + 1) + '</span>';
     }).join("");
+    if (areasHtml) pinsHtml = '<svg class="area-svg" viewBox="0 0 480 480" preserveAspectRatio="none">' + areasHtml + '</svg>' + pinsHtml;
     var tag = side === "left" ? "왼쪽" : "오른쪽";
     return '<div class="frame" data-level="' + id + '"><div class="panel"><img src="https://find-hidden-picture.vercel.app/' + href + '" alt="" style="left:' + leftPct + '%;width:' + widthPct + '%;"></div><div class="pins">' + pinsHtml + '</div><div class="candidates" data-level="' + id + '"></div><span class="side-tag">' + tag + '</span></div>';
   }
 
   function legendHtml(diffs) {
     return diffs.map(function (d, i) {
-      return '<li data-idx="' + i + '"><span class="legend-num">' + (i + 1) + '</span><span class="legend-text">x: ' + fmtNum(d.x) + ', y: ' + fmtNum(d.y) + '</span></li>';
+      return '<li data-idx="' + i + '"><span class="legend-num">' + (i + 1) + '</span><span class="legend-text">x: ' + fmtNum(d.x) + ', y: ' + fmtNum(d.y) + (d.area ? ' (그린 영역)' : '') + '</span></li>';
     }).join("");
   }
 
@@ -461,7 +479,7 @@
       '<header class="entry-head"><span class="entry-num">' + num + '</span><h2>' + esc(level.emoji) + ' ' + esc(level.name) + '</h2><span class="entry-count">' + diffs.length + '곳</span></header>' +
       '<div class="frames">' + frameHtml(level.id, info, "left", diffs) + frameHtml(level.id, info, "right", diffs) + '</div>' +
       '<ol class="legend" data-level="' + level.id + '">' + legendHtml(diffs) + '</ol>' +
-      '<p class="hint-row">빨간 핀이 틀렸으면 그 핀을 눌러서 삭제 요청 표시를 하세요 (다시 누르면 취소).</p>' +
+      '<p class="hint-row" data-level="' + level.id + '">새 정답 범위는 그림 위에 펜으로 둘러 그려요. 빨간 핀이 틀렸으면 그 핀을 눌러서 삭제 요청 표시를 하세요.</p>' +
       '<div class="report-row"><span class="report-count" data-level="' + level.id + '">내가 표시한 곳: 0개</span><button type="button" class="btn-mini btn-copy" data-level="' + level.id + '">이 레벨 복사</button><button type="button" class="btn-mini btn-clear" data-level="' + level.id + '">지우기</button></div>' +
       '</article>'
     );
@@ -480,7 +498,7 @@
 (function () {
   "use strict";
   var STORE_KEY = "diffref_marks_v2";
-  var candidates = {}; // id -> [{x,y}]  (새로 찾은 위치)
+  var candidates = {}; // id -> [{x,y,r,area}]  (새로 그린 영역. 예전에 찍은 점은 {x,y}로 그대로 남아요)
   var removals = {};   // id -> [idx]    (기존 빨간 핀 중 삭제 요청한 index)
 
   try {
@@ -509,8 +527,11 @@
     for (var li = 0; li < layers.length; li++) {
       var layer = layers[li];
       layer.innerHTML = "";
+      var areaSvg = window.AreaDraw.makeSvg();
+      layer.appendChild(areaSvg);
       for (var i = 0; i < list.length; i++) {
         var p = list[i];
+        if (p.area) window.AreaDraw.addPolygon(areaSvg, p.area, "area-new");
         var el = document.createElement("span");
         el.className = "candidate-pin";
         el.dataset.idx = String(i);
@@ -532,6 +553,10 @@
         pin.classList.toggle("flagged", flagged);
         pin.title = flagged ? "삭제 요청됨 - 취소하려면 아래 설명 목록 줄을 누르세요" : "틀렸으면 눌러서 삭제 요청";
       }
+    }
+    var savedAreas = document.querySelectorAll('.frame[data-level="' + id + '"] .area-saved');
+    for (var sa = 0; sa < savedAreas.length; sa++) {
+      savedAreas[sa].classList.toggle("flagged", removedIdx.indexOf(parseInt(savedAreas[sa].dataset.idx, 10)) !== -1);
     }
     var rows = document.querySelectorAll('.legend[data-level="' + id + '"] li[data-idx]');
     for (var ri = 0; ri < rows.length; ri++) {
@@ -596,7 +621,7 @@
       lines.push("- ❌ 삭제 요청: " + (idx + 1) + "번 (" + legendText(id, idx) + ")");
     }
     for (var i = 0; i < list.length; i++) {
-      lines.push("- ➕ " + letterFor(i) + ": x=" + list[i].x + ", y=" + list[i].y);
+      lines.push("- ➕ " + letterFor(i) + ": " + (list[i].area ? window.AreaDraw.code(list[i]) : "x=" + list[i].x + ", y=" + list[i].y));
     }
     return lines.join("\n");
   }
@@ -629,41 +654,48 @@
     } catch (e) { /* clipboard unavailable, ignore */ }
   }
 
-  // click-to-mark / click-to-remove / click-to-flag on every frame
-  var frames = document.querySelectorAll(".frame[data-level]");
-  for (var f = 0; f < frames.length; f++) {
-    frames[f].addEventListener("click", function (e) {
-      var frame = e.currentTarget;
-      var id = frame.dataset.level;
-
-      // clicked an existing blue candidate pin -> remove it
-      if (e.target.classList.contains("candidate-pin")) {
-        var cidx = parseInt(e.target.dataset.idx, 10);
-        candidates[id].splice(cidx, 1);
-        render(id); save();
-        return;
-      }
-
-      // clicked an existing red pin -> toggle "flagged for removal"
-      if (e.target.classList.contains("pin")) {
-        var pidx = parseInt(e.target.dataset.idx, 10);
-        if (!removals[id]) removals[id] = [];
-        var pos = removals[id].indexOf(pidx);
-        if (pos === -1) removals[id].push(pidx);
-        else removals[id].splice(pos, 1);
-        render(id); save();
-        return;
-      }
-
-      // otherwise -> add a new candidate at the clicked spot
-      var rect = frame.getBoundingClientRect();
-      var x = Math.round((e.clientX - rect.left) / rect.width * 480 * 10) / 10;
-      var y = Math.round((e.clientY - rect.top) / rect.height * 480 * 10) / 10;
-      if (!candidates[id]) candidates[id] = [];
-      candidates[id].push({ x: x, y: y });
-      render(id); save();
-    });
+  function nudgeHint(id) {
+    var row = document.querySelector('.hint-row[data-level="' + id + '"]');
+    if (!row) return;
+    row.classList.add("nudge");
+    setTimeout(function () { row.classList.remove("nudge"); }, 2000);
   }
+
+  // draw-to-mark / tap-to-remove / tap-to-flag on every frame
+  var frames = document.querySelectorAll(".frame[data-level]");
+  Array.prototype.forEach.call(frames, function (frame) {
+    var id = frame.dataset.level;
+    window.AreaDraw.attach(frame, {
+      peers: function () { return document.querySelectorAll('.frame[data-level="' + id + '"]'); },
+      onDraw: function (shape) {
+        if (!candidates[id]) candidates[id] = [];
+        candidates[id].push(shape);
+        render(id); save();
+      },
+      onTap: function (target) {
+        // tapped an existing blue candidate pin -> remove it
+        if (target.classList.contains("candidate-pin")) {
+          candidates[id].splice(parseInt(target.dataset.idx, 10), 1);
+          render(id); save();
+          return;
+        }
+
+        // tapped an existing red pin -> toggle "flagged for removal"
+        if (target.classList.contains("pin")) {
+          var pidx = parseInt(target.dataset.idx, 10);
+          if (!removals[id]) removals[id] = [];
+          var pos = removals[id].indexOf(pidx);
+          if (pos === -1) removals[id].push(pidx);
+          else removals[id].splice(pos, 1);
+          render(id); save();
+          return;
+        }
+
+        nudgeHint(id);
+      },
+      onTooSmall: function () { nudgeHint(id); }
+    });
+  });
 
   // clicking a legend row also toggles flagged (same as clicking the pin)
   var legendRows = document.querySelectorAll(".legend li[data-idx]");
