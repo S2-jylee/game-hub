@@ -147,6 +147,8 @@
   .filepick:hover { border-color: var(--lavender); color: var(--lavender-dark); }
   .filepick input { display: none; }
   .filepick.small { padding: 12px; }
+  .filepick .drop-hint { display: block; margin-top: 4px; font-size: 0.78rem; color: var(--lavender-dark); opacity: 0.8; }
+  .filepick.dragover { border-color: var(--pink); border-style: solid; background: #fdeaf3; color: var(--pink-dark); }
 
   .split-inputs { display: none; gap: 14px; }
   .split-inputs.show { display: flex; flex-wrap: wrap; }
@@ -494,6 +496,41 @@
       setTimeout(function () { URL.revokeObjectURL(url); }, 2000);
     }, mime || "image/png", quality);
   };
+  // 윈도우 탐색기에서 사진을 끌어다 파일 고르는 칸에 놓을 수 있어요
+  function setupDropZones() {
+    Array.prototype.forEach.call(document.querySelectorAll(".filepick"), function (zone) {
+      var input = zone.querySelector("input[type=file]");
+      if (!input) return;
+      var hint = document.createElement("span");
+      hint.className = "drop-hint";
+      hint.textContent = "또는 사진을 여기로 끌어다 놓으세요";
+      zone.appendChild(hint);
+      var depth = 0;
+      zone.addEventListener("dragenter", function (e) { e.preventDefault(); depth++; zone.classList.add("dragover"); });
+      zone.addEventListener("dragover", function (e) { e.preventDefault(); e.dataTransfer.dropEffect = "copy"; });
+      zone.addEventListener("dragleave", function () { if (--depth <= 0) { depth = 0; zone.classList.remove("dragover"); } });
+      zone.addEventListener("drop", function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        depth = 0;
+        zone.classList.remove("dragover");
+        var files = Array.prototype.filter.call(e.dataTransfer.files || [], function (f) { return /^image/.test(f.type); });
+        if (!files.length) { alert("사진 파일(이미지)만 놓을 수 있어요."); return; }
+        if (!input.multiple) files = files.slice(0, 1);
+        var dt = new DataTransfer();
+        files.forEach(function (f) { dt.items.add(f); });
+        input.files = dt.files;
+        input.dispatchEvent(new Event("change", { bubbles: true }));
+      });
+    });
+    // 칸 밖에 놓쳐도 브라우저가 사진을 새 창으로 열어버리지 않게 막아요
+    ["dragover", "drop"].forEach(function (type) {
+      window.addEventListener(type, function (e) { if (e.dataTransfer && Array.prototype.indexOf.call(e.dataTransfer.types || [], "Files") >= 0) e.preventDefault(); });
+    });
+  }
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", setupDropZones);
+  else setupDropZones();
+
   window.loadImageFile = function (file) {
     return new Promise(function (resolve, reject) {
       var reader = new FileReader();

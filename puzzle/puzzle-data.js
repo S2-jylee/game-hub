@@ -40,7 +40,10 @@
     { id: "forestmarket", name: "숲속 열매 시장", emoji: "🦉", file: "24-left.png", aspect: 0.6056 },
     { id: "forestfriends", name: "숲속 동물 친구들", emoji: "🌳", file: "25-left.png", aspect: 0.9167 },
     { id: "dinowater", name: "공룡 물놀이", emoji: "💦", file: "26-left.png", aspect: 0.9167 },
-    { id: "welcomehome", name: "어서오세요, 우리 집", emoji: "🏠", file: "27-left.png", aspect: 0.9167 }
+    { id: "welcomehome", name: "어서오세요, 우리 집", emoji: "🏠", file: "27-left.png", aspect: 0.9167 },
+    { id: "snowman", name: "신나는 눈사람 만들기", emoji: "☃️", file: "12-left.png", aspect: 0.8958 },
+    { id: "autumncafe", name: "가을 CAFE", emoji: "🍂", file: "17-left.png", aspect: 0.8958 },
+    { id: "snowboard", name: "스노우보드", emoji: "🛹", file: "18-left.png", aspect: 0.8958 }
   ];
   var LEVELS = FIND_PICTURES.map(function (p) {
     var href = "assets/find/" + p.file;
