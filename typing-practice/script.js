@@ -339,11 +339,11 @@ const el = {
   resultTime: document.getElementById('result-time'),
   resultRestart: document.getElementById('result-restart'),
   rankingList: document.getElementById('ranking-list'),
-  playerNameBtn: document.getElementById('player-name-btn'),
-  nameModal: document.getElementById('name-modal'),
+  userScreen: document.getElementById('user-screen'),
+  userList: document.getElementById('user-list'),
   nameInput: document.getElementById('name-input'),
   nameSaveBtn: document.getElementById('name-save-btn'),
-  nameCancelBtn: document.getElementById('name-cancel-btn'),
+  guestStartBtn: document.getElementById('guest-start-btn'),
   difficultySelect: document.getElementById('difficulty-select'),
   gameBoat: document.getElementById('game-boat'),
   gameLives: document.getElementById('game-lives'),
@@ -394,30 +394,46 @@ function localRanking(stageKey, limit) {
   return rows.slice(0, limit || 5);
 }
 
+// 이번 접속에서 고른 사용자. 게스트로 시작하면 빈 문자열이라 기록이 남지 않는다.
+let currentPlayer = '';
+
 function loadPlayerName() {
-  try { return localStorage.getItem(PLAYER_NAME_KEY) || ''; } catch (e) { return ''; }
+  return currentPlayer;
 }
-function savePlayerName(name) {
-  try { localStorage.setItem(PLAYER_NAME_KEY, name); } catch (e) { /* storage unavailable, ignore */ }
+// 사용자 선택 화면에 보여줄 이름 목록: 랭킹 기록이 있는 이름 + 마지막으로 쓴 이름
+function knownPlayers() {
+  const names = new Set();
+  try {
+    const last = localStorage.getItem(PLAYER_NAME_KEY);
+    if (last) names.add(last);
+  } catch (e) { /* storage unavailable, ignore */ }
+  const store = loadScoresStore();
+  Object.keys(store).forEach(stage => Object.keys(store[stage]).forEach(name => names.add(name)));
+  return [...names];
 }
-function updatePlayerNameBtn() {
-  const name = loadPlayerName();
-  el.playerNameBtn.textContent = name ? `🙂 ${name}` : '🙂 이름 설정';
+function startAsPlayer(name) {
+  currentPlayer = name;
+  if (name) {
+    try { localStorage.setItem(PLAYER_NAME_KEY, name); } catch (e) { /* storage unavailable, ignore */ }
+  }
+  el.userScreen.classList.remove('show');
+  showHome();
 }
-function openNameModal() {
-  el.nameInput.value = loadPlayerName();
-  el.nameModal.classList.add('show');
-  el.nameInput.focus();
-}
-function closeNameModal() {
-  el.nameModal.classList.remove('show');
+function buildUserList() {
+  el.userList.innerHTML = '';
+  knownPlayers().forEach(name => {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'user-item-btn';
+    btn.textContent = `🙂 ${name}`;
+    btn.addEventListener('click', () => startAsPlayer(name));
+    el.userList.appendChild(btn);
+  });
 }
 function submitPlayerName() {
   const name = el.nameInput.value.trim().slice(0, 10);
-  if (!name) return;
-  savePlayerName(name);
-  updatePlayerNameBtn();
-  closeNameModal();
+  if (!name) { el.nameInput.focus(); return; }
+  startAsPlayer(name);
 }
 
 // 모드마다 "스테이지"의 뜻이 달라서, 서로 다른 연습 내용의 기록이 섞이지
@@ -1774,9 +1790,8 @@ el.gameInput.addEventListener('keydown', e => {
 });
 el.levelUpContinueBtn.addEventListener('click', resumeAfterLevelUp);
 
-el.playerNameBtn.addEventListener('click', openNameModal);
 el.nameSaveBtn.addEventListener('click', submitPlayerName);
-el.nameCancelBtn.addEventListener('click', closeNameModal);
+el.guestStartBtn.addEventListener('click', () => startAsPlayer(''));
 el.nameInput.addEventListener('keydown', e => {
   if (e.key === 'Enter') submitPlayerName();
 });
@@ -1785,6 +1800,7 @@ el.nameInput.addEventListener('keydown', e => {
 
 initKeyboard();
 initFingerGuide();
-updatePlayerNameBtn();
 setMode('position');
 showHome();
+buildUserList();
+el.nameInput.focus();

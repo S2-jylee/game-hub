@@ -12,6 +12,22 @@
 </head>
 <body>
 
+<div class="scene" aria-hidden="true">
+  <div class="sc-sun"></div>
+  <div class="sc-moon"></div>
+  <span class="sc-twinkle" style="top:6%;left:70%;font-size:14px;animation-delay:0s">✦</span>
+  <span class="sc-twinkle" style="top:16%;left:92%;font-size:18px;animation-delay:0.8s">✦</span>
+  <span class="sc-twinkle" style="top:4%;left:84%;font-size:12px;animation-delay:1.6s">✦</span>
+  <span class="sc-twinkle" style="top:22%;left:78%;font-size:10px;animation-delay:0.4s">✦</span>
+  <div class="sc-cloud" style="top:14%;width:110px;animation-duration:46s;animation-delay:-6s"></div>
+  <div class="sc-cloud" style="top:30%;width:80px;animation-duration:60s;animation-delay:-32s"></div>
+  <div class="sc-cloud" style="top:8%;width:64px;animation-duration:52s;animation-delay:-20s"></div>
+  <svg class="sc-bottom" viewBox="0 0 1200 200" preserveAspectRatio="none">
+    <path d="M0 120 Q220 50 450 110 T900 95 T1200 105 V200 H0Z" fill="#bdeba0"/>
+    <path d="M0 165 Q320 100 620 155 T1200 145 V200 H0Z" fill="#94dc7a"/>
+  </svg>
+</div>
+
 <!-- 타이틀 화면 -->
 <section id="screen-title" class="screen active">
   <div class="title-card">
@@ -77,7 +93,6 @@
     <p class="stage-list-note">앞 스테이지를 깨면 다음 스테이지가 열려요.</p>
     <div id="level-grid" class="level-grid"></div>
     <div class="result-buttons">
-      <button id="btn-open-book" class="btn btn-primary" hidden>📖 원리 책 보기</button>
       <button id="btn-levelselect-mode" class="btn btn-ghost">← 놀이 고르기</button>
     </div>
   </div>

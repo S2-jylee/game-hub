@@ -505,3 +505,36 @@ h1 { font-family: "CookieRun", "Jua", sans-serif; font-size: 2.6rem; margin: 6px
 .result-table td, .result-table th { padding: 8px 10px; border-bottom: 1px solid #f3eefa; font-size: 0.95rem; }
 .result-table th { color: var(--text-soft); font-weight: 600; }
 .result-buttons { margin-top: 14px; }
+
+/* ---- 배경 꾸미기 ---- */
+body { background: transparent; }
+.scene { position: fixed; inset: 0; z-index: -1; pointer-events: none; overflow: hidden; }
+.sc-cloud { position: absolute; left: 0; height: 36px; background: #fff; border-radius: 40px; opacity: 0.9; animation: sc-drift linear infinite; }
+.sc-cloud::before, .sc-cloud::after { content: ""; position: absolute; background: #fff; border-radius: 50%; }
+.sc-cloud::before { width: 52%; height: 150%; top: -70%; left: 14%; }
+.sc-cloud::after { width: 38%; height: 120%; top: -48%; right: 12%; }
+@keyframes sc-drift { from { transform: translateX(-220px); } to { transform: translateX(110vw); } }
+.sc-twinkle { position: absolute; color: #fff; animation: sc-twinkle 2.4s ease-in-out infinite; }
+@keyframes sc-twinkle { 0%, 100% { opacity: 0.25; transform: scale(0.8); } 50% { opacity: 1; transform: scale(1.15); } }
+.sc-bottom { position: absolute; left: 0; right: 0; bottom: 0; width: 100%; height: 16vh; }
+.sc-rise { position: absolute; top: 100%; width: var(--s); height: var(--s); font-size: var(--s); line-height: 1; animation: sc-rise linear infinite; }
+@keyframes sc-rise { 0% { transform: translateY(0); opacity: 0; } 10% { opacity: 0.8; } 85% { opacity: 0.8; } 100% { transform: translateY(-112vh) translateX(30px); opacity: 0; } }
+@media (prefers-reduced-motion: reduce) {
+  .scene * { animation: none !important; }
+}
+
+html { background: #eefbea; }
+.scene { background: linear-gradient(#c9ecff, #e9f8ff 50%, #eefbea); }
+.sc-fly { position: absolute; left: 0; font-size: 28px; animation: sc-flutter linear infinite; }
+.sc-bee { font-size: 24px; }
+@keyframes sc-flutter {
+  0% { transform: translate(-60px, 0) rotate(8deg); }
+  25% { transform: translate(25vw, -40px) rotate(-8deg); }
+  50% { transform: translate(50vw, 10px) rotate(8deg); }
+  75% { transform: translate(75vw, -30px) rotate(-8deg); }
+  100% { transform: translate(105vw, 0) rotate(8deg); }
+}
+.sc-ground { position: absolute; left: 0; right: 0; bottom: 4px; display: flex; justify-content: space-around; font-size: 30px; }
+.sc-ground span { animation: sc-bob 3s ease-in-out infinite; }
+.sc-ground span:nth-child(even) { animation-delay: -1.5s; }
+@keyframes sc-bob { 50% { transform: translateY(-3px) rotate(-4deg); } }

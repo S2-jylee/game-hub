@@ -12,6 +12,16 @@
 </head>
 <body>
 
+<div class="scene" aria-hidden="true">
+  <div class="sc-rainbow"></div>
+  <div class="sc-cloud" style="top:12%;width:110px;animation-duration:48s;animation-delay:-8s"></div>
+  <div class="sc-cloud" style="top:28%;width:76px;animation-duration:60s;animation-delay:-35s"></div>
+  <div class="sc-cloud" style="top:70%;width:90px;animation-duration:56s;animation-delay:-18s"></div>
+  <span class="sc-twinkle" style="top:8%;left:50%;font-size:14px;animation-delay:0s">✦</span>
+  <span class="sc-twinkle" style="top:18%;left:80%;font-size:18px;animation-delay:1s">✦</span>
+  <span class="sc-twinkle" style="top:6%;left:20%;font-size:12px;animation-delay:1.7s">✦</span>
+</div>
+
 <div class="bg-decor" aria-hidden="true">
   <span style="--x:6%; --d:0s; --dur:9s;">🐣</span>
   <span style="--x:88%; --d:1.5s; --dur:11s;">🌸</span>
@@ -28,7 +38,6 @@
     <button data-lang="en" type="button">ENGLISH</button>
   </div>
   <button class="tool-btn active" id="sound-toggle-btn" type="button">🔊 소리 켬</button>
-  <button class="tool-btn" id="player-name-btn" type="button">🙂 이름 설정</button>
 </header>
 
 <nav class="mode-tabs" id="mode-tabs">
@@ -179,13 +188,15 @@
     </div>
   </div>
 
-  <div class="result-modal" id="name-modal">
-    <div class="result-card">
-      <h2>🙂 이름을 알려주세요</h2>
-      <p class="level-up-desc">랭킹에 표시될 이름이에요. 언제든 다시 바꿀 수 있어요.</p>
-      <input id="name-input" class="name-input" type="text" maxlength="10" placeholder="이름 입력" autocomplete="off">
-      <button id="name-save-btn" type="button">저장하고 시작 🐾</button>
-      <button id="name-cancel-btn" class="tool-btn" type="button">닫기</button>
+  <!-- 사용자 선택 화면: 처음 들어오면 이름을 고르거나 게스트로 시작한 뒤 홈 화면으로 넘어간다 -->
+  <div class="user-screen show" id="user-screen">
+    <div class="result-card user-card">
+      <h2>🐰 누구인가요?</h2>
+      <p class="level-up-desc">랭킹에 표시될 이름을 골라주세요.</p>
+      <div class="user-list" id="user-list"></div>
+      <input id="name-input" class="name-input" type="text" maxlength="10" placeholder="새 이름을 입력하세요" autocomplete="off">
+      <button id="name-save-btn" type="button">시작하기 🐾</button>
+      <button id="guest-start-btn" class="tool-btn" type="button">게스트로 시작</button>
     </div>
   </div>
 

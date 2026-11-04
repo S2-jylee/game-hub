@@ -949,7 +949,7 @@
       var a = polar(i * 6, 131), b = polar(i * 6, big ? 117 : (hl ? 119 : 124));
       out.push('<line x1="' + a.x + '" y1="' + a.y + '" x2="' + b.x + '" y2="' + b.y + '" class="tick' + (big ? " big" : "") + (hl ? " hl" : "") + '"/>');
       if (hl && c.count) {
-        var cp = polar(i * 6, 150);
+        var cp = polar(i * 6, 158);
         out.push('<text x="' + cp.x + '" y="' + cp.y + '" text-anchor="middle" dominant-baseline="central" class="tick-count">' + i + "</text>");
       }
       if (big && c.labels) {
@@ -1068,14 +1068,6 @@
     if (Math.abs(dx) > 50) turnBook(dx < 0 ? 1 : -1);
   });
   document.getElementById("book-close").addEventListener("click", goToLevelSelect);
-  document.getElementById("btn-open-book").addEventListener("click", function () {
-    // 아직 별이 없는 첫 스테이지부터 (다 깼으면 1단계)
-    var stars = loadStars(), stages = currentCat().stages, idx = 0;
-    for (var i = 0; i < stages.length; i++) {
-      if (!stars[stages[i].id]) { idx = i; break; }
-    }
-    openBook(idx);
-  });
 
   // ---- Mode select (놀이 고르기) --------------------------------------------
   function buildModeGrid() {
@@ -1113,9 +1105,19 @@
   function buildLevelGrid() {
     var cat = currentCat();
     levelSelectTitle.textContent = cat.icon + " " + cat.name;
-    document.getElementById("btn-open-book").hidden = !cat.guide;
     levelGrid.innerHTML = "";
     var starsMap = loadStars();
+    // 원리 책이 있는 놀이는 1단계 바로 앞에 큰 책 칸을 둬요. 읽고 나면 1단계로 이어져요
+    if (cat.guide) {
+      var read = !!state.guideRead[cat.id];
+      var bookBtn = document.createElement("button");
+      bookBtn.type = "button";
+      bookBtn.className = "level-grid-btn book-tile" + (read ? " read" : "");
+      bookBtn.innerHTML = '<div class="lvl-num">📖</div><div class="lvl-name">원리 책</div>' +
+        '<div class="lvl-stars">' + (read ? "✔ 다 읽었어요" : "먼저 읽어요!") + "</div>";
+      bookBtn.addEventListener("click", function () { openBook(0); });
+      levelGrid.appendChild(bookBtn);
+    }
     cat.stages.forEach(function (lvl, i) {
       var btn = document.createElement("button");
       btn.className = "level-grid-btn";

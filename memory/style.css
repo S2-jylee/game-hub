@@ -527,3 +527,31 @@ h1 { font-family: "CookieRun", "Jua", sans-serif; font-size: 2.6rem; margin: 6px
 .result-table td, .result-table th { padding: 8px 10px; border-bottom: 1px solid #f3eefa; font-size: 0.95rem; }
 .result-table th { color: var(--text-soft); font-weight: 600; }
 .result-buttons { margin-top: 14px; }
+
+/* ---- 배경 꾸미기 ---- */
+body { background: transparent; }
+.scene { position: fixed; inset: 0; z-index: -1; pointer-events: none; overflow: hidden; }
+.sc-cloud { position: absolute; left: 0; height: 36px; background: #fff; border-radius: 40px; opacity: 0.9; animation: sc-drift linear infinite; }
+.sc-cloud::before, .sc-cloud::after { content: ""; position: absolute; background: #fff; border-radius: 50%; }
+.sc-cloud::before { width: 52%; height: 150%; top: -70%; left: 14%; }
+.sc-cloud::after { width: 38%; height: 120%; top: -48%; right: 12%; }
+@keyframes sc-drift { from { transform: translateX(-220px); } to { transform: translateX(110vw); } }
+.sc-twinkle { position: absolute; color: #fff; animation: sc-twinkle 2.4s ease-in-out infinite; }
+@keyframes sc-twinkle { 0%, 100% { opacity: 0.25; transform: scale(0.8); } 50% { opacity: 1; transform: scale(1.15); } }
+.sc-bottom { position: absolute; left: 0; right: 0; bottom: 0; width: 100%; height: 16vh; }
+.sc-rise { position: absolute; top: 100%; width: var(--s); height: var(--s); font-size: var(--s); line-height: 1; animation: sc-rise linear infinite; }
+@keyframes sc-rise { 0% { transform: translateY(0); opacity: 0; } 10% { opacity: 0.8; } 85% { opacity: 0.8; } 100% { transform: translateY(-112vh) translateX(30px); opacity: 0; } }
+@media (prefers-reduced-motion: reduce) {
+  .scene * { animation: none !important; }
+}
+
+html { background: #f6ecff; }
+.scene { background: linear-gradient(#ffe0ef, #fff2f8 50%, #f6ecff); }
+.sc-bubble { border-radius: 50%; background: radial-gradient(circle at 30% 30%, #ffffffee 0 18%, #ffffff55 19%, #ffd1ea66 70%);
+  border: 2px solid #ffffffcc; }
+.sc-candy { position: absolute; left: 0; right: 0; bottom: 0; height: 44px;
+  background:
+    radial-gradient(circle at 30px 0, transparent 22px, #ffb3d6 23px) 0 0 / 60px 44px repeat-x; }
+.sc-candy::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 14px;
+  background: repeating-linear-gradient(-45deg, #ff8cc4 0 12px, #fff 12px 24px); opacity: 0.8; }
+.sc-twinkle { color: #ff9ccc; }

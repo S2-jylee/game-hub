@@ -73,10 +73,64 @@ button{font-family:inherit;font-weight:inherit;color:inherit;cursor:pointer;bord
 .buddy-pick{display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap}
 .buddy-pick button{font-size:26px;width:44px;height:44px;border-radius:50%;background:#f1edff}
 .buddy-pick button.on{background:#ffe7f2;box-shadow:0 0 0 3px var(--pink)}
-.modes{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px}
-.mode{border-radius:16px;padding:8px 4px;font-size:17px;background:#f1edff;line-height:1.3;word-break:keep-all}
-.mode small{display:block;font-size:12px;color:var(--muted)}
-.mode.on{background:#d9fbe9;box-shadow:0 0 0 3px var(--green)}
+.modes{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:4px}
+.mode{--mc:#34d399;--mbg:#dcfaec;position:relative;display:flex;flex-direction:column;align-items:center;gap:4px;
+  border-radius:22px;padding:14px 6px 12px;background:var(--mbg);
+  line-height:1.2;word-break:keep-all;transition:transform .1s}
+.mode:hover{transform:translateY(-2px)}
+.mode:active{transform:translateY(2px)}
+.mode .m-emoji{font-size:48px;line-height:1;animation:breathe 2.4s ease-in-out infinite}
+.mode:nth-child(2) .m-emoji{animation-delay:.4s}
+.mode:nth-child(3) .m-emoji{animation-delay:.8s}
+.mode .m-name{font-family:"CookieRun","Jua",sans-serif;font-size:23px;margin-top:2px}
+.mode small{display:block;font-size:14px;color:var(--muted)}
+.mode .m-go{margin-top:6px;padding:5px 14px;border-radius:999px;background:var(--mc);color:#fff;font-size:16px}
+.m-practice{--mc:#34d399;--mbg:#dcfaec}
+.m-challenge{--mc:#ff9f43;--mbg:#ffecd9}
+.m-penguin{--mc:#60a5fa;--mbg:#e1efff}
+
+/* ---------- 타이틀 · 사용자 · 방법 (다른 놀이와 같은 모양) ---------- */
+.screen.center{justify-content:safe center}
+.btn{border:none;border-radius:999px;font-weight:800;cursor:pointer;font-family:inherit;transition:transform .12s ease,box-shadow .12s ease,background .12s ease;touch-action:manipulation}
+.btn:active{transform:scale(.94)}
+.btn-primary{background:linear-gradient(135deg,#d81b7a,#7c2ce0);color:#fff}
+.btn-primary:hover{background:linear-gradient(135deg,#ff4fa3,#a259ff);transform:translateY(-2px)}
+.btn-huge{font-size:28.8px;padding:18px 48px;margin:10px;border-radius:24px}
+.btn-ghost{background:rgba(0,0,0,.07);color:#241b3a;padding:10px 22px;font-size:18px}
+.btn-ghost:hover{background:rgba(0,0,0,.13)}
+.card .btn-ghost{background:#f4eefd}
+.card .btn-ghost:hover{background:#e9defb}
+.btn-small{font-size:15.3px;padding:8px 16px}
+.title-card{text-align:center;color:#241b3a;padding:20px;position:relative}
+.title-shapes{position:relative;height:90px;margin-bottom:-10px}
+.ts{position:absolute;display:flex;align-items:center;justify-content:center;border-radius:14px;background:#fff;box-shadow:0 6px 14px rgba(36,27,58,.14);opacity:.95;font-size:30.6px;animation:floaty 3.2s ease-in-out infinite}
+.ts1{width:60px;height:60px;border:3px solid #ff4fa3;left:calc(50% - 130px);top:10px;animation-delay:0s}
+.ts2{width:50px;height:50px;border:3px solid #e6be00;left:calc(50% - 40px);top:-6px;animation-delay:.4s}
+.ts3{width:55px;height:55px;border:3px solid #2e9bff;left:calc(50% + 40px);top:14px;border-radius:50%;animation-delay:.8s}
+.ts4{width:45px;height:45px;border:3px solid #22c55e;left:calc(50% + 110px);top:-2px;animation-delay:1.2s}
+@keyframes floaty{0%,100%{transform:translateY(0)}50%{transform:translateY(-12px)}}
+.title-card h1{font-family:"CookieRun","Jua",sans-serif;font-size:46.8px;font-weight:700;margin:6px 0 4px;color:#d81b7a}
+.subtitle{font-size:19.8px;color:#6b5f86;margin:19.8px 0 18px;font-weight:400}
+.card{background:#fff;border:2px solid #f3eefa;border-radius:28px;box-shadow:0 8px 24px rgba(36,27,58,.1);padding:32px 40px;max-width:640px;width:90%;text-align:center;max-height:88vh;overflow-y:auto;overflow-x:hidden}
+.card h2{font-family:"CookieRun","Jua",sans-serif;font-weight:700;color:#d81b7a;margin-top:0;font-size:32.4px}
+.howto-list{list-style:none;padding:0;text-align:left;margin:20px 0}
+.howto-list li{display:flex;align-items:center;gap:14px;background:#f7f3fe;border-radius:16px;padding:14px 18px;margin-bottom:10px;font-size:18.9px;line-height:1.4;font-weight:400}
+.howto-list .ico{font-size:28.8px;flex:none}
+.user-list{display:flex;flex-direction:column;gap:8px;max-height:240px;overflow-y:auto;margin:18px 0}
+.user-empty-hint{color:#6b5f86;font-size:16.2px;margin:18px 0;font-weight:400}
+.user-item-btn{display:flex;align-items:center;justify-content:space-between;width:100%;border:none;border-radius:16px;padding:14px 20px;background:#f7f3fe;color:#241b3a;font-family:inherit;font-size:18.9px;font-weight:700;cursor:pointer;transition:background .12s ease,transform .12s ease}
+.user-item-btn:hover{background:#efe1fd;transform:translateY(-2px)}
+.user-item-btn:active{transform:scale(.97)}
+.user-new-row{display:flex;gap:8px;margin:6px 0 16px}
+.user-name-input{flex:1;min-width:0;padding:12px 18px;border-radius:999px;border:2px solid #f0e9fb;font-family:inherit;font-size:18px;color:#241b3a;outline:none;transition:border-color .12s ease}
+.user-name-input:focus{border-color:#7c2ce0}
+@media (max-width:560px){
+  .card{padding:24px 20px}
+  .btn-huge{padding:16px 36px;font-size:25px}
+}
+.home-top{width:100%;max-width:520px;display:flex;align-items:center;justify-content:space-between}
+.user-badge{background:#fff;border-radius:999px;padding:6px 14px;font-size:16px}
+.user-badge:empty{display:none}
 .big-btn{width:100%;height:54px;border-radius:20px;font-size:26px;color:#fff;background:linear-gradient(#ff8fc2,#ff5d9e);animation:wiggle 2.5s ease-in-out infinite}
 .big-btn:active{transform:translateY(2px)}
 @keyframes wiggle{0%,90%,100%{transform:rotate(0)}93%{transform:rotate(-2deg)}96%{transform:rotate(2deg)}}
@@ -187,6 +241,12 @@ button{font-family:inherit;font-weight:inherit;color:inherit;cursor:pointer;bord
   .balloon{width:min(96px,30vw)}
   .stage .buddy{font-size:44px}
   .bubble{font-size:18px}
+  .modes{grid-template-columns:1fr}
+  .mode{display:grid;grid-template-columns:auto 1fr auto;grid-template-rows:auto auto;column-gap:12px;row-gap:2px;align-items:center;text-align:left;padding:12px 14px}
+  .mode .m-emoji{grid-row:1/3;font-size:44px}
+  .mode .m-name{margin:0}
+  .mode small{grid-column:2}
+  .mode .m-go{grid-row:1/3;grid-column:3;margin:0}
 }
 @media (prefers-reduced-motion:reduce){
   *{animation-duration:.01ms!important;animation-iteration-count:1!important}
@@ -212,12 +272,60 @@ button{font-family:inherit;font-weight:inherit;color:inherit;cursor:pointer;bord
 
 <main class="app">
 
-  <!-- 시작 화면 -->
-  <section id="home" class="screen">
-    <h1 class="title"><span>구</span><span>구</span><span>단</span> <span>놀</span><span>이</span><span>터</span></h1>
+  <!-- 타이틀 화면 -->
+  <section id="intro" class="screen center">
+    <div class="title-card">
+      <div class="title-shapes" aria-hidden="true">
+        <span class="ts ts1">✖️</span>
+        <span class="ts ts2">🎈</span>
+        <span class="ts ts3" id="introBuddy">🐰</span>
+        <span class="ts ts4">🐧</span>
+      </div>
+      <h1>구구단 놀이터</h1>
+      <p class="subtitle">풍선을 터뜨리며 구구단을 외워요!</p>
+      <button id="introStart" class="btn btn-primary btn-huge">시작하기</button>
+      <button id="introHowto" class="btn btn-ghost">놀이 방법</button>
+    </div>
+  </section>
+
+  <!-- 사용자 선택 화면 -->
+  <section id="user" class="screen center hidden">
+    <div class="card">
+      <h2>누구인가요?</h2>
+      <div id="userList" class="user-list"></div>
+      <div class="user-new-row">
+        <input id="userNameInput" class="user-name-input" type="text" maxlength="10" placeholder="새 이름을 입력하세요">
+        <button id="userNewStart" class="btn btn-primary btn-small">시작</button>
+      </div>
+      <button id="userGuest" class="btn btn-ghost">게스트로 시작</button>
+      <button id="userBack" class="btn btn-ghost">처음으로</button>
+    </div>
+  </section>
+
+  <!-- 놀이 방법 화면 -->
+  <section id="howto" class="screen center hidden">
+    <div class="card">
+      <h2>놀이 방법</h2>
+      <ul class="howto-list">
+        <li><span class="ico">🔢</span><span class="howto-text">연습하고 싶은 <b>단</b>을 골라요. 여러 개 골라도 돼요.</span></li>
+        <li><span class="ico">🌱</span><span class="howto-text"><b>연습 놀이</b>: 정답 풍선을 터뜨려요. 틀려도 힌트를 보고 다시 골라요.</span></li>
+        <li><span class="ico">⏱️</span><span class="howto-text"><b>도전 놀이</b>: 10초 안에 정답 풍선을! 하트 3개를 다 쓰면 끝나요.</span></li>
+        <li><span class="ico">🐧</span><span class="howto-text"><b>펭귄 달리기</b>: ◀ ▶ 또는 화면을 눌러 펭귄을 정답 허들로 보내요.</span></li>
+        <li><span class="ico">🏅</span><span class="howto-text">별 3개를 받으면 <b>동물 스티커</b>를 모을 수 있어요!</span></li>
+      </ul>
+      <button id="howtoBack" class="btn btn-primary btn-huge">알겠어요!</button>
+    </div>
+  </section>
+
+  <!-- 놀이 고르기 화면 -->
+  <section id="home" class="screen hidden">
+    <div class="home-top">
+      <button class="btn btn-ghost btn-small" id="changeUser">← 처음으로</button>
+      <span class="user-badge" id="userBadge"></span>
+    </div>
     <div class="hero">
       <div class="buddy" id="homeBuddy">🐰</div>
-      <div class="bubble">안녕! 몇 단을 같이 연습해 볼까?</div>
+      <div class="bubble">몇 단을 골라서 어떤 놀이를 할까?</div>
     </div>
 
     <div class="panel">
@@ -227,14 +335,19 @@ button{font-family:inherit;font-weight:inherit;color:inherit;cursor:pointer;bord
       <div class="label">② 친구 고르기</div>
       <div class="buddy-pick" id="buddyPick"></div>
 
-      <div class="label">③ 놀이 방법</div>
+      <div class="label">③ 놀이를 눌러서 시작해요!</div>
       <div class="modes">
-        <button class="mode on" data-mode="practice">🌱 연습 놀이<small>천천히, 틀려도 다시!</small></button>
-        <button class="mode" data-mode="challenge">⏱️ 도전 놀이<small>10초 안에! 하트 3개</small></button>
-        <button class="mode" data-mode="penguin">🐧 펭귄 달리기<small>정답 허들로 쌩쌩!</small></button>
+        <button class="mode m-practice" data-mode="practice">
+          <span class="m-emoji">🌱</span><span class="m-name">연습 놀이</span><small>천천히, 틀려도 다시!</small><span class="m-go">시작 ▶</span>
+        </button>
+        <button class="mode m-challenge" data-mode="challenge">
+          <span class="m-emoji">⏱️</span><span class="m-name">도전 놀이</span><small>10초 안에! 하트 3개</small><span class="m-go">시작 ▶</span>
+        </button>
+        <button class="mode m-penguin" data-mode="penguin">
+          <span class="m-emoji">🐧</span><span class="m-name">펭귄 달리기</span><small>정답 허들로 쌩쌩!</small><span class="m-go">시작 ▶</span>
+        </button>
       </div>
 
-      <button class="big-btn" id="startBtn">시작! 🚀</button>
       <div class="row">
         <button class="small-btn" id="tableBtn">📖 구구단 외우기</button>
         <button class="small-btn" id="soundBtn">🔊 소리 켜짐</button>
@@ -355,7 +468,8 @@ button{font-family:inherit;font-weight:inherit;color:inherit;cursor:pointer;bord
     mode: 'practice',
     buddy: store.get('ggd_buddy', '🐰'),
     sound: store.get('ggd_sound', true),
-    stickers: store.get('ggd_stickers', []),
+    user: null, guest: false, guestData: null,
+    stickers: [],
     qs: [], i: 0, score: 0, lives: LIVES, combo: 0, correct: 0,
     wrong: [], missedThis: false, locked: false, cur: null,
     timerId: null, timeLeft: 0
@@ -483,7 +597,7 @@ button{font-family:inherit;font-weight:inherit;color:inherit;cursor:pointer;bord
       w.appendChild(b);
     });
   }
-  function setBuddies() { ['#homeBuddy', '#gameBuddy', '#resultBuddy'].forEach(s => $(s).textContent = state.buddy); }
+  function setBuddies() { ['#introBuddy', '#homeBuddy', '#gameBuddy', '#resultBuddy'].forEach(s => $(s).textContent = state.buddy); }
 
   function renderStickers() {
     const l = $('#stickerList');
@@ -497,9 +611,66 @@ button{font-family:inherit;font-weight:inherit;color:inherit;cursor:pointer;bord
     btn.onclick = () => {
       sfx.click();
       state.mode = btn.dataset.mode;
-      document.querySelectorAll('.mode').forEach(b => b.classList.toggle('on', b === btn));
+      startGame();
     };
   });
+
+  /* ---------- 사용자 (이 기기에만 저장, 게스트는 저장 안 함) ---------- */
+  const PROFILES_KEY = 'ggd_profiles';
+  const emptyData = () => ({ stickers: [], best: {} });
+  const loadProfiles = () => store.get(PROFILES_KEY, {});
+  function userData() {
+    if (state.guest) return state.guestData;
+    return loadProfiles()[state.user] || emptyData();
+  }
+  function saveUserData(d) {
+    if (state.guest) { state.guestData = d; return; }
+    const profiles = loadProfiles();
+    profiles[state.user] = d;
+    store.set(PROFILES_KEY, profiles);
+  }
+  function enterAs(name) {
+    state.guest = !name;
+    state.user = name;
+    if (state.guest) state.guestData = emptyData();
+    else if (!loadProfiles()[name]) saveUserData(emptyData());
+    state.stickers = userData().stickers;
+    $('#userBadge').textContent = '👤 ' + (name || '게스트');
+    renderStickers();
+    show('#home');
+  }
+  function renderUserList() {
+    const l = $('#userList'); l.innerHTML = '';
+    const names = Object.keys(loadProfiles());
+    if (!names.length) {
+      l.innerHTML = '<div class="user-empty-hint">저장된 사용자가 없어요. 새 이름으로 시작해보세요!</div>';
+      return;
+    }
+    names.forEach(name => {
+      const b = document.createElement('button');
+      b.className = 'user-item-btn';
+      b.innerHTML = '<span></span>'; b.firstChild.textContent = name;
+      b.onclick = () => { sfx.click(); enterAs(name); };
+      l.appendChild(b);
+    });
+  }
+  function submitNewUser() {
+    const name = $('#userNameInput').value.trim();
+    if (!name) { $('#userNameInput').focus(); return; }
+    sfx.click(); enterAs(name);
+  }
+  $('#introStart').onclick = () => {
+    sfx.click(); renderUserList();
+    $('#userNameInput').value = '';
+    show('#user');
+  };
+  $('#introHowto').onclick = () => { sfx.click(); show('#howto'); };
+  $('#howtoBack').onclick = () => { sfx.click(); show('#intro'); };
+  $('#userNewStart').onclick = submitNewUser;
+  $('#userNameInput').addEventListener('keydown', e => { if (e.key === 'Enter') submitNewUser(); });
+  $('#userGuest').onclick = () => { sfx.click(); enterAs(null); };
+  $('#userBack').onclick = () => { sfx.click(); show('#intro'); };
+  $('#changeUser').onclick = () => { sfx.click(); show('#intro'); };
   $('#soundBtn').onclick = () => {
     state.sound = !state.sound; store.set('ggd_sound', state.sound);
     if (!state.sound && 'speechSynthesis' in window) speechSynthesis.cancel();
@@ -530,7 +701,7 @@ button{font-family:inherit;font-weight:inherit;color:inherit;cursor:pointer;bord
 
   /* ---------- 게임 ---------- */
   function show(id) {
-    ['#home', '#game', '#run', '#result'].forEach(s => $(s).classList.toggle('hidden', s !== id));
+    ['#intro', '#user', '#howto', '#home', '#game', '#run', '#result'].forEach(s => $(s).classList.toggle('hidden', s !== id));
   }
 
   function buildQuestions() {
@@ -730,10 +901,10 @@ button{font-family:inherit;font-weight:inherit;color:inherit;cursor:pointer;bord
     $('#stars').innerHTML = [1, 2, 3].map(k =>
       `<span class="${k <= stars ? '' : 'dim'}" style="animation-delay:${k * 0.25}s">⭐</span>`).join('');
 
-    const bestKey = 'ggd_best_' + state.mode;
-    const best = store.get(bestKey, 0);
+    const data = userData();
+    const best = data.best[state.mode] || 0;
     const isRecord = state.score > best;
-    if (isRecord) store.set(bestKey, state.score);
+    if (isRecord) data.best[state.mode] = state.score;
     $('#resultCard').innerHTML =
       (state.mode === 'penguin' ? `도착한 스테이지 <b>${Math.min(RUN_STAGES, run.stage + 1)}</b> / ${RUN_STAGES}<br>` : '') +
       `맞힌 문제 <b>${state.correct}</b> / ${state.total}<br>` +
@@ -746,9 +917,11 @@ button{font-family:inherit;font-weight:inherit;color:inherit;cursor:pointer;bord
     if (stars === 3) {
       const notOwned = STICKERS.filter(s => !state.stickers.includes(s));
       const got = pick(notOwned.length ? notOwned : STICKERS);
-      if (!state.stickers.includes(got)) { state.stickers.push(got); store.set('ggd_stickers', state.stickers); }
+      if (!state.stickers.includes(got)) state.stickers.push(got);
       ns.innerHTML = `새 스티커를 받았어요!<span class="big">${got}</span>`;
     }
+    data.stickers = state.stickers;
+    saveUserData(data);
 
     // 틀린 문제 복습
     const rv = $('#review');
@@ -1120,7 +1293,6 @@ button{font-family:inherit;font-weight:inherit;color:inherit;cursor:pointer;bord
     show('#home');
   };
 
-  $('#startBtn').onclick = startGame;
   $('#againBtn').onclick = startGame;
   $('#homeBtn').onclick = () => { show('#home'); renderStickers(); };
   $('#quitBtn').onclick = () => {
