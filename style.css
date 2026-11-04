@@ -178,6 +178,9 @@ header, main {
 .tile-coding { background: var(--indigo); }
 .tile-coding .tile-emoji { color: var(--indigo-dark); }
 
+.tile-spelling { background: #84cc16; }
+.tile-spelling .tile-emoji { color: #65a30d; }
+
 /* ---- Game screen (top nav + embedded game) ---- */
 #game-screen {
   display: none;

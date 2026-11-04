@@ -9,7 +9,8 @@
     findhidden: "https://find-hidden-picture.vercel.app",
     multiplication: "multiplication/index.html",
     clock: "clock/index.html",
-    coding: "coding/index.html"
+    coding: "coding/index.html",
+    spelling: "spelling/index.html"
   };
 
   var homeScreen = document.getElementById("home-screen");

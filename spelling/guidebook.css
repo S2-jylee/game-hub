@@ -1,0 +1,161 @@
+/* 📖 가이드북 (게임마다 같은 파일) */
+.gb-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9000;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 253, 246, 0.72);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  font-family: "Pretendard", "Gowun Dodum", "Nunito", "Malgun Gothic", sans-serif;
+  color: #241b3a;
+  word-break: keep-all;
+}
+.gb-overlay.show { display: flex; }
+.gb-book {
+  width: 94%;
+  max-width: 900px;
+  max-height: 94vh;
+  background: #fff;
+  border: 2px solid #f3eefa;
+  border-radius: 28px;
+  box-shadow: 0 8px 24px rgba(36, 27, 58, 0.14);
+  padding: 20px 24px 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  overflow-y: auto;
+}
+.gb-head { display: flex; align-items: center; gap: 10px; }
+.gb-title { font-family: "CookieRun", "Jua", sans-serif; font-size: 1.5rem; color: #d81b7a; }
+.gb-num { font-size: 0.8rem; font-weight: 800; color: #7c2ce0; background: #f1e9ff; padding: 3px 10px; border-radius: 999px; }
+.gb-body { width: 100%; display: flex; align-items: center; gap: 14px; }
+.gb-arrow {
+  flex: none;
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  border: none;
+  background: linear-gradient(135deg, #d81b7a, #7c2ce0);
+  color: #fff;
+  font-size: 1.6rem;
+  cursor: pointer;
+  box-shadow: 0 6px 14px rgba(124, 44, 224, 0.3);
+  transition: transform 0.12s ease, opacity 0.12s ease;
+}
+.gb-arrow:hover { transform: scale(1.08); }
+.gb-arrow:active { transform: scale(0.94); }
+.gb-arrow:disabled { opacity: 0.18; pointer-events: none; box-shadow: none; }
+.gb-arrow.gb-nudge { animation: gb-nudge 1.2s ease-in-out infinite; }
+@keyframes gb-nudge { 50% { transform: translateX(6px) scale(1.06); } }
+.gb-page {
+  flex: 1;
+  min-width: 0;
+  min-height: 340px;
+  background: #fffaf0;
+  border: 2px dashed #f0e2c8;
+  border-radius: 24px;
+  padding: 18px 22px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  text-align: center;
+  touch-action: pan-y;
+}
+.gb-page.gb-turn-next { animation: gb-turnnext 0.35s ease; }
+.gb-page.gb-turn-prev { animation: gb-turnprev 0.35s ease; }
+@keyframes gb-turnnext { from { transform: translateX(40px) rotateY(-12deg); opacity: 0; } }
+@keyframes gb-turnprev { from { transform: translateX(-40px) rotateY(12deg); opacity: 0; } }
+.gb-icon { font-size: 4.6rem; line-height: 1; animation: gb-bob 2.4s ease-in-out infinite; }
+@keyframes gb-bob { 50% { transform: translateY(-6px); } }
+.gb-page-title { font-family: "CookieRun", "Jua", sans-serif; font-size: 1.6rem; color: #7c2ce0; }
+.gb-text { font-size: 1.2rem; line-height: 1.75; max-width: 560px; }
+.gb-text b { color: #d81b7a; }
+.gb-note { font-size: 0.85rem; color: #6b5f86; }
+.gb-start-text { font-family: "CookieRun", "Jua", sans-serif; font-size: 2rem; color: #d81b7a; }
+.gb-start {
+  border: none;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #ff4fa3, #a259ff);
+  color: #fff;
+  font-family: inherit;
+  font-size: 1.35rem;
+  font-weight: 800;
+  padding: 16px 46px;
+  cursor: pointer;
+  box-shadow: 0 6px 14px rgba(162, 89, 255, 0.35);
+  transition: transform 0.12s ease;
+}
+.gb-start:hover { transform: translateY(-2px) scale(1.03); }
+.gb-dots { display: flex; gap: 8px; }
+.gb-dot { width: 10px; height: 10px; border-radius: 50%; background: #e6ddf5; border: none; padding: 0; cursor: pointer; }
+.gb-dot.on { background: #7c2ce0; width: 26px; border-radius: 999px; }
+.gb-close {
+  border: none;
+  border-radius: 999px;
+  background: #f4eefd;
+  color: #241b3a;
+  font-family: inherit;
+  font-weight: 800;
+  font-size: 0.85rem;
+  padding: 8px 16px;
+  cursor: pointer;
+}
+@media (max-width: 640px) {
+  .gb-book { padding: 14px 10px; }
+  .gb-body { gap: 6px; }
+  .gb-arrow { width: 44px; height: 44px; font-size: 1.1rem; }
+  .gb-page { padding: 12px; min-height: 0; }
+  .gb-text { font-size: 1rem; }
+  .gb-icon { font-size: 3.4rem; }
+}
+
+/* 스테이지 고르기 맨 앞의 가이드북 칸 */
+.gb-tile {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  color: #fff !important;
+  border: none;
+  cursor: pointer;
+  background: linear-gradient(135deg, #ff4fa3, #a259ff) !important;
+  box-shadow: 0 0 0 4px #fff, 0 0 0 7px #ff4fa3 !important;
+  animation: gb-pulse 1.6s ease-in-out infinite;
+  font-family: inherit;
+}
+.gb-tile.read { animation: none; box-shadow: 0 4px 12px rgba(162, 89, 255, 0.3) !important; }
+@keyframes gb-pulse { 50% { transform: translateY(-3px) scale(1.04); } }
+.gb-tile-ico { font-size: 2rem; line-height: 1.1; }
+.gb-tile-name { font-family: "CookieRun", "Jua", sans-serif; font-size: 1.05rem; }
+.gb-tile-sub { font-size: 0.78rem; font-weight: 800; opacity: 0.95; }
+
+/* 놀이 고르기 맨 앞의 가로 띠 */
+.gb-tile.gb-wide { grid-column: 1 / -1; flex-direction: row; gap: 14px; padding: 12px 20px; border-radius: 22px; min-height: 64px; animation-name: gb-pulse-wide; }
+.gb-tile.gb-wide.read { animation: none; }
+.gb-tile.gb-wide .gb-tile-ico { font-size: 1.8rem; }
+.gb-tile.gb-wide .gb-tile-name { font-size: 1.25rem; }
+@keyframes gb-pulse-wide { 50% { transform: translateY(-2px) scale(1.01); } }
+
+/* 건너뛰기 */
+.gb-foot { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
+.gb-skip {
+  border: none;
+  border-radius: 999px;
+  background: #fff4cc;
+  color: #e67300;
+  font-family: inherit;
+  font-weight: 800;
+  font-size: 0.85rem;
+  padding: 8px 16px;
+  cursor: pointer;
+}
+.gb-skip:hover { background: #ffe9a3; }
+.gb-skip[hidden] { display: none; }

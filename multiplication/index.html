@@ -524,6 +524,7 @@ button{font-family:inherit;font-weight:inherit;color:inherit;cursor:pointer;bord
       <li><span>🪵</span><span><b>통나무</b>는 <b>스페이스바</b> 또는 <b>화면 터치</b>로 점프해서 피할 수 있어요!</span></li>
     </ul>
     <button class="btn btn-primary btn-huge" id="runIntroOk">확인</button>
+    <div><button class="btn btn-ghost btn-small" id="runIntroBack">← 게임 고르기</button></div>
   </div>
 </div>
 
@@ -1144,6 +1145,7 @@ button{font-family:inherit;font-weight:inherit;color:inherit;cursor:pointer;bord
     run.raf = requestAnimationFrame(runFrame);
   }
   $('#runIntroOk').onclick = beginRun;
+  $('#runIntroBack').onclick = () => $('#runQuit').onclick();
   function stopRun() {
     $('#runIntro').classList.add('hidden');
     run.active = false; run.tok++;
