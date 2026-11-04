@@ -23,7 +23,9 @@
   var DIFFS = {
     easy: { grid: 3, label: "쉬움", par: 40, scoreMult: 1 },
     normal: { grid: 4, label: "보통", par: 90, scoreMult: 1.5 },
-    hard: { grid: 5, label: "어려움", par: 170, scoreMult: 2.2 }
+    hard: { grid: 5, label: "어려움", par: 170, scoreMult: 2.2 },
+    // 4 columns x 5 rows on the (portrait) spot-the-difference illustrations
+    extreme: { grid: 4, rows: 5, label: "완전어려움", par: 180, scoreMult: 2.8, levels: "extreme" }
   };
 
   var PROFILES_KEY = "puzzle_profiles_v1";
@@ -78,8 +80,8 @@
 
     ART_G_TY = EDGE_MARGIN;
     ART_G_TX = EDGE_MARGIN;
-    ART_TARGET_SIZE = Math.max(60, h - EDGE_MARGIN * 2);
-    ART_G_SCALE = ART_TARGET_SIZE / ART_SIZE;
+    ART_G_SCALE = Math.max(60, h - EDGE_MARGIN * 2) / state.artH;
+    ART_TARGET_SIZE = state.artW * ART_G_SCALE; // on-screen board width
     artSpace.setAttribute("transform", "translate(" + ART_G_TX + " " + ART_G_TY + ") scale(" + ART_G_SCALE + ")");
 
     boardToolbarEl.style.left = (ART_G_TX + ART_TARGET_SIZE + BTN_GAP) + "px";
@@ -261,13 +263,17 @@
     placedCount: 0,
     total: 0,
     gridN: 3,
+    gridRows: 3,
+    artW: ART_SIZE,
+    artH: ART_SIZE,
     snapTol: 40,
     previewOn: true,
     stageStartTime: 0,
     timerHandle: null
   };
 
-  function currentLevel() { return PD.LEVELS[state.levelIndex]; }
+  function levelList() { return DIFFS[state.difficulty].levels === "extreme" ? PD.EXTREME_LEVELS : PD.LEVELS; }
+  function currentLevel() { return levelList()[state.levelIndex]; }
   function rankKey() { return currentLevel().id + "_" + state.difficulty; }
 
   // ---- Jigsaw piece geometry --------------------------------------------
@@ -306,7 +312,7 @@
     return d;
   }
 
-  function buildPiecePaths(rows, cols, size) {
+  function buildPiecePaths(rows, cols, width, height) {
     var r, c;
     var tabsH = []; // edge between row r / r+1 at column c -> direction from the ABOVE piece's viewpoint
     for (r = 0; r < rows - 1; r++) {
@@ -320,7 +326,7 @@
       for (c = 0; c < cols - 1; c++) rowV.push(Math.random() < 0.5 ? 1 : -1);
       tabsV.push(rowV);
     }
-    var pw = size / cols, ph = size / rows;
+    var pw = width / cols, ph = height / rows;
     var out = [];
     for (r = 0; r < rows; r++) {
       for (c = 0; c < cols; c++) {
@@ -356,7 +362,7 @@
       var p = pt.matrixTransform(inv);
       return { x: p.x, y: p.y };
     }
-    var pad = (ART_SIZE / (state.gridN || 3)) * 0.6;
+    var pad = (state.artW / (state.gridN || 3)) * 0.6;
     var a = toLocal(rect.left, rect.top);
     var b = toLocal(rect.right, rect.bottom);
     return {
@@ -387,13 +393,17 @@
     state.levelIndex = idx;
     state.placedCount = 0;
     completionModal.classList.remove("show");
-    computeLayout();
 
     var level = currentLevel();
-    var n = DIFFS[state.difficulty].grid;
-    state.gridN = n;
-    state.total = n * n;
-    state.snapTol = (ART_SIZE / n) * 0.28;
+    var diff = DIFFS[state.difficulty];
+    var cols = diff.grid, rows = diff.rows || diff.grid;
+    state.artW = level.width || ART_SIZE;
+    state.artH = level.height || ART_SIZE;
+    state.gridN = cols;
+    state.gridRows = rows;
+    state.total = cols * rows;
+    state.snapTol = Math.min(state.artW / cols, state.artH / rows) * 0.28;
+    computeLayout();
 
     artworkDefs.innerHTML = "";
     var artG = document.createElementNS(SVG_NS, "g");
@@ -413,11 +423,11 @@
 
     var frame = document.createElementNS(SVG_NS, "rect");
     frame.setAttribute("x", 0); frame.setAttribute("y", 0);
-    frame.setAttribute("width", ART_SIZE); frame.setAttribute("height", ART_SIZE);
+    frame.setAttribute("width", state.artW); frame.setAttribute("height", state.artH);
     frame.setAttribute("class", "target-frame");
     layerTarget.appendChild(frame);
 
-    var piecesData = buildPiecePaths(n, n, ART_SIZE);
+    var piecesData = buildPiecePaths(rows, cols, state.artW, state.artH);
     state.pieces = piecesData.map(function (p, i) {
       var clipId = "clip-" + i;
       var clip = document.createElementNS(SVG_NS, "clipPath");
@@ -469,11 +479,11 @@
   }
 
   function updateHud() {
-    hudStageVal.textContent = (state.levelIndex + 1) + " / " + PD.LEVELS.length;
+    hudStageVal.textContent = (state.levelIndex + 1) + " / " + levelList().length;
     hudLevelName.textContent = currentLevel().name;
     hudPiecesVal.textContent = state.placedCount + " / " + state.total;
     hudScoreVal.textContent = state.totalScore;
-    progressFill.style.width = (state.levelIndex / PD.LEVELS.length * 100) + "%";
+    progressFill.style.width = (state.levelIndex / levelList().length * 100) + "%";
   }
 
   // ---- Timer ----------------------------------------------------------
@@ -569,7 +579,7 @@
 
   function goToNextLevelOrResult() {
     completionModal.classList.remove("show");
-    if (state.levelIndex + 1 < PD.LEVELS.length) {
+    if (state.levelIndex + 1 < levelList().length) {
       loadLevel(state.levelIndex + 1);
     } else {
       showResult();
@@ -593,7 +603,7 @@
 
   // ---- Ranking modal ------------------------------------------------------
   function openRanking(levelIndex) {
-    var level = PD.LEVELS[levelIndex];
+    var level = levelList()[levelIndex];
     var key = level.id + "_" + state.difficulty;
     rankingStageLabel.textContent = DIFFS[state.difficulty].label + " · " + level.name;
     rankingList.innerHTML = "";
@@ -627,12 +637,21 @@
   function buildLevelGrid() {
     levelGrid.innerHTML = "";
     var starsMap = loadStars();
-    PD.LEVELS.forEach(function (lvl, i) {
+    levelList().forEach(function (lvl, i) {
       var btn = document.createElement("button");
       btn.className = "level-grid-btn";
-      var emoji = document.createElement("div");
-      emoji.className = "lvl-emoji";
-      emoji.textContent = lvl.emoji;
+      var emoji;
+      if (lvl.thumb) {
+        emoji = document.createElement("img");
+        emoji.className = "lvl-thumb";
+        emoji.src = lvl.thumb;
+        emoji.alt = "";
+        emoji.loading = "lazy";
+      } else {
+        emoji = document.createElement("div");
+        emoji.className = "lvl-emoji";
+        emoji.textContent = lvl.emoji;
+      }
       var name = document.createElement("div");
       name.className = "lvl-name";
       name.textContent = lvl.name;

@@ -257,5 +257,33 @@
     }
   ];
 
-  window.PuzzleData = { ART_SIZE: ART_SIZE, LEVELS: LEVELS, E: E };
+  // "완전어려움" uses the real illustrations from the spot-the-difference game
+  // (left picture only). Each level's drawLeft() already lays its image out at
+  // the right aspect inside the 480-tall art space, so we just read the image's
+  // href/width/height from it and re-anchor it at x=0 on a board exactly that wide.
+  var FIND_ASSET_BASE = "../spot-the-difference/";
+  var EXTREME_LEVELS = [];
+  var findLevels = (window.FindData && window.FindData.LEVELS) || [];
+  // Probe elements are created in an inert document so the browser doesn't try
+  // to fetch drawLeft()'s "assets/..." href relative to this (wrong) folder.
+  var inertDoc = document.implementation.createHTMLDocument("");
+  findLevels.forEach(function (fl) {
+    var probe = inertDoc.createElementNS(SVG_NS, "g");
+    document.createElementNS = inertDoc.createElementNS.bind(inertDoc);
+    try { fl.drawLeft(probe); } finally { delete document.createElementNS; }
+    var img = probe.querySelector("image");
+    if (!img) return;
+    var href = FIND_ASSET_BASE + img.getAttribute("href");
+    var w = parseFloat(img.getAttribute("width"));
+    var h = parseFloat(img.getAttribute("height"));
+    EXTREME_LEVELS.push({
+      id: "find_" + fl.id, name: fl.name, emoji: fl.emoji, thumb: href,
+      width: ART_SIZE * w / h, height: ART_SIZE,
+      draw: function (g) {
+        E("image", { x: 0, y: 0, width: ART_SIZE * w / h, height: ART_SIZE, href: href, preserveAspectRatio: "none" }, g);
+      }
+    });
+  });
+
+  window.PuzzleData = { ART_SIZE: ART_SIZE, LEVELS: LEVELS, EXTREME_LEVELS: EXTREME_LEVELS, E: E };
 })();

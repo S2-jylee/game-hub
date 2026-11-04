@@ -182,6 +182,7 @@ h1 { font-family: "CookieRun", "Jua", sans-serif; font-size: 2.6rem; margin: 6px
 .diff-btn[data-diff="easy"] { background: var(--mint); }
 .diff-btn[data-diff="normal"] { background: var(--sky); }
 .diff-btn[data-diff="hard"] { background: var(--red); }
+.diff-btn[data-diff="extreme"] { background: linear-gradient(180deg, var(--lavender), var(--lavender-dark)); }
 .diff-emoji {
   font-size: 2.2rem;
   width: 72px;
@@ -236,6 +237,14 @@ h1 { font-family: "CookieRun", "Jua", sans-serif; font-size: 2.6rem; margin: 6px
 .level-grid-btn:active { transform: translateY(2px); }
 .level-grid-btn.has-stars { background: linear-gradient(180deg, var(--yellow), var(--peach)); }
 .lvl-emoji { font-size: 2.1rem; }
+.lvl-thumb {
+  width: 84px;
+  height: 100px;
+  object-fit: cover;
+  border-radius: 12px;
+  background: rgba(255,255,255,0.85);
+  box-shadow: 0 2px 6px rgba(36,27,58,0.18);
+}
 .lvl-name { font-size: 0.85rem; line-height: 1.25; }
 .level-grid-btn .lvl-stars { font-size: 0.65rem; letter-spacing: 1px; color: rgba(255,255,255,0.9); line-height: 1; }
 .lvl-trophy {
