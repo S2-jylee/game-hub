@@ -567,3 +567,13 @@ html { background: #eefbea; }
   .lvl-thumb { width: 100%; max-width: 110px; height: auto; aspect-ratio: 84 / 100; }
   .lvl-name { font-size: 0.78rem; }
 }
+
+/* 좁은 화면: 난이도 고르기도 한 줄에 2칸씩 */
+@media (max-width: 560px) {
+  #screen-difficulty .card { padding: 22px 14px; width: 94%; }
+  .difficulty-options { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin: 16px 0 14px; }
+  .diff-btn { padding: 18px 8px; border-radius: 22px; }
+  .diff-emoji { width: 58px; height: 58px; font-size: 1.8rem; }
+  .diff-name { font-size: 1.1rem; }
+  .diff-desc { font-size: 0.78rem; }
+}

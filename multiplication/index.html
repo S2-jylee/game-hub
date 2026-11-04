@@ -1268,13 +1268,35 @@ button{font-family:inherit;font-weight:inherit;color:inherit;cursor:pointer;bord
   /* ---------- 통나무: 걸리면 하트 반 개 + 1초 동안 꽁꽁, 점프로 피해요 ---------- */
   // 허들을 지나면 거의 매번 다음 허들 전에 통나무가 굴러와요.
   // 다음 허들까지 1.5초 넘게 남는 때에만 놓아서, 얼었다 풀려도 정답 칸으로 갈 수 있어요.
+  // 스테이지가 올라갈수록 허들 사이에 통나무가 여러 개 굴러와요
+  // 5스테이지부터는 가끔 두 칸을 차지하는 긴 통나무도 나와요
+  // 8스테이지부터는 통나무 사이가 점프 시간보다 짧을 수 있어서, 그때는 서로 다른 칸에 짧은 통나무만 놓아요
   function maybeLog(delaySec) {
+    const LOG_GAP = run.stage >= 7 ? 0.55 : 0.75;
     if (Math.random() > (run.stage === 0 ? 0.85 : 1)) return;
     const T = Z_SPAWN / run.speed;
     const tMin = 0.7, tMax = delaySec + T - 1.5;
     if (tMax < tMin) return;
-    const ta = tMin + Math.random() * (tMax - tMin);
-    run.logs.push({ z: run.speed * ta, x: pick(LANE_X), done: false, age: 0 });
+    const fit = Math.floor((tMax - tMin) / LOG_GAP) + 1;
+    const want = 1 + Math.floor(run.stage * 0.3 + Math.random());
+    const n = Math.max(1, Math.min(fit, want));
+    const gap = n > 1 ? (tMax - tMin) / (n - 1) : 0;
+    const close = gap > 0 && gap < HOP + 0.1;   // 한 번 점프로 둘 다 넘기 어려울 만큼 가까워요
+    // 가까이 붙은 두 통나무는 겹치는 칸이 없게 놓아요 (긴 통나무 + 남은 한 칸 통나무는 괜찮아요)
+    const overlap = (a, b) => Math.abs(a.x - b.x) < a.half + b.half - 0.05;
+    let prev = null;
+    for (let k = 0; k < n; k++) {
+      const ta = n > 1 ? tMin + k * gap - (k === n - 1 ? Math.random() * 0.05 : 0) : tMin + Math.random() * (tMax - tMin);
+      const opts = [];
+      if (run.stage >= 4 && Math.random() < 0.3) [-1 / 3, 1 / 3].forEach(x => opts.push({ x, half: 0.6 }));
+      if (!opts.length) LANE_X.forEach(x => opts.push({ x, half: 0.27 }));
+      let ok = close && prev ? opts.filter(o => !overlap(o, prev)) : opts;
+      if (!ok.length) ok = LANE_X.map(x => ({ x, half: 0.27 })).filter(o => !(close && prev && overlap(o, prev)));
+      const c = pick(ok);
+      const lg = { z: run.speed * ta, x: c.x, half: c.half, done: false, age: 0 };
+      prev = lg;
+      run.logs.push(lg);
+    }
   }
 
   function hitLog() {
@@ -1371,8 +1393,9 @@ button{font-family:inherit;font-weight:inherit;color:inherit;cursor:pointer;bord
       lg.age += dt;
       if (!lg.done && lg.z <= 0) {
         lg.done = true;
-        if (Math.abs(run.px - lg.x) < 0.3 && run.jumpT <= 0 && run.hopT <= 0) hitLog();
-        else if (run.hopT > 0 && Math.abs(run.px - lg.x) < 0.3) floatAt(canvas.getBoundingClientRect().left + proj(geo(), run.px, 0).x, canvas.getBoundingClientRect().top + proj(geo(), run.px, 0).y - geo().R * 0.6, '점프! 👍');
+        const onLog = Math.abs(run.px - lg.x) < (lg.half || 0.27) + 0.03;
+        if (onLog && run.jumpT <= 0 && run.hopT <= 0) hitLog();
+        else if (run.hopT > 0 && onLog) floatAt(canvas.getBoundingClientRect().left + proj(geo(), run.px, 0).x, canvas.getBoundingClientRect().top + proj(geo(), run.px, 0).y - geo().R * 0.6, '점프! 👍');
       }
     });
     run.logs = run.logs.filter(lg => lg.z > -CAM * 0.6);
@@ -1559,7 +1582,7 @@ button{font-family:inherit;font-weight:inherit;color:inherit;cursor:pointer;bord
 
   // 길 위에 가로로 누운 통나무 (한 칸 폭)
   function drawLog(g, lg) {
-    const half = 0.27, rad = 0.055;
+    const half = lg.half || 0.27, rad = 0.055;
     const L = proj(g, lg.x - half, lg.z, rad), Rr = proj(g, lg.x + half, lg.z, rad), base = proj(g, lg.x, lg.z);
     if (base.s <= 0) return;
     const r = Math.max(2, rad * g.R * base.s);
@@ -1846,7 +1869,15 @@ button{font-family:inherit;font-weight:inherit;color:inherit;cursor:pointer;bord
     const baseY = H - gh * 0.45;
     return { W, H, gh, cs, baseY, basketY: baseY - cs * 0.42, bw: cs * 0.62, ir: Math.max(17, Math.min(26, Math.min(W, H) * 0.04)) };
   }
-  const catchLevel = () => Math.min(30, state.correct);   // 정답을 받을수록 빨라져요
+  // 속도는 6단계: 정답 10개마다 한 단계씩 빨라지고, 6단계부터는 하트가 다 없어질 때까지 그대로예요
+  const SPEED_STEPS = 6, PER_SPEED = 10;
+  const speedStep = () => Math.min(SPEED_STEPS - 1, Math.floor(state.correct / PER_SPEED));   // 0 ~ 5
+  const catchLevel = () => speedStep() * 6;   // 아래 속도 식에 쓰는 값 (0 ~ 30)
+  function showSpeedUp() {
+    const step = speedStep() + 1;
+    cg.speedUp = { t: 1.5, step };
+    [660, 880, 1175].forEach((fq, i) => tone(fq, 0.14, 'triangle', i * 0.08, 0.1));
+  }
 
   function startCatch() {
     renderHearts();
@@ -1856,7 +1887,7 @@ button{font-family:inherit;font-weight:inherit;color:inherit;cursor:pointer;bord
       active: true, t: 0, px: 0.5, lean: 0, target: null, items: [], spawnT: 0.6, sinceAns: 1,
       heartT: 25 + Math.random() * 10, gemT: 9 + Math.random() * 6, gems: 0,
       waitT: 0, overT: 0, hurtT: 0, happyT: 0, shakeT: 0, flashT: 0, basket: [],
-      banner: { text: '준비~ 시작! 🧺', t: 1.8 }
+      banner: { text: '준비~ 시작! 🧺', t: 1.8 }, speedUp: null
     });
     cg.keys.l = cg.keys.r = false;
     $('#catchGems').textContent = '0';
@@ -1906,7 +1937,7 @@ button{font-family:inherit;font-weight:inherit;color:inherit;cursor:pointer;bord
     cg.spawnT = Math.max(0.7, 1.4 - lv * 0.023) * (0.85 + Math.random() * 0.3);
     if (Math.random() < Math.min(0.2, 0.08 + lv * 0.004)) { addItem('bomb', g); return; }
     const { ans, wrongs } = state.cur;
-    const onScreen = cg.items.filter(it => it.kind === 'num' && !it.done && it.v === ans).length;
+    const onScreen = cg.items.filter(it => it.kind === 'num' && !it.done && !it.stale && it.v === ans).length;
     // 정답은 너무 오래 안 나오지 않게, 한 번에 너무 많지도 않게
     if (cg.sinceAns >= 3 || (onScreen < 2 && Math.random() < 0.32)) {
       addItem('num', g, ans);
@@ -1938,10 +1969,16 @@ button{font-family:inherit;font-weight:inherit;color:inherit;cursor:pointer;bord
       cg.basket.push(it.color); if (cg.basket.length > 5) cg.basket.shift();
       $('#catchMsg').textContent = pick(PRAISE) + (state.combo >= 2 ? `  🔥 ${state.combo}콤보!` : '');
       if (state.combo % 5 === 0) cg.banner = { text: `🔥 ${state.combo}콤보! 보너스 점수 UP`, t: 1.8 };
-      else if (state.correct % 10 === 0) cg.banner = { text: '🚀 더 빨라져요!', t: 1.8 };
-      // 남아 있는 숫자 열매는 퐁 사라지고 다음 문제로
-      cg.items.forEach(o => { if (o.kind === 'num' && !o.done) { o.done = true; o.fade = FADE; } });
-      cg.waitT = 0.6;
+      // 정답 10개마다 한 단계씩 빨라져요 (6단계까지)
+      if (state.correct % PER_SPEED === 0 && state.correct / PER_SPEED < SPEED_STEPS) showSpeedUp();
+      $('#catchMsg').textContent = `${a} × ${b} = ${ans} 정답! ` + pick(PRAISE) + (state.combo >= 2 ? `  🔥 ${state.combo}콤보!` : '');
+      // 화면은 멈추지 않아요: 지난 문제의 숫자 열매는 흐려져서 그냥 지나가고,
+      // 다음 문제의 열매가 바로 이어서 떨어져요
+      cg.items.forEach(o => { if (o.kind === 'num' && !o.done) o.stale = true; });
+      state.i++;
+      setCatchQuestion();
+      cg.sinceAns = 2;
+      cg.spawnT = Math.min(cg.spawnT, 0.35);
       return;
     }
     if (it.kind === 'heart') {
@@ -2027,7 +2064,7 @@ button{font-family:inherit;font-weight:inherit;color:inherit;cursor:pointer;bord
       it.y += it.vy * dt;
       if (it.wob) it.x = Math.max(0.05, Math.min(0.95, it.x + Math.sin(cg.t * 3 + it.ph) * it.wob * dt));
       if (it.fade != null) { it.fade -= dt; return; }
-      if (it.done || cg.overT > 0) return;
+      if (it.done || it.stale || cg.overT > 0) return;
       // 바구니 입구에 닿으면 받아요
       if (it.y + it.r * 0.4 >= g.basketY && it.y - it.r * 0.4 <= g.basketY + g.cs * 0.25 &&
           Math.abs(it.x * g.W - bx) <= g.bw + it.r * 0.3) catchItem(it, g);
@@ -2038,6 +2075,7 @@ button{font-family:inherit;font-weight:inherit;color:inherit;cursor:pointer;bord
     cg.shakeT = Math.max(0, cg.shakeT - dt);
     cg.flashT = Math.max(0, cg.flashT - dt);
     if (cg.banner && (cg.banner.t -= dt) <= 0) cg.banner = null;
+    if (cg.speedUp && (cg.speedUp.t -= dt) <= 0) cg.speedUp = null;
 
     drawCatch(g);
     cg.raf = requestAnimationFrame(catchFrame);
@@ -2070,6 +2108,7 @@ button{font-family:inherit;font-weight:inherit;color:inherit;cursor:pointer;bord
       const x = it.x * W, y = it.y;
       c.save(); c.translate(x, y);
       if (it.fade != null) { const k = Math.max(0, it.fade / FADE); c.globalAlpha = k; c.scale(1 + (1 - k) * 0.6, 1 + (1 - k) * 0.6); }
+      else if (it.stale) c.globalAlpha = 0.28;   // 지난 문제의 열매는 흐리게
       if (it.kind === 'num') drawFruit(c, it);
       else drawEmojiItem(c, it);
       c.restore();
@@ -2080,6 +2119,48 @@ button{font-family:inherit;font-weight:inherit;color:inherit;cursor:pointer;bord
     // 다쳤을 때 빨갛게 번쩍
     if (cg.flashT > 0) { c.fillStyle = `rgba(255,93,115,${0.28 * cg.flashT / 0.35})`; c.fillRect(-10, -10, W + 20, H + 20); }
     if (cg.banner) drawCatchBanner(c, g, cg.banner);
+    drawSpeedBadge(c, g);
+    if (cg.speedUp) drawSpeedUp(c, g, cg.speedUp);
+    c.restore();
+  }
+
+  // 왼쪽 위 지금 속도 단계
+  function drawSpeedBadge(c, g) {
+    const step = speedStep() + 1, fs = Math.max(13, Math.min(18, g.W * 0.03));
+    const text = `🚀 속도 ${step} / ${SPEED_STEPS}`;
+    c.save();
+    c.font = `800 ${fs}px Pretendard, sans-serif`;
+    const w = c.measureText(text).width + fs * 1.4, h = fs * 2;
+    c.fillStyle = 'rgba(255,255,255,.85)';
+    c.beginPath(); if (c.roundRect) c.roundRect(10, 10, w, h, h / 2); else c.rect(10, 10, w, h); c.fill();
+    c.fillStyle = step >= SPEED_STEPS ? '#e8590c' : '#3b2d5c';
+    c.textAlign = 'left'; c.textBaseline = 'middle';
+    c.fillText(text, 10 + fs * 0.7, 10 + h / 2 + 1);
+    c.restore();
+  }
+
+  // 화면 가운데 "스피드 업!" (톡 커졌다가 사라져요)
+  function drawSpeedUp(c, g, su) {
+    const life = 1.5, k = 1 - su.t / life;
+    const pop = k < 0.15 ? 0.6 + k / 0.15 * 0.55 : k < 0.25 ? 1.15 - (k - 0.15) / 0.1 * 0.15 : 1;
+    const alpha = su.t < 0.35 ? su.t / 0.35 : 1;
+    const fs = Math.max(30, Math.min(64, g.W * 0.09));
+    c.save();
+    c.globalAlpha = alpha;
+    c.translate(g.W / 2, g.H * 0.42);
+    c.scale(pop, pop);
+    c.rotate(-0.05);
+    c.font = `${fs}px CookieRun, Jua, sans-serif`;
+    c.textAlign = 'center'; c.textBaseline = 'middle';
+    c.lineJoin = 'round';
+    c.lineWidth = fs * 0.22; c.strokeStyle = '#ffffff';
+    c.strokeText('스피드 업! 🚀', 0, 0);
+    c.fillStyle = '#ff5d73';
+    c.fillText('스피드 업! 🚀', 0, 0);
+    const sub = su.step >= SPEED_STEPS ? '최고 속도! 끝까지 버텨요 🔥' : `속도 ${su.step}단계`;
+    c.font = `800 ${fs * 0.42}px Pretendard, sans-serif`;
+    c.lineWidth = fs * 0.12; c.strokeText(sub, 0, fs * 0.85);
+    c.fillStyle = '#3b2d5c'; c.fillText(sub, 0, fs * 0.85);
     c.restore();
   }
 
