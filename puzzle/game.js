@@ -251,7 +251,6 @@
   function playClear() {
     [523, 659, 784, 1046].forEach(function (f, i) { beep(f, 0.22, i * 0.09, "triangle", 0.16); });
   }
-  function playClick() { beep(440, 0.06, 0, "square", 0.06); }
 
   // ---- Game state -----------------------------------------------------
   var state = {
@@ -564,7 +563,6 @@
       setTimeout(function () { piece.groupEl.classList.remove("just-locked"); }, 400);
       state.placedCount++;
       updateHud();
-      playClick();
       if (state.placedCount === state.total) finishStage();
     }
     drag = null;
@@ -796,7 +794,6 @@
       piece.offset.y = tp.y - piece.cy;
       updatePieceTransform(piece);
     });
-    playClick();
   });
 
   document.getElementById("btn-completion-next").addEventListener("click", goToNextLevelOrResult);

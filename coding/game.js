@@ -212,9 +212,6 @@
   function playClear() {
     [523, 659, 784, 1046].forEach(function (f, i) { beep(f, 0.22, i * 0.09, "triangle", 0.16); });
   }
-  function playClick() { beep(520, 0.06, 0, "square", 0.06); }
-  function playStep() { beep(700, 0.05, 0, "triangle", 0.07); }
-  function playTurn() { beep(560, 0.05, 0, "sine", 0.08); beep(760, 0.05, 0.05, "sine", 0.08); }
   function playMatch() { beep(660, 0.12, 0, "triangle", 0.14); beep(880, 0.16, 0.08, "triangle", 0.14); }
   function playMiss() { beep(260, 0.14, 0, "sawtooth", 0.09); }
 
@@ -406,7 +403,6 @@
           if (pm) {
             evt.stopPropagation();
             it.loop = Math.max(2, Math.min(9, it.loop + Number(pm.dataset.d)));
-            playClick();
             edited();
             return;
           }
@@ -477,7 +473,6 @@
 
   function selectRef(ref) {
     if (state.running) return;
-    playClick();
     state.sel = sameRef(state.sel, ref) ? null : ref;
     renderProgram();
     renderPalette();
@@ -509,7 +504,6 @@
       state.prog.push({ c: c });
       state.popRef = { i: state.prog.length - 1, j: -1 };
     }
-    playClick();
     edited();
   }
 
@@ -525,7 +519,6 @@
     state.prog.push({ loop: 2, body: [] });
     state.sel = { i: state.prog.length - 1, j: -1 };
     state.popRef = state.sel;
-    playClick();
     edited();
   }
 
@@ -554,7 +547,6 @@
       if (last.body && last.body.length) last.body.pop();
       else state.prog.pop();
     }
-    playClick();
     edited();
   }
 
@@ -563,7 +555,6 @@
     var level = currentLevel();
     state.prog = level.prefill ? JSON.parse(JSON.stringify(level.prefill)) : [];
     state.sel = null;
-    playClick();
     edited();
   }
 
@@ -728,7 +719,6 @@
       if (!t) {
         // 코드 밖으로 끌어내면 지워져요
         state.sel = null;
-        playClick();
         edited();
         return;
       }
@@ -749,7 +739,6 @@
       // 새 반복 블록은 골라 둬서 아래 블록을 누르면 바로 안으로 들어가요
       state.sel = item.body && !item.body.length ? { i: t.at, j: -1 } : null;
     }
-    playClick();
     edited();
   }
 
@@ -815,11 +804,10 @@
         if (st.star != null) {
           cellEls[key(st.x, st.y)].classList.add("star-got");
           playMatch();
-        } else playStep();
+        }
       } else if (st.type === "turn") {
         state.faceDeg += (st.ref && blockAt(st.ref).c === "TL") ? -90 : 90;
         faceActor();
-        playTurn();
       } else if (st.type === "bump") {
         actorEl.style.setProperty("--bx", (CD.DX[st.dir] * 28) + "%");
         actorEl.style.setProperty("--by", (CD.DY[st.dir] * 28) + "%");
@@ -1170,7 +1158,6 @@
     var next = Math.max(0, Math.min(book.pages.length - 1, book.index + delta));
     if (next === book.index) return;
     book.index = next;
-    playClick();
     renderBookPage(delta);
   }
 
@@ -1209,7 +1196,6 @@
       btn.querySelector(".mode-title").textContent = cat.name;
       btn.querySelector(".mode-desc").textContent = cat.desc;
       btn.addEventListener("click", function () {
-        playClick();
         state.catIndex = ci;
         goToLevelSelect();
       });

@@ -164,7 +164,6 @@
   function playClear() {
     [523, 659, 784, 1046].forEach(function (f, i) { beep(f, 0.22, i * 0.09, "triangle", 0.16); });
   }
-  function playClick() { beep(440, 0.06, 0, "square", 0.06); }
   function playRetry() { beep(300, 0.1, 0, "sawtooth", 0.1); beep(220, 0.16, 0.08, "sawtooth", 0.1); }
 
   // ---- Game state -----------------------------------------------------
@@ -631,7 +630,6 @@
       releaseSnap(piece);
       piece.current.angleDeg = normalizeDeg(piece.current.angleDeg + 45);
       updatePieceTransform(piece);
-      playClick();
     }
     trySnap(piece);
     drag = null;
@@ -802,7 +800,6 @@
     updatePivotMarker();
     if (turned) {
       trySnap(piece);
-      playClick();
     } else if (tapRotate) {
       rotateSelected(1);
     }
@@ -818,7 +815,6 @@
     piece.current.angleDeg = normalizeDeg(piece.current.angleDeg + dir * 45);
     updatePieceTransform(piece);
     trySnap(piece);
-    playClick();
   }
 
   function flipSelected() {
@@ -829,7 +825,6 @@
     piece.current.flip = !piece.current.flip;
     updatePieceTransform(piece);
     trySnap(piece);
-    playClick();
   }
 
   // ---- Snapping ------------------------------------------------------------
@@ -900,7 +895,6 @@
     updatePieceTransform(piece);
     piece.el.classList.remove("snap-pop");
     requestAnimationFrame(function () { piece.el.classList.add("snap-pop"); });
-    playClick();
   }
 
   function pieceSlotDeviation(piece, slot) {

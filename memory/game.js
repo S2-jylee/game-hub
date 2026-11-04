@@ -193,7 +193,6 @@
   function playClear() {
     [523, 659, 784, 1046].forEach(function (f, i) { beep(f, 0.22, i * 0.09, "triangle", 0.16); });
   }
-  function playClick() { beep(520, 0.06, 0, "square", 0.06); }
   function playMatch() { beep(660, 0.12, 0, "triangle", 0.14); beep(880, 0.16, 0.08, "triangle", 0.14); }
   function playMiss() { beep(260, 0.14, 0, "sawtooth", 0.09); }
 
@@ -320,7 +319,6 @@
 
     card.flipped = true;
     renderCardState(card);
-    playClick();
     state.flippedIds.push(card.id);
 
     if (state.flippedIds.length < 2) return;

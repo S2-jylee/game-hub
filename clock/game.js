@@ -210,8 +210,6 @@
   function playClear() {
     [523, 659, 784, 1046].forEach(function (f, i) { beep(f, 0.22, i * 0.09, "triangle", 0.16); });
   }
-  function playClick() { beep(520, 0.06, 0, "square", 0.06); }
-  function playTick() { beep(1250, 0.03, 0, "square", 0.025); }
   function playMatch() { beep(660, 0.12, 0, "triangle", 0.14); beep(880, 0.16, 0.08, "triangle", 0.14); }
   function playMiss() { beep(260, 0.14, 0, "sawtooth", 0.09); }
 
@@ -774,7 +772,6 @@
     if (!sameTime(next, now)) {
       state.setTime = next;
       showTimeOnClock(next);
-      playTick();
     }
   }
 
@@ -1046,7 +1043,6 @@
     var next = Math.max(0, Math.min(book.pages.length - 1, book.index + delta));
     if (next === book.index) return;
     book.index = next;
-    playClick();
     renderBookPage(delta);
   }
 
@@ -1090,7 +1086,6 @@
       btn.querySelector(".mode-title").textContent = cat.name;
       btn.querySelector(".mode-desc").textContent = cat.desc;
       btn.addEventListener("click", function () {
-        playClick();
         state.catIndex = ci;
         goToLevelSelect();
       });
@@ -1212,7 +1207,7 @@
   document.getElementById("btn-speak").addEventListener("click", function () {
     if (state.cur) speak(state.cur.say);
   });
-  checkBtn.addEventListener("click", function () { playClick(); onCheck(); });
+  checkBtn.addEventListener("click", function () { onCheck(); });
   document.getElementById("btn-retry").addEventListener("click", goToModeSelect);
   document.getElementById("btn-to-title").addEventListener("click", function () { showScreen("title"); });
   document.getElementById("btn-completion-next").addEventListener("click", goToNextLevelOrResult);

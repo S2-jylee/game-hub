@@ -605,7 +605,6 @@ button{font-family:inherit;font-weight:inherit;color:inherit;cursor:pointer;bord
     pop() { tone(880, 0.07, 'square', 0, 0.05); },
     win() { [523, 659, 784, 659, 784, 1047].forEach((f, i) => tone(f, 0.22, 'triangle', i * 0.13)); },
     tick() { tone(1250, 0.04, 'square', 0, 0.03); },
-    click() { tone(660, 0.05, 'sine', 0, 0.08); }
   };
   function speak(text) {
     if (!state.sound || !('speechSynthesis' in window)) return;
@@ -670,7 +669,6 @@ button{font-family:inherit;font-weight:inherit;color:inherit;cursor:pointer;bord
       b.className = 'dan' + (state.dans.has(d) ? ' on' : '');
       b.textContent = d + '단';
       b.onclick = () => {
-        sfx.click();
         if (state.dans.has(d) && state.dans.size > 1) state.dans.delete(d); else state.dans.add(d);
         saveDans(); renderDanGrid();
       };
@@ -681,7 +679,6 @@ button{font-family:inherit;font-weight:inherit;color:inherit;cursor:pointer;bord
     all.className = 'dan' + (isAll ? ' on' : '');
     all.textContent = '전체';
     all.onclick = () => {
-      sfx.click();
       state.dans = isAll ? new Set([2]) : new Set([2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]);
       saveDans(); renderDanGrid();
     };
@@ -696,7 +693,7 @@ button{font-family:inherit;font-weight:inherit;color:inherit;cursor:pointer;bord
       b.textContent = bd;
       if (bd === state.buddy) b.className = 'on';
       b.onclick = () => {
-        sfx.click(); state.buddy = bd; store.set('ggd_buddy', bd);
+        state.buddy = bd; store.set('ggd_buddy', bd);
         renderBuddyPick(); setBuddies(); animate($('#homeBuddy'), 'jump');
       };
       w.appendChild(b);
@@ -724,7 +721,7 @@ button{font-family:inherit;font-weight:inherit;color:inherit;cursor:pointer;bord
       b.style.setProperty('--mc', game.mc); b.style.setProperty('--mbg', game.mbg);
       b.innerHTML = `<span class="m-emoji">${game.emoji}</span><span class="m-name">${game.name}</span><small>${game.desc}</small>` +
         (best[game.mode] ? `<span class="best">🏆 최고 ${best[game.mode]}점</span>` : '') + '<span class="m-go">시작 ▶</span>';
-      b.onclick = () => { sfx.click(); state.mode = game.mode; startGame(); };
+      b.onclick = () => { state.mode = game.mode; startGame(); };
       g.appendChild(b);
     });
     const soon = document.createElement('div');
@@ -732,12 +729,11 @@ button{font-family:inherit;font-weight:inherit;color:inherit;cursor:pointer;bord
     soon.innerHTML = '<span class="m-emoji">🎁</span><span class="m-name">새 게임 준비 중</span><small>곧 더 많은 게임이 나와요!</small>';
     g.appendChild(soon);
   }
-  $('#arcadeBtn').onclick = () => { sfx.click(); renderArcade(); show('#arcade'); };
-  $('#arcadeBack').onclick = () => { sfx.click(); show('#home'); };
+  $('#arcadeBtn').onclick = () => { renderArcade(); show('#arcade'); };
+  $('#arcadeBack').onclick = () => { show('#home'); };
 
   document.querySelectorAll('.mode[data-mode]').forEach(btn => {
     btn.onclick = () => {
-      sfx.click();
       state.mode = btn.dataset.mode;
       startGame();
     };
@@ -778,34 +774,33 @@ button{font-family:inherit;font-weight:inherit;color:inherit;cursor:pointer;bord
       const b = document.createElement('button');
       b.className = 'user-item-btn';
       b.innerHTML = '<span></span>'; b.firstChild.textContent = name;
-      b.onclick = () => { sfx.click(); enterAs(name); };
+      b.onclick = () => { enterAs(name); };
       l.appendChild(b);
     });
   }
   function submitNewUser() {
     const name = $('#userNameInput').value.trim();
     if (!name) { $('#userNameInput').focus(); return; }
-    sfx.click(); enterAs(name);
+    enterAs(name);
   }
   $('#introStart').onclick = () => {
-    sfx.click(); renderUserList();
+    renderUserList();
     $('#userNameInput').value = '';
     show('#user');
   };
   $('#userNewStart').onclick = submitNewUser;
   $('#userNameInput').addEventListener('keydown', e => { if (e.key === 'Enter') submitNewUser(); });
-  $('#userGuest').onclick = () => { sfx.click(); enterAs(null); };
-  $('#userBack').onclick = () => { sfx.click(); show('#intro'); };
-  $('#changeUser').onclick = () => { sfx.click(); show('#intro'); };
+  $('#userGuest').onclick = () => { enterAs(null); };
+  $('#userBack').onclick = () => { show('#intro'); };
+  $('#changeUser').onclick = () => { show('#intro'); };
   $('#soundBtn').onclick = () => {
     state.sound = !state.sound; store.set('ggd_sound', state.sound);
     if (!state.sound && 'speechSynthesis' in window) speechSynthesis.cancel();
-    renderSoundBtn(); sfx.click();
+    renderSoundBtn();
   };
 
   /* ---------- 구구단표 ---------- */
   $('#tableBtn').onclick = () => {
-    sfx.click();
     const g = $('#tableGrid'); g.innerHTML = '';
     [...state.dans].sort((a, b) => a - b).forEach((d, idx) => {
       const card = document.createElement('div');
@@ -1141,7 +1136,6 @@ button{font-family:inherit;font-weight:inherit;color:inherit;cursor:pointer;bord
   function beginRun() {
     if (run.active || $('#run').classList.contains('hidden')) return;
     $('#runIntro').classList.add('hidden');
-    sfx.click();
     run.active = true;
     if (state.sound) { bgm.currentTime = BGM_START; bgm.play().catch(() => {}); }
     $('#runMsg').textContent = '◀ ▶ 로 정답 허들로! 🪵 통나무는 스페이스(화면 톡)로 점프!';
@@ -1314,7 +1308,6 @@ button{font-family:inherit;font-weight:inherit;color:inherit;cursor:pointer;bord
   function hop() {
     if (!run.active || run.goal || run.hopT > 0 || run.freezeT > 0 || run.fallT > 0) return;
     run.hopT = HOP;
-    tone(520, 0.08, 'sine', 0, 0.09); tone(780, 0.1, 'sine', 0.06, 0.08);
   }
 
   /* ---------- 스테이지 끝 이글루 ---------- */
@@ -1839,7 +1832,7 @@ button{font-family:inherit;font-weight:inherit;color:inherit;cursor:pointer;bord
   /* ---------- 정답 바구니: 하늘에서 떨어지는 정답 열매를 바구니로 받아요 ---------- */
   // 정답 열매 = 점수 + 콤보, 틀린 열매·폭탄 = 하트 -1, 하트 = 하트 +1, 보석 = +50점(랭킹용)
   const GEM_POINTS = 50;
-  const FADE = 0.35;        // 정답을 받으면 남은 숫자 열매가 사라지는 시간(초)
+  const FADE = 0.35;        // 하트를 다 써서 끝날 때 남은 것들이 사라지는 시간(초)
   const RANK_KEY = 'ggd_rank_catch';
   const EMOJI_FONT = '"Segoe UI Emoji","Apple Color Emoji","Noto Color Emoji",sans-serif';
   const ITEM_EMOJI = { bomb: '💣', heart: '❤️', gem: '💎' };
@@ -1937,7 +1930,7 @@ button{font-family:inherit;font-weight:inherit;color:inherit;cursor:pointer;bord
     cg.spawnT = Math.max(0.7, 1.4 - lv * 0.023) * (0.85 + Math.random() * 0.3);
     if (Math.random() < Math.min(0.2, 0.08 + lv * 0.004)) { addItem('bomb', g); return; }
     const { ans, wrongs } = state.cur;
-    const onScreen = cg.items.filter(it => it.kind === 'num' && !it.done && !it.stale && it.v === ans).length;
+    const onScreen = cg.items.filter(it => it.kind === 'num' && !it.done && it.v === ans).length;
     // 정답은 너무 오래 안 나오지 않게, 한 번에 너무 많지도 않게
     if (cg.sinceAns >= 3 || (onScreen < 2 && Math.random() < 0.32)) {
       addItem('num', g, ans);
@@ -1972,9 +1965,8 @@ button{font-family:inherit;font-weight:inherit;color:inherit;cursor:pointer;bord
       // 정답 10개마다 한 단계씩 빨라져요 (6단계까지)
       if (state.correct % PER_SPEED === 0 && state.correct / PER_SPEED < SPEED_STEPS) showSpeedUp();
       $('#catchMsg').textContent = `${a} × ${b} = ${ans} 정답! ` + pick(PRAISE) + (state.combo >= 2 ? `  🔥 ${state.combo}콤보!` : '');
-      // 화면은 멈추지 않아요: 지난 문제의 숫자 열매는 흐려져서 그냥 지나가고,
+      // 화면은 멈추지 않아요: 이미 떨어지고 있던 열매도 그대로 받을 수 있고(새 문제로 채점해요),
       // 다음 문제의 열매가 바로 이어서 떨어져요
-      cg.items.forEach(o => { if (o.kind === 'num' && !o.done) o.stale = true; });
       state.i++;
       setCatchQuestion();
       cg.sinceAns = 2;
@@ -2064,7 +2056,7 @@ button{font-family:inherit;font-weight:inherit;color:inherit;cursor:pointer;bord
       it.y += it.vy * dt;
       if (it.wob) it.x = Math.max(0.05, Math.min(0.95, it.x + Math.sin(cg.t * 3 + it.ph) * it.wob * dt));
       if (it.fade != null) { it.fade -= dt; return; }
-      if (it.done || it.stale || cg.overT > 0) return;
+      if (it.done || cg.overT > 0) return;
       // 바구니 입구에 닿으면 받아요
       if (it.y + it.r * 0.4 >= g.basketY && it.y - it.r * 0.4 <= g.basketY + g.cs * 0.25 &&
           Math.abs(it.x * g.W - bx) <= g.bw + it.r * 0.3) catchItem(it, g);
@@ -2107,9 +2099,7 @@ button{font-family:inherit;font-weight:inherit;color:inherit;cursor:pointer;bord
     cg.items.forEach(it => {
       const x = it.x * W, y = it.y;
       c.save(); c.translate(x, y);
-      if (it.fade != null) { const k = Math.max(0, it.fade / FADE); c.globalAlpha = k; c.scale(1 + (1 - k) * 0.6, 1 + (1 - k) * 0.6); }
-      else if (it.stale) c.globalAlpha = 0.28;   // 지난 문제의 열매는 흐리게
-      if (it.kind === 'num') drawFruit(c, it);
+      if (it.fade != null) { const k = Math.max(0, it.fade / FADE); c.globalAlpha = k; c.scale(1 + (1 - k) * 0.6, 1 + (1 - k) * 0.6); }      if (it.kind === 'num') drawFruit(c, it);
       else drawEmojiItem(c, it);
       c.restore();
     });
