@@ -64,7 +64,9 @@
     { id: "morningbath", name: "머리 말리는 아침", emoji: "💇", file: "45-left.png", aspect: 1.0111 },
     { id: "taekwondo", name: "태권도 연습", emoji: "🥋", file: "46-left.png", aspect: 0.8958 },
     { id: "gamenight", name: "가족 게임 시간", emoji: "🎮", file: "47-left.png", aspect: 0.8958 },
-    { id: "supermarket", name: "마트에서 장보기", emoji: "🛒", file: "48-left.png", aspect: 0.8958 }
+    { id: "supermarket", name: "마트에서 장보기", emoji: "🛒", file: "48-left.png", aspect: 0.8958 },
+    { id: "hospitalvisit", name: "엄마 병문안", emoji: "🏥", file: "49-left.png", aspect: 1.1786 },
+    { id: "boutique", name: "옷 가게 쇼핑", emoji: "🛍️", file: "50-left.png", aspect: 1.1786 }
   ];
   var LEVELS = FIND_PICTURES.map(function (p) {
     var href = "assets/find/" + p.file;
