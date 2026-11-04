@@ -165,15 +165,16 @@ h1 { font-family: "CookieRun", "Jua", sans-serif; font-size: 2.6rem; margin: 6px
   gap: 16px;
   justify-content: center;
   margin: 22px 0 18px;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
 }
 .diff-btn {
   border: none;
   border-radius: 28px;
-  padding: 26px 30px;
+  padding: 26px 12px;
   cursor: pointer;
   font-family: inherit;
-  min-width: 150px;
+  flex: 1 1 0;
+  min-width: 0;
   color: white;
   transition: transform 0.15s ease;
 }
@@ -194,7 +195,7 @@ h1 { font-family: "CookieRun", "Jua", sans-serif; font-size: 2.6rem; margin: 6px
   background: rgba(255,255,255,0.92);
   margin: 0 auto 8px;
 }
-.diff-name { font-size: 1.3rem; font-weight: 800; margin-top: 4px; color: white; }
+.diff-name { font-size: 1.3rem; font-weight: 800; margin-top: 4px; color: white; white-space: nowrap; }
 .diff-desc { font-size: 0.85rem; color: rgba(255,255,255,0.9); margin-top: 2px; }
 .diff-tag {
   display: inline-block;

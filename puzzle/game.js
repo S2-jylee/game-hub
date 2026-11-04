@@ -24,8 +24,8 @@
     easy: { grid: 3, label: "쉬움", par: 40, scoreMult: 1 },
     normal: { grid: 4, label: "보통", par: 90, scoreMult: 1.5 },
     hard: { grid: 5, label: "어려움", par: 170, scoreMult: 2.2 },
-    // 4 columns x 5 rows on the (portrait) spot-the-difference illustrations
-    extreme: { grid: 4, rows: 5, label: "완전어려움", par: 180, scoreMult: 2.8, levels: "extreme" }
+    // 5 columns x 10 rows (the pictures are portrait)
+    extreme: { grid: 5, rows: 10, label: "완전어려움", par: 420, scoreMult: 4 }
   };
 
   var PROFILES_KEY = "puzzle_profiles_v1";
@@ -267,13 +267,12 @@
     artW: ART_SIZE,
     artH: ART_SIZE,
     snapTol: 40,
-    previewOn: true,
+    previewOn: false,
     stageStartTime: 0,
     timerHandle: null
   };
 
-  function levelList() { return DIFFS[state.difficulty].levels === "extreme" ? PD.EXTREME_LEVELS : PD.LEVELS; }
-  function currentLevel() { return levelList()[state.levelIndex]; }
+  function currentLevel() { return PD.LEVELS[state.levelIndex]; }
   function rankKey() { return currentLevel().id + "_" + state.difficulty; }
 
   // ---- Jigsaw piece geometry --------------------------------------------
@@ -281,13 +280,16 @@
   // neighbour) or a "blank" (cut inward); the neighbour's matching edge uses
   // the opposite sign so the two curves are mirror images of the same line
   // and always interlock regardless of which piece computes it first.
-  function edgeSegment(x0, y0, x1, y1, dir) {
+  // tab is the knob scale; on non-square pieces it is the shorter side so
+  // knobs on the long edges don't cut too deep into a short piece.
+  function edgeSegment(x0, y0, x1, y1, dir, tab) {
     if (!dir) return "L " + x1 + " " + y1 + " ";
     var dx = x1 - x0, dy = y1 - y0, L = Math.sqrt(dx * dx + dy * dy);
     var ux = dx / L, uy = dy / L;
     var nx = uy, ny = -ux; // outward normal for a clockwise-wound piece outline
-    var bw = L * 0.16;
-    var depth = L * 0.22 * dir;
+    var T = Math.min(L, tab || L);
+    var bw = T * 0.16;
+    var depth = T * 0.22 * dir;
     var mx = (x0 + x1) / 2, my = (y0 + y1) / 2;
     var sx = mx - ux * bw, sy = my - uy * bw;
     var ex = mx + ux * bw, ey = my + uy * bw;
@@ -303,11 +305,12 @@
   }
 
   function piecePathD(x0, y0, x1, y1, topDir, rightDir, bottomDir, leftDir) {
+    var tab = Math.min(x1 - x0, y1 - y0);
     var d = "M " + x0 + " " + y0 + " ";
-    d += edgeSegment(x0, y0, x1, y0, topDir);
-    d += edgeSegment(x1, y0, x1, y1, rightDir);
-    d += edgeSegment(x1, y1, x0, y1, bottomDir);
-    d += edgeSegment(x0, y1, x0, y0, leftDir);
+    d += edgeSegment(x0, y0, x1, y0, topDir, tab);
+    d += edgeSegment(x1, y0, x1, y1, rightDir, tab);
+    d += edgeSegment(x1, y1, x0, y1, bottomDir, tab);
+    d += edgeSegment(x0, y1, x0, y0, leftDir, tab);
     d += "Z";
     return d;
   }
@@ -479,11 +482,11 @@
   }
 
   function updateHud() {
-    hudStageVal.textContent = (state.levelIndex + 1) + " / " + levelList().length;
+    hudStageVal.textContent = (state.levelIndex + 1) + " / " + PD.LEVELS.length;
     hudLevelName.textContent = currentLevel().name;
     hudPiecesVal.textContent = state.placedCount + " / " + state.total;
     hudScoreVal.textContent = state.totalScore;
-    progressFill.style.width = (state.levelIndex / levelList().length * 100) + "%";
+    progressFill.style.width = (state.levelIndex / PD.LEVELS.length * 100) + "%";
   }
 
   // ---- Timer ----------------------------------------------------------
@@ -579,7 +582,7 @@
 
   function goToNextLevelOrResult() {
     completionModal.classList.remove("show");
-    if (state.levelIndex + 1 < levelList().length) {
+    if (state.levelIndex + 1 < PD.LEVELS.length) {
       loadLevel(state.levelIndex + 1);
     } else {
       showResult();
@@ -603,7 +606,7 @@
 
   // ---- Ranking modal ------------------------------------------------------
   function openRanking(levelIndex) {
-    var level = levelList()[levelIndex];
+    var level = PD.LEVELS[levelIndex];
     var key = level.id + "_" + state.difficulty;
     rankingStageLabel.textContent = DIFFS[state.difficulty].label + " · " + level.name;
     rankingList.innerHTML = "";
@@ -637,7 +640,7 @@
   function buildLevelGrid() {
     levelGrid.innerHTML = "";
     var starsMap = loadStars();
-    levelList().forEach(function (lvl, i) {
+    PD.LEVELS.forEach(function (lvl, i) {
       var btn = document.createElement("button");
       btn.className = "level-grid-btn";
       var emoji;
