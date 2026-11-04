@@ -28,7 +28,7 @@
     { id: "bearbunnypicnic", name: "곰돌이 토끼 소풍", emoji: "🧺", file: "09-left.png", aspect: 0.6052 },
     { id: "drawingtime", name: "다 같이 그림 그리기", emoji: "🖍️", file: "10-left.png", aspect: 0.7500 },
     { id: "girlbedroom", name: "소녀의 방", emoji: "🐶", file: "11-left.png", aspect: 0.6248 },
-    { id: "trainstation", name: "기차역 가족 여행", emoji: "🚂", file: "13-left.png", aspect: 0.9167 },
+    { id: "babyfood", name: "아기 이유식 먹는 시간", emoji: "🍼", file: "13-left.png", aspect: 1.1786 },
     { id: "nightfeeding", name: "한밤중 우리 아기", emoji: "🍼", file: "14-left.png", aspect: 0.9167 },
     { id: "forestpicnic", name: "숲속 친구들 소풍", emoji: "🦊", file: "15-left.png", aspect: 0.9167 },
     { id: "singinggirl", name: "노래하는 소녀", emoji: "🎤", file: "16-left.png", aspect: 0.9167 },
