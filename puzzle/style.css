@@ -328,16 +328,20 @@ h1 { font-family: "CookieRun", "Jua", sans-serif; font-size: 2.6rem; margin: 6px
   touch-action: none;
 }
 
+.target-bg {
+  fill: rgba(255,255,255,0.6);
+  pointer-events: none;
+}
 .target-frame {
-  fill: rgba(36,27,58,0.03);
+  fill: none;
   stroke: rgba(36,27,58,0.35);
   stroke-width: 3;
   stroke-dasharray: 10 8;
 }
 .target-slot {
   fill: none;
-  stroke: rgba(36,27,58,0.28);
-  stroke-width: 2;
+  stroke: rgba(36,27,58,0.08);
+  stroke-width: 1.5;
   pointer-events: none;
 }
 .art-preview { opacity: 0.28; pointer-events: none; transition: opacity 0.2s ease; }

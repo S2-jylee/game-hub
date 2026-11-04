@@ -422,6 +422,13 @@
     layerTarget.innerHTML = "";
     layerPieces.innerHTML = "";
 
+    // 하얀 판을 밑그림보다 먼저 깔아서, 배경은 살짝 비치고 밑그림은 판 위에 보이게 해요
+    var boardBg = document.createElementNS(SVG_NS, "rect");
+    boardBg.setAttribute("x", 0); boardBg.setAttribute("y", 0);
+    boardBg.setAttribute("width", state.artW); boardBg.setAttribute("height", state.artH);
+    boardBg.setAttribute("class", "target-bg");
+    layerTarget.appendChild(boardBg);
+
     var refUse = document.createElementNS(SVG_NS, "use");
     refUse.setAttribute("href", "#artwork-" + level.id);
     refUse.setAttributeNS(XLINK_NS, "href", "#artwork-" + level.id);
