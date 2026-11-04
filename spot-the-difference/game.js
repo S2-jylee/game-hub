@@ -218,11 +218,25 @@
   function areaPoints(d) {
     return d.area.map(function (p) { return p[0] + "," + p[1]; }).join(" ");
   }
+  // 펜으로 그린 영역의 가운데 (넓이로 구한 무게중심) 와 알맞은 동그라미 크기
+  function areaCenter(d) {
+    var pts = d.area, a = 0, cx = 0, cy = 0;
+    for (var i = 0; i < pts.length; i++) {
+      var p = pts[i], q = pts[(i + 1) % pts.length], k = p[0] * q[1] - q[0] * p[1];
+      a += k; cx += (p[0] + q[0]) * k; cy += (p[1] + q[1]) * k;
+    }
+    var xs = pts.map(function (p) { return p[0]; }), ys = pts.map(function (p) { return p[1]; });
+    var w = Math.max.apply(null, xs) - Math.min.apply(null, xs), h = Math.max.apply(null, ys) - Math.min.apply(null, ys);
+    if (Math.abs(a) < 1e-6) { cx = Math.min.apply(null, xs) + w / 2; cy = Math.min.apply(null, ys) + h / 2; }
+    else { cx /= 3 * a; cy /= 3 * a; }
+    return { x: cx, y: cy, r: Math.max(18, Math.min(40, Math.max(w, h) / 2)) };
+  }
   function drawCircleMark(overlay, d) {
-    if (d.area) { E(overlay, "polygon", { points: areaPoints(d), class: "mark-circle" }); return; }
-    var r = (d.r || 34) * 0.72;
-    var c = E(overlay, "circle", { cx: d.x, cy: d.y, r: r, class: "mark-circle" });
-    var c2 = E(overlay, "circle", { cx: d.x + 2, cy: d.y - 1, r: r * 0.82, class: "mark-circle" });
+    // 펜으로 그린 영역도 그 모양 그대로가 아니라, 가운데에 평소처럼 동그라미를 그려요
+    var c0 = d.area ? areaCenter(d) : { x: d.x, y: d.y, r: (d.r || 34) * 0.72 };
+    var r = c0.r;
+    var c = E(overlay, "circle", { cx: c0.x, cy: c0.y, r: r, class: "mark-circle" });
+    var c2 = E(overlay, "circle", { cx: c0.x + 2, cy: c0.y - 1, r: r * 0.82, class: "mark-circle" });
     c2.style.opacity = "0.6";
   }
   function drawXMark(overlay, x, y) {

@@ -558,3 +558,12 @@ html { background: #eefbea; }
 .sc-ground span { animation: sc-bob 3s ease-in-out infinite; }
 .sc-ground span:nth-child(even) { animation-delay: -1.5s; }
 @keyframes sc-bob { 50% { transform: translateY(-3px) rotate(-4deg); } }
+
+/* 좁은 화면: 그림 고르기를 한 줄에 2칸씩 */
+@media (max-width: 560px) {
+  #screen-levelselect .card { padding: 22px 14px; width: 94%; }
+  .level-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; max-height: 64vh; padding: 8px 8px 14px; }
+  .level-grid-btn { padding: 12px 6px 10px; border-radius: 18px; }
+  .lvl-thumb { width: 100%; max-width: 110px; height: auto; aspect-ratio: 84 / 100; }
+  .lvl-name { font-size: 0.78rem; }
+}

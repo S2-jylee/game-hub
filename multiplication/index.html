@@ -70,6 +70,9 @@ button{font-family:inherit;font-weight:inherit;color:inherit;cursor:pointer;bord
 .dan{height:52px;border-radius:16px;font-size:22px;background:#f1edff;transition:transform .1s}
 .dan.on{background:var(--yellow)}
 .dan:active{transform:translateY(2px)}
+.dan{min-width:0;padding:0}
+/* 좁은 화면: 한 줄에 4칸 */
+@media (max-width:560px){.dan-grid{grid-template-columns:repeat(4,1fr);gap:8px}.dan{height:46px;font-size:20px}}
 .buddy-pick{display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap}
 .buddy-pick button{font-size:26px;width:44px;height:44px;border-radius:50%;background:#f1edff}
 .buddy-pick button.on{background:#ffe7f2;box-shadow:0 0 0 3px var(--pink)}
@@ -211,8 +214,15 @@ button{font-family:inherit;font-weight:inherit;color:inherit;cursor:pointer;bord
 
 /* ---------- 정답 바구니 ---------- */
 #catchCanvas{position:absolute;inset:0;width:100%;height:100%;display:block}
-#catchHearts.hearts{font-size:24px;letter-spacing:0;white-space:nowrap}
-.gem-box{font-weight:800;font-size:22px;background:#fff;border-radius:18px;padding:6px 12px;white-space:nowrap}
+.app.wide{max-width:1100px}
+#catch .hud{max-width:1068px}
+#catch .back-btn{height:36px;font-size:15px;padding:0 14px}
+#catch .score{font-size:20px;padding:4px 12px;min-width:76px}
+#catch .run-q{font-size:clamp(26px,6vw,34px);padding:2px 20px;border-radius:18px}
+#catch .run-msg{font-size:16px;min-height:22px;margin-top:2px}
+#catchHearts.hearts{font-size:20px;letter-spacing:0;white-space:nowrap}
+#catchField .run-pad{bottom:auto;top:46%;width:50px;height:50px;font-size:20px;opacity:.85}
+.gem-box{font-weight:800;font-size:18px;background:#fff;border-radius:18px;padding:5px 12px;white-space:nowrap}
 .gem-box.bump{animation:bump .4s ease}
 .rank{margin-top:10px;text-align:left}
 .rank ol{list-style:none;margin:0;padding:0}
@@ -272,6 +282,12 @@ button{font-family:inherit;font-weight:inherit;color:inherit;cursor:pointer;bord
 /* ---------- 구구단표 ---------- */
 .modal{position:fixed;inset:0;z-index:80;background:rgba(59,45,92,.45);display:flex;align-items:center;justify-content:center;padding:16px}
 .modal-box{background:#fff;border-radius:26px;width:100%;max-width:720px;max-height:90vh;overflow:auto;padding:18px;position:relative}
+.run-intro{max-width:520px;text-align:center;padding:22px 22px 10px}
+.run-intro-emoji{font-size:56px;line-height:1;animation:breathe 2.4s ease-in-out infinite}
+.run-intro-list{list-style:none;padding:0;margin:4px 0 6px;text-align:left}
+.run-intro-list li{display:flex;align-items:center;gap:12px;background:#f1f7ff;border-radius:16px;padding:12px 16px;margin-bottom:8px;font-size:18px;line-height:1.45}
+.run-intro-list li span:first-child{font-size:26px;flex:none}
+.run-intro-list b{color:#2563eb}
 .modal-box h3{margin:0 0 12px;font-family:"CookieRun","Jua",sans-serif;font-size:28px;font-weight:700;text-align:center}
 .close-btn{position:absolute;top:12px;right:12px;width:44px;height:44px;border-radius:50%;font-size:22px;background:#f1edff}
 .table-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px}
@@ -497,6 +513,20 @@ button{font-family:inherit;font-weight:inherit;color:inherit;cursor:pointer;bord
 </main>
 
 <!-- 구구단표 -->
+<!-- 펭귄 달리기 시작 전 안내 -->
+<div class="modal hidden" id="runIntro">
+  <div class="modal-box run-intro">
+    <div class="run-intro-emoji">🐧</div>
+    <h3>펭귄 달리기</h3>
+    <ul class="run-intro-list">
+      <li><span>⬅️➡️</span><span>펭귄을 움직여서 <b>정답 허들</b>로 가요!</span></li>
+      <li><span>🐟</span><span><b>물고기</b>를 먹고 게이지를 채우면 <b>❤️ 하트 반 개</b>가 차요!</span></li>
+      <li><span>🪵</span><span><b>통나무</b>는 <b>스페이스바</b> 또는 <b>화면 터치</b>로 점프해서 피할 수 있어요!</span></li>
+    </ul>
+    <button class="btn btn-primary btn-huge" id="runIntroOk">확인</button>
+  </div>
+</div>
+
 <div class="modal hidden" id="tableModal">
   <div class="modal-box">
     <button class="close-btn" id="closeTable">✖</button>
@@ -798,6 +828,8 @@ button{font-family:inherit;font-weight:inherit;color:inherit;cursor:pointer;bord
   /* ---------- 게임 ---------- */
   function show(id) {
     ['#intro', '#user', '#home', '#arcade', '#game', '#run', '#catch', '#result'].forEach(s => $(s).classList.toggle('hidden', s !== id));
+    // 정답 바구니는 타자게임처럼 넓은 화면을 써요
+    $('.app').classList.toggle('wide', id === '#catch');
   }
 
   function buildQuestions() {
@@ -1094,19 +1126,32 @@ button{font-family:inherit;font-weight:inherit;color:inherit;cursor:pointer;bord
     renderHearts();
     show('#run');
     resizeRun();
-    Object.assign(run, { active: true, dist: 0, px: 0, lean: 0, dir: 0, target: null, gates: [], jumpT: 0, fallT: 0, stage: 0, banner: null,
+    Object.assign(run, { active: false, dist: 0, px: 0, lean: 0, dir: 0, target: null, gates: [], jumpT: 0, fallT: 0, stage: 0, banner: null,
       fish: [], fishT: 4, goal: null, gulpT: 0, logs: [], freezeT: 0, energy: 0, hopT: 0 });
     renderEnergy();
     run.keys.l = run.keys.r = false;
     run.tok++;
+    cancelAnimationFrame(run.raf);
+    $('#runMsg').textContent = '';
+    $('#rqa').textContent = '?'; $('#rqb').textContent = '?'; $('#rqans').textContent = '?';
+    drawRun(0);
+    // 시작하기 전에 안내 팝업을 먼저 보여줘요. 확인을 누르면 출발!
+    $('#runIntro').classList.remove('hidden');
+  }
+  function beginRun() {
+    if (run.active || $('#run').classList.contains('hidden')) return;
+    $('#runIntro').classList.add('hidden');
+    sfx.click();
+    run.active = true;
     if (state.sound) { bgm.currentTime = BGM_START; bgm.play().catch(() => {}); }
     $('#runMsg').textContent = '◀ ▶ 로 정답 허들로! 🪵 통나무는 스페이스(화면 톡)로 점프!';
     nextRunQuestion();
     run.last = performance.now();
-    cancelAnimationFrame(run.raf);
     run.raf = requestAnimationFrame(runFrame);
   }
+  $('#runIntroOk').onclick = beginRun;
   function stopRun() {
+    $('#runIntro').classList.add('hidden');
     run.active = false; run.tok++;
     cancelAnimationFrame(run.raf);
     bgm.pause();
@@ -1757,6 +1802,8 @@ button{font-family:inherit;font-weight:inherit;color:inherit;cursor:pointer;bord
   // 키보드: ← → 또는 A D
   const RUN_KEYS = { ArrowLeft: 'l', a: 'l', A: 'l', ArrowRight: 'r', d: 'r', D: 'r' };
   document.addEventListener('keydown', e => {
+    // 안내 팝업이 떠 있으면 스페이스·엔터로도 확인
+    if (!$('#runIntro').classList.contains('hidden') && (e.code === 'Space' || e.key === 'Enter')) { e.preventDefault(); beginRun(); return; }
     if (run.active && (e.code === 'Space' || e.key === ' ' || e.key === 'ArrowUp' || e.key === 'w' || e.key === 'W')) { e.preventDefault(); if (!e.repeat) hop(); return; }
     if (!run.active || !RUN_KEYS[e.key]) return;
     run.keys[RUN_KEYS[e.key]] = true; e.preventDefault();
@@ -1764,7 +1811,451 @@ button{font-family:inherit;font-weight:inherit;color:inherit;cursor:pointer;bord
   document.addEventListener('keyup', e => {
     if (RUN_KEYS[e.key]) run.keys[RUN_KEYS[e.key]] = false;
   });
-  window.addEventListener('blur', () => { run.keys.l = run.keys.r = false; });
+  window.addEventListener('blur', () => { run.keys.l = run.keys.r = false; cg.keys.l = cg.keys.r = false; });
+
+  /* ---------- 정답 바구니: 하늘에서 떨어지는 정답 열매를 바구니로 받아요 ---------- */
+  // 정답 열매 = 점수 + 콤보, 틀린 열매·폭탄 = 하트 -1, 하트 = 하트 +1, 보석 = +50점(랭킹용)
+  const GEM_POINTS = 50;
+  const FADE = 0.35;        // 정답을 받으면 남은 숫자 열매가 사라지는 시간(초)
+  const RANK_KEY = 'ggd_rank_catch';
+  const EMOJI_FONT = '"Segoe UI Emoji","Apple Color Emoji","Noto Color Emoji",sans-serif';
+  const ITEM_EMOJI = { bomb: '💣', heart: '❤️', gem: '💎' };
+  const catchCanvas = $('#catchCanvas');
+  const cctx = catchCanvas.getContext('2d');
+  const cg = {
+    W: 0, H: 0, raf: 0, last: 0, t: 0, active: false,
+    px: 0.5, lean: 0, target: null, keys: { l: false, r: false },
+    items: [], spawnT: 0, sinceAns: 0, heartT: 0, gemT: 0, gems: 0,
+    waitT: 0, overT: 0, hurtT: 0, happyT: 0, shakeT: 0, flashT: 0, banner: null, basket: []
+  };
+
+  function resizeCatch() {
+    const r = $('#catchField').getBoundingClientRect();
+    const dpr = window.devicePixelRatio || 1;
+    cg.W = r.width; cg.H = r.height;
+    catchCanvas.width = Math.round(r.width * dpr); catchCanvas.height = Math.round(r.height * dpr);
+    cctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  }
+  window.addEventListener('resize', () => { if (cg.active) resizeCatch(); });
+
+  // 화면 크기에 맞춘 바구니·열매 크기
+  function cgeo() {
+    const { W, H } = cg;
+    const gh = Math.max(20, H * 0.06);
+    const cs = Math.max(40, Math.min(H * 0.13, W * 0.08, 70));
+    const baseY = H - gh * 0.45;
+    return { W, H, gh, cs, baseY, basketY: baseY - cs * 0.42, bw: cs * 0.62, ir: Math.max(17, Math.min(26, Math.min(W, H) * 0.04)) };
+  }
+  const catchLevel = () => Math.min(30, state.correct);   // 정답을 받을수록 빨라져요
+
+  function startCatch() {
+    renderHearts();
+    show('#catch');
+    resizeCatch();
+    Object.assign(cg, {
+      active: true, t: 0, px: 0.5, lean: 0, target: null, items: [], spawnT: 0.6, sinceAns: 1,
+      heartT: 25 + Math.random() * 10, gemT: 9 + Math.random() * 6, gems: 0,
+      waitT: 0, overT: 0, hurtT: 0, happyT: 0, shakeT: 0, flashT: 0, basket: [],
+      banner: { text: '준비~ 시작! 🧺', t: 1.8 }
+    });
+    cg.keys.l = cg.keys.r = false;
+    $('#catchGems').textContent = '0';
+    $('#catchMsg').textContent = '◀ ▶ 로 정답 열매만 쏙! 💣 폭탄은 피해요';
+    setCatchQuestion();
+    cg.last = performance.now();
+    cancelAnimationFrame(cg.raf);
+    cg.raf = requestAnimationFrame(catchFrame);
+  }
+  function stopCatch() {
+    cg.active = false;
+    cancelAnimationFrame(cg.raf);
+  }
+
+  function setCatchQuestion() {
+    const [a, b] = state.qs[state.i % state.qs.length];
+    state.cur = { a, b, ans: a * b, wrongs: makeChoices(a, b, 7).filter(n => n !== a * b) };
+    state.missedThis = false;
+    $('#cqa').textContent = a; $('#cqb').textContent = b;
+    const qm = $('#cqans'); qm.textContent = '?'; qm.className = 'q-mark';
+  }
+
+  // 다른 열매와 겹치지 않는 가로 위치
+  function freeX(g) {
+    const m = (g.ir + 6) / g.W;
+    let x = 0.5;
+    for (let k = 0; k < 6; k++) {
+      x = m + Math.random() * (1 - 2 * m);
+      if (!cg.items.some(it => it.y < g.ir * 3 && Math.abs(it.x - x) * g.W < g.ir * 2.4)) break;
+    }
+    return x;
+  }
+
+  function addItem(kind, g, v, speedMul = 1) {
+    const lv = catchLevel();
+    // 처음엔 화면을 9초쯤 걸려 내려오고, 정답 30개쯤이면 3.5초쯤으로 빨라져요
+    const fall = g.H * (0.11 + lv * 0.006) * (0.9 + Math.random() * 0.25) * speedMul;
+    cg.items.push({
+      kind, v, x: freeX(g), y: -g.ir, r: g.ir * (kind === 'num' ? 1 : 0.9), vy: fall,
+      ph: Math.random() * 6, color: pick(COLORS), done: false, fade: null, wob: kind === 'gem' ? 0.06 : 0
+    });
+  }
+
+  function spawnCatch(g) {
+    if (cg.waitT > 0 || cg.overT > 0) { cg.spawnT = 0.2; return; }
+    const lv = catchLevel();
+    cg.spawnT = Math.max(0.7, 1.4 - lv * 0.023) * (0.85 + Math.random() * 0.3);
+    if (Math.random() < Math.min(0.2, 0.08 + lv * 0.004)) { addItem('bomb', g); return; }
+    const { ans, wrongs } = state.cur;
+    const onScreen = cg.items.filter(it => it.kind === 'num' && !it.done && it.v === ans).length;
+    // 정답은 너무 오래 안 나오지 않게, 한 번에 너무 많지도 않게
+    if (cg.sinceAns >= 3 || (onScreen < 2 && Math.random() < 0.32)) {
+      addItem('num', g, ans);
+      cg.sinceAns = 0;
+    } else {
+      addItem('num', g, pick(wrongs));
+      cg.sinceAns++;
+    }
+  }
+
+  function screenPos(x, y) {
+    const r = catchCanvas.getBoundingClientRect();
+    return [r.left + x, r.top + y];
+  }
+
+  function catchItem(it, g) {
+    it.done = true;
+    const [sx, sy] = screenPos(it.x * g.W, g.basketY - g.ir);
+    const { a, b, ans } = state.cur;
+    if (it.kind === 'num' && it.v === ans) {
+      // 정답!
+      state.correct++; state.combo++;
+      const gain = 10 + Math.min(state.combo - 1, 10) * 2;
+      bumpScore(gain);
+      sfx.pop(); sfx.correct();
+      burstAt(sx, sy); floatAt(sx, sy - 20, '+' + gain);
+      const qm = $('#cqans'); qm.textContent = ans; qm.className = 'q-mark ok';
+      cg.happyT = 0.4;
+      cg.basket.push(it.color); if (cg.basket.length > 5) cg.basket.shift();
+      $('#catchMsg').textContent = pick(PRAISE) + (state.combo >= 2 ? `  🔥 ${state.combo}콤보!` : '');
+      if (state.combo % 5 === 0) cg.banner = { text: `🔥 ${state.combo}콤보! 보너스 점수 UP`, t: 1.8 };
+      else if (state.correct % 10 === 0) cg.banner = { text: '🚀 더 빨라져요!', t: 1.8 };
+      // 남아 있는 숫자 열매는 퐁 사라지고 다음 문제로
+      cg.items.forEach(o => { if (o.kind === 'num' && !o.done) { o.done = true; o.fade = FADE; } });
+      cg.waitT = 0.6;
+      return;
+    }
+    if (it.kind === 'heart') {
+      state.lives = Math.min(CATCH_LIVES, state.lives + 1);
+      renderHearts();
+      sfx.correct();
+      floatAt(sx, sy, '❤️ +1');
+      $('#catchMsg').textContent = '❤️ 하트 한 개가 채워졌어요!';
+      return;
+    }
+    if (it.kind === 'gem') {
+      cg.gems++;
+      $('#catchGems').textContent = cg.gems;
+      animate($('#catchGemBox'), 'bump');
+      bumpScore(GEM_POINTS);
+      [1047, 1319, 1568, 2093].forEach((f, i) => tone(f, 0.15, 'triangle', i * 0.06, 0.1));
+      burstAt(sx, sy); floatAt(sx, sy - 20, `💎 +${GEM_POINTS}`);
+      $('#catchMsg').textContent = `💎 반짝반짝 보석! +${GEM_POINTS}점`;
+      return;
+    }
+    // 틀린 열매 또는 폭탄: 하트 -1
+    state.combo = 0;
+    state.lives = Math.max(0, state.lives - 1);
+    renderHearts(true);
+    cg.hurtT = 0.6; cg.flashT = 0.35;
+    if (it.kind === 'bomb') {
+      cg.shakeT = 0.4;
+      tone(110, 0.35, 'sawtooth', 0, 0.12); tone(70, 0.4, 'square', 0.05, 0.08);
+      floatAt(sx, sy, '💥 펑!');
+      $('#catchMsg').textContent = '펑! 💣 폭탄은 피해야 해요!';
+    } else {
+      sfx.wrong();
+      floatAt(sx, sy, '❌ ' + it.v);
+      if (!state.missedThis) state.wrong.push({ a, b, ans });
+      state.missedThis = true;
+      $('#catchMsg').textContent = `앗! ${it.v}${eun(it.v)} 정답이 아니에요. ${a} × ${b}${eun(b)}?`;
+    }
+    if (state.lives <= 0) {
+      cg.overT = 1.2;
+      cg.banner = { text: '하트를 다 썼어요! 💪', t: 1.8 };
+      cg.items.forEach(o => { if (!o.done) { o.done = true; o.fade = FADE; } });
+    }
+  }
+
+  function catchFrame(now) {
+    if (!cg.active) return;
+    const dt = Math.min(0.05, (now - cg.last) / 1000);
+    cg.last = now; cg.t += dt;
+    const g = cgeo();
+
+    // 바구니 움직이기 (키·버튼은 그 방향으로, 마우스·손가락은 그 자리로 따라가요)
+    // 화면 넓이와 상관없이 1초에 320px쯤 움직여요 (정답을 받을수록 조금씩 빨라져요)
+    const spd = (320 + catchLevel() * 5) / g.W;
+    const lo = g.bw / g.W, hi = 1 - lo;
+    let dir = (cg.keys.r ? 1 : 0) - (cg.keys.l ? 1 : 0);
+    if (cg.overT > 0) dir = 0;
+    else if (dir) cg.target = null;
+    else if (cg.target != null) {
+      const d = Math.max(lo, Math.min(hi, cg.target)) - cg.px;
+      dir = Math.max(-1, Math.min(1, d * 12));
+      if (Math.abs(d) < 0.003) dir = 0;
+    }
+    cg.px = Math.max(lo, Math.min(hi, cg.px + dir * spd * dt));
+    cg.lean += (dir * 0.18 - cg.lean) * Math.min(1, dt * 10);
+    $('#cpadL').classList.toggle('on', dir < -0.1);
+    $('#cpadR').classList.toggle('on', dir > 0.1);
+
+    if (cg.overT > 0) {
+      if ((cg.overT -= dt) <= 0) { finish(); return; }
+    } else {
+      if (cg.waitT > 0 && (cg.waitT -= dt) <= 0) { state.i++; setCatchQuestion(); cg.sinceAns = 2; cg.spawnT = Math.min(cg.spawnT, 0.3); }
+      if ((cg.spawnT -= dt) <= 0) spawnCatch(g);
+      if ((cg.gemT -= dt) <= 0) { addItem('gem', g, 0, 1.35); cg.gemT = 12 + Math.random() * 10; }
+      // 하트는 가끔, 하트가 줄어 있을 때만 떨어져요
+      if ((cg.heartT -= dt) <= 0) {
+        if (state.lives < CATCH_LIVES) { addItem('heart', g); cg.heartT = 22 + Math.random() * 14; }
+        else cg.heartT = 4;
+      }
+    }
+
+    const bx = cg.px * g.W;
+    cg.items.forEach(it => {
+      it.y += it.vy * dt;
+      if (it.wob) it.x = Math.max(0.05, Math.min(0.95, it.x + Math.sin(cg.t * 3 + it.ph) * it.wob * dt));
+      if (it.fade != null) { it.fade -= dt; return; }
+      if (it.done || cg.overT > 0) return;
+      // 바구니 입구에 닿으면 받아요
+      if (it.y + it.r * 0.4 >= g.basketY && it.y - it.r * 0.4 <= g.basketY + g.cs * 0.25 &&
+          Math.abs(it.x * g.W - bx) <= g.bw + it.r * 0.3) catchItem(it, g);
+    });
+    cg.items = cg.items.filter(it => !(it.done && it.fade == null) && !(it.fade != null && it.fade <= 0) && it.y - it.r < g.H);
+    cg.hurtT = Math.max(0, cg.hurtT - dt);
+    cg.happyT = Math.max(0, cg.happyT - dt);
+    cg.shakeT = Math.max(0, cg.shakeT - dt);
+    cg.flashT = Math.max(0, cg.flashT - dt);
+    if (cg.banner && (cg.banner.t -= dt) <= 0) cg.banner = null;
+
+    drawCatch(g);
+    cg.raf = requestAnimationFrame(catchFrame);
+  }
+
+  /* ---------- 정답 바구니 그리기 ---------- */
+  function drawCatch(g) {
+    const c = cctx, { W, H } = g;
+    c.save();
+    c.clearRect(0, 0, W, H);
+    if (cg.shakeT > 0) c.translate((Math.random() - 0.5) * 14 * cg.shakeT / 0.4, (Math.random() - 0.5) * 10 * cg.shakeT / 0.4);
+
+    // 하늘과 구름
+    const sky = c.createLinearGradient(0, 0, 0, H);
+    sky.addColorStop(0, '#a5dcff'); sky.addColorStop(1, '#eef9ff');
+    c.fillStyle = sky; c.fillRect(-10, -10, W + 20, H + 20);
+    c.fillStyle = 'rgba(255,255,255,.9)';
+    [[0.18, 0.16, 1], [0.62, 0.1, 0.8], [0.9, 0.3, 0.7]].forEach(([fx, fy, s], k) => {
+      const x = ((fx * W + cg.t * (12 + k * 6)) % (W + 160)) - 80, y = fy * H, r = 22 * s;
+      c.beginPath(); c.arc(x, y, r, 0, Math.PI * 2); c.arc(x + r * 1.1, y - r * 0.4, r * 1.2, 0, Math.PI * 2); c.arc(x + r * 2.3, y, r, 0, Math.PI * 2); c.fill();
+    });
+
+    // 풀밭
+    c.fillStyle = '#9be36d'; c.fillRect(-10, H - g.gh, W + 20, g.gh + 10);
+    c.fillStyle = '#6fcf45';
+    for (let x = -10; x < W + 20; x += 18) { c.beginPath(); c.moveTo(x, H - g.gh); c.lineTo(x + 9, H - g.gh - 8); c.lineTo(x + 18, H - g.gh); c.fill(); }
+
+    // 떨어지는 것들
+    cg.items.forEach(it => {
+      const x = it.x * W, y = it.y;
+      c.save(); c.translate(x, y);
+      if (it.fade != null) { const k = Math.max(0, it.fade / FADE); c.globalAlpha = k; c.scale(1 + (1 - k) * 0.6, 1 + (1 - k) * 0.6); }
+      if (it.kind === 'num') drawFruit(c, it);
+      else drawEmojiItem(c, it);
+      c.restore();
+    });
+
+    drawCatcher(g);
+
+    // 다쳤을 때 빨갛게 번쩍
+    if (cg.flashT > 0) { c.fillStyle = `rgba(255,93,115,${0.28 * cg.flashT / 0.35})`; c.fillRect(-10, -10, W + 20, H + 20); }
+    if (cg.banner) drawCatchBanner(c, g, cg.banner);
+    c.restore();
+  }
+
+  // 숫자 열매: 동그란 과일 + 꼭지 + 잎 + 숫자
+  function drawFruit(c, it) {
+    const r = it.r, rot = Math.sin(cg.t * 2.2 + it.ph) * 0.15;
+    c.rotate(rot);
+    c.fillStyle = 'rgba(0,0,0,.1)';
+    c.beginPath(); c.arc(r * 0.08, r * 0.1, r, 0, Math.PI * 2); c.fill();
+    c.fillStyle = it.color;
+    c.beginPath(); c.arc(0, 0, r, 0, Math.PI * 2); c.fill();
+    c.fillStyle = 'rgba(255,255,255,.55)';
+    c.beginPath(); c.ellipse(-r * 0.42, -r * 0.45, r * 0.24, r * 0.14, -0.7, 0, Math.PI * 2); c.fill();
+    c.strokeStyle = '#7a4520'; c.lineWidth = Math.max(2, r * 0.1); c.lineCap = 'round';
+    c.beginPath(); c.moveTo(0, -r * 0.88); c.quadraticCurveTo(r * 0.04, -r * 1.12, r * 0.14, -r * 1.24); c.stroke();
+    c.fillStyle = '#34d399';
+    c.beginPath(); c.ellipse(r * 0.36, -r * 1.08, r * 0.28, r * 0.13, -0.5, 0, Math.PI * 2); c.fill();
+    c.rotate(-rot);
+    const fs = r * (it.v >= 100 ? 0.82 : 1.02);
+    c.font = `800 ${fs}px Pretendard, sans-serif`;
+    c.textAlign = 'center'; c.textBaseline = 'middle';
+    c.lineJoin = 'round'; c.lineWidth = Math.max(2, r * 0.16); c.strokeStyle = 'rgba(59,45,92,.35)';
+    c.strokeText(it.v, 0, r * 0.06);
+    c.fillStyle = '#fff'; c.fillText(it.v, 0, r * 0.06);
+  }
+
+  // 폭탄·하트·보석 (보석과 하트는 반짝반짝 빛나요)
+  function drawEmojiItem(c, it) {
+    const r = it.r;
+    c.rotate(Math.sin(cg.t * 3 + it.ph) * (it.kind === 'bomb' ? 0.25 : 0.12));
+    if (it.kind !== 'bomb') {
+      const glow = c.createRadialGradient(0, 0, r * 0.2, 0, 0, r * 1.7);
+      glow.addColorStop(0, it.kind === 'gem' ? 'rgba(125,211,252,.75)' : 'rgba(255,126,182,.6)');
+      glow.addColorStop(1, 'rgba(255,255,255,0)');
+      c.fillStyle = glow;
+      c.beginPath(); c.arc(0, 0, r * 1.7, 0, Math.PI * 2); c.fill();
+    }
+    c.font = `${r * 1.9}px ${EMOJI_FONT}`;
+    c.textAlign = 'center'; c.textBaseline = 'middle';
+    c.fillStyle = '#000';
+    c.fillText(ITEM_EMOJI[it.kind], 0, r * 0.1);
+    if (it.kind === 'bomb') {
+      // 심지 불꽃
+      c.fillStyle = Math.sin(cg.t * 30) > 0 ? '#ffd23f' : '#ff9f43';
+      c.beginPath(); c.arc(r * 0.62, -r * 0.78, r * 0.16, 0, Math.PI * 2); c.fill();
+    } else if (it.kind === 'gem' && Math.sin(cg.t * 6 + it.ph) > 0.3) {
+      c.font = `${r * 0.8}px ${EMOJI_FONT}`;
+      c.fillText('✨', r * 0.8, -r * 0.7);
+    }
+  }
+
+  // 친구 + 바구니 (바구니 입구 가운데가 기준)
+  function drawCatcher(g) {
+    const c = cctx, { cs, bw, basketY, baseY } = g;
+    const x = cg.px * g.W;
+    const hop = cg.happyT > 0 ? Math.sin(Math.PI * (1 - cg.happyT / 0.4)) * cs * 0.16 : 0;
+    const shake = cg.hurtT > 0 ? Math.sin(cg.t * 60) * cs * 0.05 : 0;
+    const h = baseY - basketY;
+    // 그림자
+    c.fillStyle = 'rgba(59,45,92,.18)';
+    c.beginPath(); c.ellipse(x, baseY + 2, bw * (1 - hop / cs), cs * 0.07, 0, 0, Math.PI * 2); c.fill();
+    c.save();
+    c.translate(x + shake, basketY - hop);
+    c.rotate(cg.lean);
+    // 친구 (바구니 뒤에서 머리를 쏙)
+    c.font = `${cs * 1.05}px ${EMOJI_FONT}`;
+    c.textAlign = 'center'; c.textBaseline = 'bottom';
+    c.fillStyle = '#000';   // 이모지는 fillStyle의 투명도를 따라가서, 불투명한 색으로 바꿔 둬요
+    // 하얀 친구도 밝은 하늘에서 잘 보이게 그림자를 둘러요
+    c.save();
+    c.shadowColor = 'rgba(59,45,92,.45)'; c.shadowBlur = cs * 0.08;
+    c.fillText(state.buddy, 0, cs * 0.22);
+    c.restore();
+    if (cg.hurtT > 0) { c.font = `${cs * 0.35}px ${EMOJI_FONT}`; c.fillText('💫', 0, -cs * 0.8); }
+    // 바구니에 담긴 열매
+    cg.basket.forEach((col, k) => {
+      const fx = (k - (cg.basket.length - 1) / 2) * bw * 0.36;
+      c.fillStyle = col;
+      c.beginPath(); c.arc(fx, -cs * 0.02, cs * 0.14, 0, Math.PI * 2); c.fill();
+    });
+    // 바구니 몸통
+    c.fillStyle = '#c98a4b';
+    c.beginPath(); c.moveTo(-bw, 0); c.lineTo(bw, 0); c.lineTo(bw * 0.78, h); c.lineTo(-bw * 0.78, h); c.closePath(); c.fill();
+    c.save();
+    c.clip();
+    c.strokeStyle = 'rgba(122,69,32,.55)'; c.lineWidth = Math.max(1.5, cs * 0.025);
+    for (let k = 1; k <= 2; k++) { c.beginPath(); c.moveTo(-bw, h * k / 3); c.lineTo(bw, h * k / 3); c.stroke(); }
+    for (let k = -4; k <= 4; k++) { c.beginPath(); c.moveTo(k * bw * 0.25, 0); c.lineTo(k * bw * 0.2, h); c.stroke(); }
+    c.restore();
+    // 바구니 테두리
+    c.fillStyle = '#a0622d';
+    roundRectOn(c, -bw - 4, -cs * 0.06, bw * 2 + 8, cs * 0.12, cs * 0.06); c.fill();
+    c.restore();
+  }
+
+  function roundRectOn(c, x, y, w, h, r) {
+    c.beginPath();
+    c.moveTo(x + r, y); c.arcTo(x + w, y, x + w, y + h, r); c.arcTo(x + w, y + h, x, y + h, r);
+    c.arcTo(x, y + h, x, y, r); c.arcTo(x, y, x + w, y, r); c.closePath();
+  }
+
+  function drawCatchBanner(c, g, bn) {
+    const fs = Math.min(g.W * 0.07, 34);
+    c.save();
+    c.globalAlpha = Math.min(1, bn.t / 0.3, (1.8 - bn.t) / 0.2 + 0.2);
+    c.font = `${fs}px CookieRun, Jua, sans-serif`;
+    const w = c.measureText(bn.text).width + fs * 1.4, h = fs * 1.9;
+    const x = g.W / 2 - w / 2, y = g.H * 0.3;
+    roundRectOn(c, x, y, w, h, h / 2);
+    c.fillStyle = '#ffffff'; c.fill();
+    c.lineWidth = 4; c.strokeStyle = '#ff9f43'; c.stroke();
+    c.fillStyle = '#3b2d5c'; c.textAlign = 'center'; c.textBaseline = 'middle';
+    c.fillText(bn.text, g.W / 2, y + h / 2 + fs * 0.05);
+    c.restore();
+  }
+
+  /* ---------- 정답 바구니 랭킹 (이 기기에 저장, 게스트는 빼요) ---------- */
+  const esc = s => String(s).replace(/[&<>"']/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]));
+  function catchRankHtml() {
+    let list = store.get(RANK_KEY, []);
+    let mine = null;
+    if (!state.guest && state.score > 0) {
+      mine = { name: state.user, score: state.score, gems: cg.gems, at: Date.now() };
+      list.push(mine);
+      list.sort((a, b) => b.score - a.score || a.at - b.at);
+      list = list.slice(0, 10);
+      store.set(RANK_KEY, list);
+    }
+    if (!list.length) return '';
+    const medal = ['🥇', '🥈', '🥉'];
+    const myIdx = mine ? list.findIndex(e => e.at === mine.at) : -1;
+    const row = (e, i) => `<li class="${i === myIdx ? 'me' : ''}"><span class="no">${medal[i] || i + 1}</span>` +
+      `<span class="nm">${esc(e.name)}</span><span class="gm">💎${e.gems}</span><span class="sc">${e.score}점</span></li>`;
+    let html = list.slice(0, 5).map(row).join('');
+    if (myIdx >= 5) html += row(list[myIdx], myIdx);
+    const note = state.guest ? '게스트 점수는 랭킹에 올라가지 않아요. 이름으로 시작해 보세요!'
+      : mine && myIdx < 0 ? '아쉽게 10위 안에 못 들었어요. 💎 보석을 모으면 점수가 쑥쑥!' : '💎 보석을 많이 받을수록 순위가 올라가요!';
+    return `<div class="rank"><div class="label" style="text-align:center">🏆 정답 바구니 랭킹</div><ol>${html}</ol><div class="rank-note">${note}</div></div>`;
+  }
+
+  // 마우스: 화면 위에서 움직이면 바구니가 따라가요 / 손가락: 누른 채 밀면 따라가요
+  const cfield = $('#catchField');
+  function caim(e) {
+    const r = cfield.getBoundingClientRect();
+    cg.target = (e.clientX - r.left) / r.width;
+  }
+  cfield.addEventListener('pointerdown', e => {
+    if (e.target.closest('.run-pad')) return;
+    cfield.setPointerCapture(e.pointerId);
+    caim(e);
+  });
+  cfield.addEventListener('pointermove', e => {
+    if (e.target.closest('.run-pad') && !cfield.hasPointerCapture(e.pointerId)) return;
+    if (e.pointerType === 'mouse' || cfield.hasPointerCapture(e.pointerId)) caim(e);
+  });
+  [['#cpadL', 'l'], ['#cpadR', 'r']].forEach(([sel, k]) => {
+    const pad = $(sel);
+    pad.addEventListener('pointerdown', e => { e.preventDefault(); pad.setPointerCapture(e.pointerId); cg.keys[k] = true; cg.target = null; });
+    const up = () => { cg.keys[k] = false; };
+    pad.addEventListener('pointerup', up);
+    pad.addEventListener('pointercancel', up);
+    pad.addEventListener('lostpointercapture', up);
+  });
+  document.addEventListener('keydown', e => {
+    if (!cg.active || !RUN_KEYS[e.key]) return;
+    cg.keys[RUN_KEYS[e.key]] = true; e.preventDefault();
+  });
+  document.addEventListener('keyup', e => {
+    if (RUN_KEYS[e.key]) cg.keys[RUN_KEYS[e.key]] = false;
+  });
+
+  $('#catchQuit').onclick = () => {
+    stopCatch();
+    if ('speechSynthesis' in window) speechSynthesis.cancel();
+    renderArcade(); show('#arcade');
+  };
 
   $('#runQuit').onclick = () => {
     stopRun();

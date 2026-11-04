@@ -522,6 +522,14 @@ h1 { font-family: "CookieRun", "Jua", sans-serif; font-size: 2.6rem; margin: 6px
   .diff-board { flex-direction: column; padding: 4px 12px 12px; gap: 8px; }
   .diff-panel { flex: 0 0 auto; width: min(100%, 44vh); height: auto; aspect-ratio: 1; max-width: 100%; margin: 0 auto; }
 }
+/* 좁은 화면: 위아래 두 그림이 남은 높이 안에 꼭 들어가게 크기를 맞춰요 (스크롤 없이 다 보여요) */
+@supports (width: 1cqw) {
+  @media (max-width: 620px) {
+    .board-wrap { container-type: size; }
+    .diff-board { padding: 4px 12px 8px; }
+    .diff-panel { width: min(calc(100cqw - 24px), calc((100cqh - 20px) / 2)); max-height: none; border-width: 3px; }
+  }
+}
 
 /* ---- 배경 꾸미기 ---- */
 body { background: transparent; }
