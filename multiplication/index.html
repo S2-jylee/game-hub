@@ -225,7 +225,6 @@ button{font-family:inherit;font-weight:inherit;color:inherit;cursor:pointer;bord
 #catch .run-q{font-size:clamp(26px,6vw,34px);padding:2px 20px;border-radius:18px}
 #catch .run-msg{font-size:16px;min-height:22px;margin-top:2px}
 #catchHearts.hearts{font-size:20px;letter-spacing:0;white-space:nowrap}
-#catchField .run-pad{bottom:auto;top:46%;width:50px;height:50px;font-size:20px;opacity:.85}
 .gem-box{font-weight:800;font-size:18px;background:#fff;border-radius:18px;padding:5px 12px;white-space:nowrap}
 .gem-box.bump{animation:bump .4s ease}
 .rank{margin-top:10px;text-align:left}
@@ -494,8 +493,6 @@ button{font-family:inherit;font-weight:inherit;color:inherit;cursor:pointer;bord
     <div class="run-msg" id="catchMsg"></div>
     <div class="run-field" id="catchField">
       <canvas id="catchCanvas"></canvas>
-      <div class="run-pad left" id="cpadL">◀</div>
-      <div class="run-pad right" id="cpadR">▶</div>
     </div>
   </section>
 
@@ -1913,7 +1910,7 @@ button{font-family:inherit;font-weight:inherit;color:inherit;cursor:pointer;bord
     });
     cg.keys.l = cg.keys.r = false;
     $('#catchGems').textContent = '0';
-    $('#catchMsg').textContent = '◀ ▶ 로 정답 열매만 쏙! 💣 폭탄은 피해요';
+    $('#catchMsg').textContent = '바구니를 움직여서 정답 열매만 쏙! 💣 폭탄은 피해요';
     setCatchQuestion();
     cg.last = performance.now();
     cancelAnimationFrame(cg.raf);
@@ -2050,7 +2047,7 @@ button{font-family:inherit;font-weight:inherit;color:inherit;cursor:pointer;bord
     cg.last = now; cg.t += dt;
     const g = cgeo();
 
-    // 바구니 움직이기 (키·버튼은 그 방향으로, 마우스·손가락은 그 자리로 따라가요)
+    // 바구니 움직이기 (방향키는 그 방향으로, 마우스·손가락은 그 자리로 따라가요)
     // 화면 넓이와 상관없이 1초에 320px쯤 움직여요 (정답을 받을수록 조금씩 빨라져요)
     const spd = (320 + catchLevel() * 5) / g.W;
     const lo = g.bw / g.W, hi = 1 - lo;
@@ -2064,8 +2061,6 @@ button{font-family:inherit;font-weight:inherit;color:inherit;cursor:pointer;bord
     }
     cg.px = Math.max(lo, Math.min(hi, cg.px + dir * spd * dt));
     cg.lean += (dir * 0.18 - cg.lean) * Math.min(1, dt * 10);
-    $('#cpadL').classList.toggle('on', dir < -0.1);
-    $('#cpadR').classList.toggle('on', dir > 0.1);
 
     if (cg.overT > 0) {
       if ((cg.overT -= dt) <= 0) { finish(); return; }
@@ -2327,31 +2322,11 @@ button{font-family:inherit;font-weight:inherit;color:inherit;cursor:pointer;bord
     cg.target = (e.clientX - r.left) / r.width;
   }
   cfield.addEventListener('pointerdown', e => {
-    if (e.target.closest('.run-pad')) return;
     cfield.setPointerCapture(e.pointerId);
     caim(e);
   });
   cfield.addEventListener('pointermove', e => {
-    if (e.target.closest('.run-pad') && !cfield.hasPointerCapture(e.pointerId)) return;
     if (e.pointerType === 'mouse' || cfield.hasPointerCapture(e.pointerId)) caim(e);
-  });
-  // ◀ ▶ 버튼: 톡 누르면 바구니 한 개만큼, 꾹 누르고 있으면 계속 그쪽으로 가요
-  [['#cpadL', 'l', -1], ['#cpadR', 'r', 1]].forEach(([sel, k, dir]) => {
-    const pad = $(sel);
-    let holdTimer = null;
-    pad.addEventListener('pointerdown', e => {
-      e.preventDefault();
-      try { pad.setPointerCapture(e.pointerId); } catch (err) { /* 이미 끝난 터치 */ }
-      if (!cg.active) return;
-      const g = cgeo(), lo = g.bw / g.W;
-      cg.target = Math.max(lo, Math.min(1 - lo, (cg.target != null ? cg.target : cg.px) + dir * 2 * lo));
-      clearTimeout(holdTimer);
-      holdTimer = setTimeout(() => { cg.keys[k] = true; }, 250);
-    });
-    const up = () => { clearTimeout(holdTimer); cg.keys[k] = false; };
-    pad.addEventListener('pointerup', up);
-    pad.addEventListener('pointercancel', up);
-    pad.addEventListener('lostpointercapture', up);
   });
   document.addEventListener('keydown', e => {
     if (!cg.active || !RUN_KEYS[e.key]) return;

@@ -4,7 +4,8 @@
   "use strict";
 
   var $ = function (s) { return document.querySelector(s); };
-  var WORDS = window.SPELL_WORDS, LEVELS = window.SPELL_LEVELS;
+  var GRADES = window.SPELL_GRADES, LEVELS = window.SPELL_LEVELS;
+  var grade = GRADES[0];          // 고른 학년
   var COLS = 13, ROWS = 9;        // 맵 칸 수 (세로 화면에서는 판을 시작할 때 9칸 너비로 바꿔요)
   var LIVES = 3;                  // 한 판 하트 수
   var PER_ROUND = 8;              // 한 판 단어 수
@@ -107,8 +108,9 @@
     if (guest) guestData = { best: {} };
     else if (!loadProfiles()[name]) saveUserData({ best: {} });
     $("#user-badge").textContent = "👤 " + (name || "게스트");
-    renderLevels();
-    show("screen-level");
+    Array.prototype.forEach.call(document.querySelectorAll(".user-badge-copy"), function (el) { el.textContent = "👤 " + (name || "게스트"); });
+    renderGrades();
+    show("screen-grade");
   }
   function renderUserList() {
     var l = $("#user-list"); l.innerHTML = "";
@@ -131,21 +133,41 @@
   $("#user-name-input").addEventListener("keydown", function (e) { if (e.key === "Enter") submitNewUser(); });
   $("#btn-user-guest").addEventListener("click", function () { enterAs(null); });
   $("#btn-user-back").addEventListener("click", function () { show("screen-title"); });
-  $("#btn-level-back").addEventListener("click", function () { show("screen-title"); });
+  $("#btn-level-back").addEventListener("click", function () { renderGrades(); show("screen-grade"); });
+  $("#btn-grade-back").addEventListener("click", function () { show("screen-title"); });
+
+  /* ---------- 학년 고르기 ---------- */
+  var GR_BG = [["#ecfccb", "#4d7c0f"], ["#fef9c3", "#a16207"], ["#ffedd5", "#c2410c"], ["#e1efff", "#1d4ed8"], ["#f3e8ff", "#7e22ce"], ["#ffe4e6", "#be123c"]];
+  function renderGrades() {
+    var g = $("#grade-grid"); g.innerHTML = "";
+    GRADES.forEach(function (gr, i) {
+      var b = document.createElement("button");
+      b.className = "grade-btn"; b.type = "button";
+      b.style.setProperty("--bg", GR_BG[i][0]); b.style.setProperty("--c", GR_BG[i][1]);
+      var ex = gr.words.slice(0, 3).map(function (w) { return w[0]; }).join(" · ");
+      b.innerHTML = '<span class="gr-emoji">' + gr.emoji + '</span><span class="gr-name">' + gr.grade + "학년</span>" +
+        '<span class="gr-desc">' + gr.desc + '</span><span class="gr-ex">' + ex + " …</span>";
+      b.addEventListener("click", function () { grade = gr; renderLevels(); show("screen-level"); });
+      g.appendChild(b);
+    });
+  }
+  // 학년 + 난이도마다 기록을 따로 모아요
+  function recKey(lv) { return "g" + grade.grade + "_" + lv.id; }
 
   /* ---------- 난이도 고르기 ---------- */
   var LV_BG = { easy: ["#ecfccb", "#65a30d"], normal: ["#e1efff", "#2e9bff"], hard: ["#ffe7f2", "#d81b7a"] };
   function renderLevels() {
     var g = $("#level-grid"); g.innerHTML = "";
+    $("#level-grade-tag").textContent = grade.emoji + " " + grade.grade + "학년";
     var best = userData().best || {};
     LEVELS.forEach(function (lv) {
       var b = document.createElement("button");
       b.className = "level-btn"; b.type = "button";
       b.style.setProperty("--bg", LV_BG[lv.id][0]); b.style.setProperty("--c", LV_BG[lv.id][1]);
-      var top = store.get(RANK_KEY + lv.id, [])[0];
+      var top = store.get(RANK_KEY + recKey(lv), [])[0];
       b.innerHTML = '<span class="lv-emoji">' + lv.emoji + '</span><span class="lv-name">' + lv.name + "</span>" +
         '<span class="lv-desc">' + lv.desc + "</span>" +
-        '<span class="lv-best">' + (best[lv.id] ? "⭐ 내 최고 " + best[lv.id] + "점" : "아직 기록이 없어요") +
+        '<span class="lv-best">' + (best[recKey(lv)] ? "⭐ 내 최고 " + best[recKey(lv)] + "점" : "아직 기록이 없어요") +
         (top ? " · 🥇 " + esc(top.name) + " " + top.score + "점" : "") + "</span>" +
         '<span class="lv-go">출발 ▶</span>';
       b.addEventListener("click", function () { chooseLevel(lv); });
@@ -172,6 +194,7 @@
     else startRound(lv);
   }
   $("#btn-guide").addEventListener("click", function () { GuideBook.open(guide(null)); });
+  $("#btn-grade-guide").addEventListener("click", function () { GuideBook.open(guide(null)); });
 
   /* ---------- 게임 상태 ---------- */
   var canvas = $("#board"), ctx = canvas.getContext("2d");
@@ -193,7 +216,9 @@
   window.addEventListener("resize", function () { if (G.active) resize(); });
 
   function startRound(lv) {
-    var pool = WORDS.filter(function (w) { return w[0].length >= lv.min && w[0].length <= lv.max; });
+    // 학년 단어를 짧은 순서로 세우고(같은 길이는 섞어서), 난이도에 맞는 쪽에서 골라요
+    var sorted = shuffle(grade.words.slice()).sort(function (a, b) { return a[0].length - b[0].length; });
+    var pool = sorted.slice(Math.floor(sorted.length * lv.part[0]), Math.ceil(sorted.length * lv.part[1]));
     Object.assign(G, {
       level: lv, words: shuffle(pool.slice()).slice(0, PER_ROUND), wi: 0,
       lives: LIVES, score: 0, done: [], active: true, t: 0, freezeT: 0, after: null, puffs: []
@@ -410,10 +435,10 @@
 
     var lv = G.level, data = userData();
     data.best = data.best || {};
-    var best = data.best[lv.id] || 0, isRecord = G.score > best;
-    if (isRecord) data.best[lv.id] = G.score;
+    var best = data.best[recKey(lv)] || 0, isRecord = G.score > best;
+    if (isRecord) data.best[recKey(lv)] = G.score;
     saveUserData(data);
-    $("#result-text").innerHTML = lv.emoji + " " + lv.name + " · 완성한 단어 <b>" + n + "</b> / " + G.words.length + "<br>" +
+    $("#result-text").innerHTML = grade.grade + "학년 " + lv.emoji + " " + lv.name + " · 완성한 단어 <b>" + n + "</b> / " + G.words.length + "<br>" +
       "점수 <b>" + G.score + "</b>점" + (isRecord && G.score > 0 ? '<span class="record">🎊 최고 기록!</span>' : "");
 
     var wb = $("#result-words"); wb.innerHTML = "";
@@ -432,7 +457,7 @@
 
   // 난이도별 랭킹 (이 기기에 저장, 게스트는 빼요)
   function rankHtml() {
-    var key = RANK_KEY + G.level.id;
+    var key = RANK_KEY + recKey(G.level);
     var list = store.get(key, []), mine = null;
     if (!guest && G.score > 0) {
       mine = { name: user, score: G.score, words: G.done.length, at: Date.now() };
@@ -452,7 +477,7 @@
     if (myIdx >= 5) html += row(list[myIdx], myIdx);
     var note = guest ? "게스트 점수는 랭킹에 올라가지 않아요. 이름으로 시작해 보세요!"
       : mine && myIdx < 0 ? "아쉽게 10위 안에 못 들었어요. 다시 도전!" : "한 번도 안 틀리고 완성하면 보너스 +20점!";
-    return '<div class="rank-title">🏆 ' + G.level.name + " 랭킹</div><ol>" + html + '</ol><div class="rank-note">' + note + "</div>";
+    return '<div class="rank-title">🏆 ' + grade.grade + "학년 " + G.level.name + " 랭킹</div><ol>" + html + '</ol><div class="rank-note">' + note + "</div>";
   }
 
   $("#btn-again").addEventListener("click", function () { startRound(G.level); });

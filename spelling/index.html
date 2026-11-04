@@ -57,14 +57,27 @@
   </div>
 </section>
 
+<!-- 학년 고르기 화면 -->
+<section id="screen-grade" class="screen">
+  <div class="card card-wide">
+    <h2>몇 학년이에요? <span class="user-badge-copy diff-tag"></span></h2>
+    <p class="grade-note">학년에 맞는 영어 단어가 나와요</p>
+    <div id="grade-grid" class="grade-grid"></div>
+    <div class="row-buttons">
+      <button id="btn-grade-guide" class="btn btn-ghost">📖 가이드북</button>
+      <button id="btn-grade-back" class="btn btn-ghost">처음으로</button>
+    </div>
+  </div>
+</section>
+
 <!-- 난이도 고르기 화면 -->
 <section id="screen-level" class="screen">
   <div class="card card-wide">
-    <h2>난이도를 골라요 <span id="user-badge" class="diff-tag"></span></h2>
+    <h2><span id="level-grade-tag" class="grade-tag"></span> 난이도를 골라요 <span id="user-badge" class="diff-tag"></span></h2>
     <div id="level-grid" class="level-grid"></div>
     <div class="row-buttons">
       <button id="btn-guide" class="btn btn-ghost">📖 가이드북</button>
-      <button id="btn-level-back" class="btn btn-ghost">처음으로</button>
+      <button id="btn-level-back" class="btn btn-ghost">← 학년 고르기</button>
     </div>
   </div>
 </section>
