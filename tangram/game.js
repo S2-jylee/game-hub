@@ -984,19 +984,24 @@
       var cleared = !!clearedMap[lvl.id];
       var locked = i > 0 && !clearedMap[TD.LEVELS[i - 1].id];
       var num = document.createElement("div");
+      num.className = "lvl-num";
       num.textContent = (i + 1);
       btn.appendChild(num);
+      var name = document.createElement("div");
+      name.className = "lvl-name";
+      name.textContent = "🧩 조각 " + lvl.slots.length + "개";
+      btn.appendChild(name);
       if (cleared) {
         btn.classList.add("cleared");
         var checkEl = document.createElement("div");
         checkEl.className = "lvl-check";
-        checkEl.textContent = "✓";
+        checkEl.textContent = "✓ 클리어";
         btn.appendChild(checkEl);
       }
       if (locked) {
         btn.classList.add("locked");
         btn.disabled = true;
-        btn.title = "이전 단계를 클리어해야 도전할 수 있어요";
+        btn.title = "이전 스테이지를 클리어해야 도전할 수 있어요";
         var lockEl = document.createElement("div");
         lockEl.className = "lvl-lock";
         lockEl.textContent = "🔒";

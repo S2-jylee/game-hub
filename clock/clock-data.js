@@ -23,7 +23,7 @@
     set24: "✋ 24시간 바늘 맞추기", after24: "⏩ 24시간 뒤 계산"
   };
 
-  // 한 놀이 안에서 1단계 → 20단계로 갈수록 어려워져요
+  // 한 놀이 안의 난이도 계획 20칸 (아래 expand가 100스테이지로 늘려요)
   //  labels: 시계 둘레에 5분, 10분… 도움 숫자   choices: 보기 개수   count: 문제 수
   function clockStages(cat) {
     var list = [];
@@ -83,8 +83,24 @@
     return list;
   }
 
+  // 위의 20칸 계획을 100스테이지로 늘려요. 계획 한 칸이 5스테이지가 되고,
+  // 같은 칸 안에서도 뒤로 갈수록 문제가 늘고(+0~2, 51단계부터 +1 더), 목표 시간이 조금씩 짧아져요(pace 1 → 0.7)
+  var STAGE_COUNT = 100;
+  function expand(plan) {
+    var per = STAGE_COUNT / plan.length, list = [];
+    for (var n = 1; n <= STAGE_COUNT; n++) {
+      var base = plan[Math.floor((n - 1) / per)];
+      var s = {};
+      for (var k in base) if (Object.prototype.hasOwnProperty.call(base, k)) s[k] = base[k];
+      s.count = base.count + Math.floor(((n - 1) % per) / 2) + (n > STAGE_COUNT / 2 ? 1 : 0);
+      s.pace = Math.round((1 - 0.3 * (n - 1) / (STAGE_COUNT - 1)) * 100) / 100;
+      list.push(s);
+    }
+    return list;
+  }
+
   CATEGORIES.forEach(function (cat) {
-    var stages = cat.id === "day" ? dayStages() : cat.id === "full" ? fullStages() : clockStages(cat);
+    var stages = expand(cat.id === "day" ? dayStages() : cat.id === "full" ? fullStages() : clockStages(cat));
     cat.stages = stages.map(function (s, i) {
       s.id = cat.id + "-" + (i + 1);
       s.n = i + 1;

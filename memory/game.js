@@ -461,7 +461,11 @@
       var st = starsMap[lvl.id] || 0;
       var locked = i > 0 && !(starsMap[MD.LEVELS[i - 1].id] > 0);
       var num = document.createElement("div");
+      num.className = "lvl-num";
       num.textContent = (i + 1);
+      var name = document.createElement("div");
+      name.className = "lvl-name";
+      name.textContent = "🃏 " + lvl.pairs + "쌍 짝맞추기";
       var starsEl = document.createElement("div");
       starsEl.className = "lvl-stars";
       if (st > 0) {
@@ -477,6 +481,7 @@
         openRanking(i);
       });
       btn.appendChild(num);
+      btn.appendChild(name);
       btn.appendChild(starsEl);
       btn.appendChild(trophy);
       if (locked) {

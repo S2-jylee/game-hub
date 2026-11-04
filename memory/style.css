@@ -555,3 +555,10 @@ html { background: #f6ecff; }
 .sc-candy::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 14px;
   background: repeating-linear-gradient(-45deg, #ff8cc4 0 12px, #fff 12px 24px); opacity: 0.8; }
 .sc-twinkle { color: #ff9ccc; }
+
+/* 스테이지 칸: 시계 읽기 놀이와 같은 크기 (번호 + 설명 + 기록) */
+.level-grid { grid-template-columns: repeat(auto-fill, minmax(118px, 1fr)); gap: 12px; padding: 10px 10px 14px; }
+.level-grid-btn { aspect-ratio: auto; min-height: 88px; padding: 10px 6px; gap: 3px; border-radius: 18px; }
+.level-grid-btn .lvl-num { font-size: 1.35rem; }
+.level-grid-btn .lvl-name { font-size: 0.72rem; font-weight: 700; line-height: 1.25; }
+.level-grid-btn .lvl-stars, .level-grid-btn .lvl-check { font-size: 0.72rem; }

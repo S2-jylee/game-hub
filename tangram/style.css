@@ -488,3 +488,10 @@ html { background: #fff1f7; }
 .sc-sq { width: 40px; height: 40px; border-radius: 6px; }
 .sc-par { width: 70px; height: 34px; clip-path: polygon(30% 0, 100% 0, 70% 100%, 0 100%); }
 @keyframes sc-spin { 0%, 100% { transform: translateY(0) rotate(0deg); } 50% { transform: translateY(-18px) rotate(45deg); } }
+
+/* 스테이지 칸: 시계 읽기 놀이와 같은 크기 (번호 + 설명 + 기록) */
+.level-grid { grid-template-columns: repeat(auto-fill, minmax(118px, 1fr)); gap: 12px; padding: 10px 10px 14px; }
+.level-grid-btn { aspect-ratio: auto; min-height: 88px; padding: 10px 6px; gap: 3px; border-radius: 18px; }
+.level-grid-btn .lvl-num { font-size: 1.35rem; }
+.level-grid-btn .lvl-name { font-size: 0.72rem; font-weight: 700; line-height: 1.25; }
+.level-grid-btn .lvl-stars, .level-grid-btn .lvl-check { font-size: 0.72rem; }

@@ -833,7 +833,7 @@
 
     var elapsed = elapsedStage();
     var slow = currentCat().step === 1 ? 1.3 : 1;   // 1분 읽기는 세는 데 시간이 더 걸려요
-    var idealTime = state.questions.reduce(function (sum, q) { return sum + q.ideal * slow; }, 0);
+    var idealTime = state.questions.reduce(function (sum, q) { return sum + q.ideal * slow * (currentLevel().pace || 1); }, 0);
     var timeScore = Math.max(40, Math.min(100, 100 - Math.max(0, elapsed - idealTime) * 1.5));
 
     var finalPercent = Math.round(accuracyPercent * 0.7 + timeScore * 0.3);
