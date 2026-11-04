@@ -6,7 +6,17 @@
   var XLINK_NS = "http://www.w3.org/1999/xlink";
   var ART_SIZE = PD.ART_SIZE;
 
-  var ART_G_TX = 40, ART_G_TY = 70, ART_TARGET_SIZE = 460;
+  // Layout is computed fresh from the board's actual on-screen pixel size
+  // each time a level loads (see computeLayout()) rather than fixed numbers,
+  // so the picture board fills the visible area edge-to-edge (minus a small
+  // fixed margin) whatever the window's shape happens to be, instead of
+  // living inside one hardcoded aspect ratio and letterboxing around it.
+  var EDGE_MARGIN = 30;   // top/bottom (and left) margin around the picture board, in px
+  var BTN_GAP = 16;       // gap between the picture board and the button column
+  var BTN_COL_W = 60;     // matches .btn-round width
+  var TRAY_MARGIN = 20;   // margin around the scatter tray
+
+  var ART_G_TX = 30, ART_G_TY = 30, ART_TARGET_SIZE = 460;
   var ART_G_SCALE = ART_TARGET_SIZE / ART_SIZE;
   var TRAY = { x0: 520, x1: 880, y0: 20, y1: 580 };
 
@@ -31,6 +41,8 @@
   var userListEl = document.getElementById("user-list");
   var userNameInput = document.getElementById("user-name-input");
   var boardSvg = document.getElementById("board");
+  var boardWrapEl = document.getElementById("board-wrap");
+  var boardToolbarEl = document.querySelector(".board-toolbar");
   var artworkDefs = document.getElementById("artwork-defs");
   var clipDefs = document.getElementById("clip-defs");
   var artSpace = document.getElementById("art-space");
@@ -55,7 +67,29 @@
   var rankingStageLabel = document.getElementById("ranking-stage-label");
   var rankingList = document.getElementById("ranking-list");
 
-  artSpace.setAttribute("transform", "translate(" + ART_G_TX + " " + ART_G_TY + ") scale(" + ART_G_SCALE + ")");
+  // Sizes the SVG viewBox to the board-wrap's actual pixel box (so viewBox
+  // units == real CSS px, eliminating any aspect-ratio letterboxing), then
+  // fits the square picture board inside it with a fixed edge margin, and
+  // places the button column and scatter tray relative to that same board.
+  function computeLayout() {
+    var w = Math.max(1, Math.round(boardWrapEl.clientWidth));
+    var h = Math.max(1, Math.round(boardWrapEl.clientHeight));
+    boardSvg.setAttribute("viewBox", "0 0 " + w + " " + h);
+
+    ART_G_TY = EDGE_MARGIN;
+    ART_G_TX = EDGE_MARGIN;
+    ART_TARGET_SIZE = Math.max(60, h - EDGE_MARGIN * 2);
+    ART_G_SCALE = ART_TARGET_SIZE / ART_SIZE;
+    artSpace.setAttribute("transform", "translate(" + ART_G_TX + " " + ART_G_TY + ") scale(" + ART_G_SCALE + ")");
+
+    boardToolbarEl.style.left = (ART_G_TX + ART_TARGET_SIZE + BTN_GAP) + "px";
+    boardToolbarEl.style.top = ART_G_TY + "px";
+
+    TRAY.x0 = ART_G_TX + ART_TARGET_SIZE + BTN_GAP + BTN_COL_W + BTN_GAP;
+    TRAY.x1 = Math.max(TRAY.x0 + 40, w - TRAY_MARGIN);
+    TRAY.y0 = TRAY_MARGIN;
+    TRAY.y1 = Math.max(TRAY.y0 + 40, h - TRAY_MARGIN);
+  }
 
   function showScreen(name) {
     Object.keys(screens).forEach(function (k) {
@@ -305,9 +339,39 @@
   function boardToLocal(bx, by) {
     return { x: (bx - ART_G_TX) / ART_G_SCALE, y: (by - ART_G_TY) / ART_G_SCALE };
   }
+  // The preview/shuffle buttons float on top of the board (see .board-toolbar),
+  // so a piece must never be allowed to scatter directly underneath them - it
+  // would be stuck there, since clicks on the buttons' area never reach the
+  // board beneath. Converts their live screen rect into art-space-local units
+  // (padded by roughly a piece's radius) and re-rolls any point that lands in it.
+  function toolbarLocalRect() {
+    var rect = boardToolbarEl.getBoundingClientRect();
+    if (!rect.width || !rect.height) return null;
+    var ctm = artSpace.getScreenCTM();
+    if (!ctm) return null;
+    var inv = ctm.inverse();
+    function toLocal(x, y) {
+      var pt = boardSvg.createSVGPoint();
+      pt.x = x; pt.y = y;
+      var p = pt.matrixTransform(inv);
+      return { x: p.x, y: p.y };
+    }
+    var pad = (ART_SIZE / (state.gridN || 3)) * 0.6;
+    var a = toLocal(rect.left, rect.top);
+    var b = toLocal(rect.right, rect.bottom);
+    return {
+      x0: Math.min(a.x, b.x) - pad, x1: Math.max(a.x, b.x) + pad,
+      y0: Math.min(a.y, b.y) - pad, y1: Math.max(a.y, b.y) + pad
+    };
+  }
   function randomTrayLocalPoint() {
-    var bx = TRAY.x0 + Math.random() * (TRAY.x1 - TRAY.x0);
-    var by = TRAY.y0 + Math.random() * (TRAY.y1 - TRAY.y0);
+    var avoid = toolbarLocalRect();
+    for (var tries = 0; tries < 20; tries++) {
+      var bx = TRAY.x0 + Math.random() * (TRAY.x1 - TRAY.x0);
+      var by = TRAY.y0 + Math.random() * (TRAY.y1 - TRAY.y0);
+      var p = boardToLocal(bx, by);
+      if (!avoid || p.x < avoid.x0 || p.x > avoid.x1 || p.y < avoid.y0 || p.y > avoid.y1) return p;
+    }
     return boardToLocal(bx, by);
   }
   function svgPoint(evt) {
@@ -323,6 +387,7 @@
     state.levelIndex = idx;
     state.placedCount = 0;
     completionModal.classList.remove("show");
+    computeLayout();
 
     var level = currentLevel();
     var n = DIFFS[state.difficulty].grid;

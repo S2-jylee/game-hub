@@ -25,7 +25,7 @@
 
 @font-face {
   font-family: "CookieRun";
-  src: url("CookieRun-Bold.ttf") format("truetype");
+  src: url("assets/CookieRun-Bold.ttf") format("truetype");
   font-weight: 700;
   font-style: normal;
   font-display: swap;
@@ -338,7 +338,7 @@ h1 { font-family: "CookieRun", "Jua", sans-serif; font-size: 2.6rem; margin: 6px
 .piece.dragging .piece-outline { stroke: var(--yellow); stroke-width: 4; }
 .piece:not(.locked) > g[clip-path] { filter: drop-shadow(0 4px 6px rgba(36,27,58,0.35)); }
 .piece.dragging > g[clip-path] { filter: drop-shadow(0 10px 14px rgba(36,27,58,0.45)); }
-.piece.locked { cursor: default; }
+.piece.locked { cursor: default; pointer-events: none; }
 .piece.locked .piece-outline { stroke: rgba(255,255,255,0.5); stroke-width: 1.5; }
 .piece.just-locked { animation: piecepop 0.35s ease; }
 @keyframes piecepop {
@@ -383,14 +383,17 @@ h1 { font-family: "CookieRun", "Jua", sans-serif; font-size: 2.6rem; margin: 6px
 .completion-scoregain { font-size: 1.05rem; color: var(--pink-dark); font-weight: 800; margin-top: 2px; }
 .completion-buttons { margin-top: 14px; display: flex; flex-direction: column; align-items: center; gap: 4px; }
 
-.toolbar {
-  flex: none;
+.board-toolbar {
+  position: absolute;
+  left: 0;
+  top: 0;
   display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 18px;
-  padding: 12px 0 18px;
+  flex-direction: column;
+  gap: 14px;
+  z-index: 5;
+  pointer-events: none;
 }
+.board-toolbar .btn { pointer-events: auto; }
 
 /* ---- Ranking modal ---- */
 .ranking-modal {

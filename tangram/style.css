@@ -352,25 +352,16 @@ h1 { font-family: "CookieRun", "Jua", sans-serif; font-size: 2.6rem; margin: 6px
   stroke-dasharray: 10 8;
 }
 
-.rotate-handle-line {
+.pivot-group { pointer-events: none; }
+.pivot-line {
   stroke: rgba(36,27,58,0.45);
   stroke-width: 2.5;
   stroke-dasharray: 4 4;
-  pointer-events: none;
 }
-.rotate-handle-knob {
+.pivot-dot {
   fill: white;
   stroke: var(--lavender-dark);
   stroke-width: 3;
-  cursor: grab;
-  touch-action: none;
-}
-.rotate-handle-knob:active { cursor: grabbing; }
-.rotate-handle-glyph {
-  font-size: 18px;
-  fill: var(--lavender-dark);
-  pointer-events: none;
-  user-select: none;
 }
 
 /* ---- Completion modal (retry / success) ---- */

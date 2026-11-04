@@ -191,28 +191,6 @@
     return [sx / shape.length, sy / shape.length];
   }
 
-  // Distance from centroid to the polygon boundary along a fixed local
-  // direction (straight "up", before rotation). The rotate handle is placed
-  // this far out - along the SAME local direction, which then rotates with
-  // the piece - so it hugs the actual silhouette instead of orbiting at a
-  // generic "farthest corner" radius that's way too wide for most pieces.
-  function localUpExtent(shape, centroid) {
-    var dx = 0, dy = -1;
-    var best = Infinity;
-    var n = shape.length;
-    for (var i = 0; i < n; i++) {
-      var a = shape[i], b = shape[(i + 1) % n];
-      var abx = b[0] - a[0], aby = b[1] - a[1];
-      var det = abx * dy - aby * dx;
-      if (Math.abs(det) < 1e-9) continue;
-      var acx = a[0] - centroid[0], acy = a[1] - centroid[1];
-      var t = (abx * acy - aby * acx) / det;
-      var s = (dx * acy - dy * acx) / det;
-      if (t > 1e-6 && s >= -1e-6 && s <= 1 + 1e-6 && t < best) best = t;
-    }
-    return isFinite(best) ? best : 1;
-  }
-
   // Matches the viewBox height to board-wrap's actual current aspect ratio,
   // so "meet" scaling fills the real container edge-to-edge on whatever
   // device/orientation this happens to be, instead of letterboxing based on
@@ -290,7 +268,6 @@
         symmetry: TD.SHAPE_SYMMETRY[s.shape] || 360,
         localShape: localShape,
         localCentroid: lc,
-        handleRadiusPx: localUpExtent(localShape, lc) * scale + 24,
         current: { x: 0, y: 0, angleDeg: 0, flip: false },
         snappedSlot: null,
         el: null,
@@ -304,7 +281,6 @@
     renderPieces(true);
     updateHud();
     startTimer();
-    updateRotateHandle();
     updateFlipButton();
     resetHint();
     btnHint.hidden = state.difficulty !== "hard";
@@ -551,7 +527,6 @@
     }
     piece.groupEl.setAttribute("transform", transform);
     piece.el.classList.toggle("selected", state.selectedId === piece.id);
-    if (state.selectedId === piece.id) updateRotateHandle();
   }
 
   function updateHud() {
@@ -593,7 +568,6 @@
   function selectPiece(piece) {
     state.selectedId = piece ? piece.id : null;
     state.pieces.forEach(updatePieceTransform);
-    updateRotateHandle();
     updateFlipButton();
   }
 
@@ -683,75 +657,115 @@
     return { x: rx + piece.current.x, y: ry + piece.current.y };
   }
 
-  // ---- Rotate handle (drag-to-rotate) ----------------------------------
-  var handleGroup = document.createElementNS(SVG_NS, "g");
-  handleGroup.setAttribute("class", "rotate-handle-group");
-  var handleLine = document.createElementNS(SVG_NS, "line");
-  handleLine.setAttribute("class", "rotate-handle-line");
-  var handleKnob = document.createElementNS(SVG_NS, "circle");
-  handleKnob.setAttribute("r", 17);
-  handleKnob.setAttribute("class", "rotate-handle-knob");
-  var handleGlyph = document.createElementNS(SVG_NS, "text");
-  handleGlyph.setAttribute("class", "rotate-handle-glyph");
-  handleGlyph.setAttribute("text-anchor", "middle");
-  handleGlyph.setAttribute("dominant-baseline", "central");
-  handleGlyph.textContent = "↻";
-  handleGroup.appendChild(handleLine);
-  handleGroup.appendChild(handleKnob);
-  handleGroup.appendChild(handleGlyph);
-  handleGroup.style.display = "none";
-  layerToolbar.appendChild(handleGroup);
+  // ---- Pivot rotate (press anywhere on the board, then swing around) -----
+  // With a piece selected, pressing on any empty spot drops a pivot right
+  // there, and dragging around it swings the selected piece around that
+  // pivot by however far the finger has turned - no small handle to hunt
+  // for. Pressing ON a piece still drags it as before.
+  var PIVOT_DEAD_ZONE = 24; // px from the pivot before the pointer's angle is trusted
 
-  function updateRotateHandle() {
-    var piece = state.selectedId ? findPiece(state.selectedId) : null;
-    if (!piece) { handleGroup.style.display = "none"; return; }
-    var c = pieceCentroidPx(piece);
-    var theta = (piece.current.angleDeg - 90) * Math.PI / 180;
-    var hx = c.x + piece.handleRadiusPx * Math.cos(theta);
-    var hy = c.y + piece.handleRadiusPx * Math.sin(theta);
-    handleLine.setAttribute("x1", c.x); handleLine.setAttribute("y1", c.y);
-    handleLine.setAttribute("x2", hx); handleLine.setAttribute("y2", hy);
-    handleKnob.setAttribute("cx", hx); handleKnob.setAttribute("cy", hy);
-    handleGlyph.setAttribute("x", hx); handleGlyph.setAttribute("y", hy);
-    handleGroup.style.display = "";
+  var pivotGroup = document.createElementNS(SVG_NS, "g");
+  pivotGroup.setAttribute("class", "pivot-group");
+  var pivotLine = document.createElementNS(SVG_NS, "line");
+  pivotLine.setAttribute("class", "pivot-line");
+  var pivotDot = document.createElementNS(SVG_NS, "circle");
+  pivotDot.setAttribute("r", 9);
+  pivotDot.setAttribute("class", "pivot-dot");
+  pivotGroup.appendChild(pivotLine);
+  pivotGroup.appendChild(pivotDot);
+  pivotGroup.style.display = "none";
+  layerToolbar.appendChild(pivotGroup);
+
+  var pivotDrag = null; // {piece, pivot, startCentroid, startAngle, lastPointerAngle, swept}
+
+  function updatePivotMarker() {
+    if (!pivotDrag) { pivotGroup.style.display = "none"; return; }
+    var c = pieceCentroidPx(pivotDrag.piece);
+    pivotDot.setAttribute("cx", pivotDrag.pivot.x); pivotDot.setAttribute("cy", pivotDrag.pivot.y);
+    pivotLine.setAttribute("x1", pivotDrag.pivot.x); pivotLine.setAttribute("y1", pivotDrag.pivot.y);
+    pivotLine.setAttribute("x2", c.x); pivotLine.setAttribute("y2", c.y);
+    pivotGroup.style.display = "";
   }
 
-  var rotateDrag = null; // {piece, centroid, startPointerAngle, startPieceAngle}
-
-  function onHandlePointerDown(evt) {
+  function onBoardPointerDown(evt) {
+    if (drag || pivotDrag) return;
+    if (evt.target.classList && evt.target.classList.contains("piece-poly")) return;
     var piece = state.selectedId ? findPiece(state.selectedId) : null;
     if (!piece) return;
     evt.preventDefault();
-    evt.stopPropagation();
-    var centroid = pieceCentroidPx(piece);
+    pivotDrag = {
+      piece: piece,
+      pivot: svgPoint(evt),
+      startCentroid: pieceCentroidPx(piece),
+      startAngle: piece.current.angleDeg,
+      lastPointerAngle: null,
+      swept: 0
+    };
+    bringToFront(piece);
+    boardSvg.setPointerCapture(evt.pointerId);
+    window.addEventListener("pointermove", onBoardPointerMove);
+    window.addEventListener("pointerup", onBoardPointerUp);
+    window.addEventListener("pointercancel", onBoardPointerUp);
+    updatePivotMarker();
+  }
+
+  function onBoardPointerMove(evt) {
+    if (!pivotDrag) return;
     var p = svgPoint(evt);
-    var startPointerAngle = Math.atan2(p.y - centroid.y, p.x - centroid.x) * 180 / Math.PI;
-    rotateDrag = { piece: piece, centroid: centroid, startPointerAngle: startPointerAngle, startPieceAngle: piece.current.angleDeg };
-    handleKnob.setPointerCapture(evt.pointerId);
-    window.addEventListener("pointermove", onHandlePointerMove);
-    window.addEventListener("pointerup", onHandlePointerUp);
+    var dx = p.x - pivotDrag.pivot.x, dy = p.y - pivotDrag.pivot.y;
+    // Right next to the pivot the pointer's angle jumps around wildly, so
+    // those samples are ignored; turning only counts once the finger is out.
+    if (Math.sqrt(dx * dx + dy * dy) < PIVOT_DEAD_ZONE) return;
+    var a = Math.atan2(dy, dx) * 180 / Math.PI;
+    if (pivotDrag.lastPointerAngle === null) { pivotDrag.lastPointerAngle = a; return; }
+    var step = a - pivotDrag.lastPointerAngle;
+    if (step > 180) step -= 360;
+    if (step < -180) step += 360;
+    pivotDrag.lastPointerAngle = a;
+    pivotDrag.swept += step;
+    releaseSnap(pivotDrag.piece);
+    applyPivotRotation(pivotDrag.piece, pivotDrag.swept);
+    updatePivotMarker();
   }
 
-  function onHandlePointerMove(evt) {
-    if (!rotateDrag) return;
-    releaseSnap(rotateDrag.piece);
-    var p = svgPoint(evt);
-    var angleNow = Math.atan2(p.y - rotateDrag.centroid.y, p.x - rotateDrag.centroid.x) * 180 / Math.PI;
-    var delta = angleNow - rotateDrag.startPointerAngle;
-    rotateDrag.piece.current.angleDeg = normalizeDeg(rotateDrag.startPieceAngle + delta);
-    updatePieceTransform(rotateDrag.piece);
+  // Turns the piece's whole pose by `delta` degrees around the pivot,
+  // always measured from where it was when the press began (so no drift
+  // builds up). The centroid orbits the pivot and the piece's own angle
+  // turns by the same amount - reversed when flipped, since the mirror
+  // flips the angle's sense (see updatePieceTransform).
+  function applyPivotRotation(piece, delta) {
+    var d = pivotDrag;
+    var rad = delta * Math.PI / 180;
+    var cs = Math.cos(rad), sn = Math.sin(rad);
+    var ox = d.startCentroid.x - d.pivot.x, oy = d.startCentroid.y - d.pivot.y;
+    var cx = d.pivot.x + ox * cs - oy * sn;
+    var cy = d.pivot.y + ox * sn + oy * cs;
+    var angle = normalizeDeg(piece.current.flip ? d.startAngle - delta : d.startAngle + delta);
+    var lc = piece.localCentroid;
+    var ar = angle * Math.PI / 180;
+    var p0 = lc[0] * state.unitScale, p1 = lc[1] * state.unitScale;
+    piece.current.angleDeg = angle;
+    piece.current.x = cx - (p0 * Math.cos(ar) - p1 * Math.sin(ar));
+    piece.current.y = cy - (p0 * Math.sin(ar) + p1 * Math.cos(ar));
+    updatePieceTransform(piece);
   }
 
-  function onHandlePointerUp(evt) {
-    if (!rotateDrag) return;
-    window.removeEventListener("pointermove", onHandlePointerMove);
-    window.removeEventListener("pointerup", onHandlePointerUp);
-    trySnap(rotateDrag.piece);
-    rotateDrag = null;
-    playClick();
+  function onBoardPointerUp(evt) {
+    if (!pivotDrag) return;
+    window.removeEventListener("pointermove", onBoardPointerMove);
+    window.removeEventListener("pointerup", onBoardPointerUp);
+    window.removeEventListener("pointercancel", onBoardPointerUp);
+    var piece = pivotDrag.piece;
+    var turned = Math.abs(pivotDrag.swept) > 1;
+    pivotDrag = null;
+    updatePivotMarker();
+    if (turned) {
+      trySnap(piece);
+      playClick();
+    }
   }
 
-  handleKnob.addEventListener("pointerdown", onHandlePointerDown);
+  boardSvg.addEventListener("pointerdown", onBoardPointerDown);
 
   function rotateSelected(dir) {
     if (!state.selectedId) return;
