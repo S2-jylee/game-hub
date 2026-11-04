@@ -205,6 +205,8 @@ button{font-family:inherit;font-weight:inherit;color:inherit;cursor:pointer;bord
 .run-pad.left{left:12px}
 .run-pad.right{right:12px}
 .run-pad.on{background:#fff;transform:scale(.9)}
+#run .run-pad{bottom:auto;top:50%;margin-top:-33px;background:rgba(255,255,255,.22);color:rgba(36,27,58,.45);box-shadow:none}
+#run .run-pad.on{background:rgba(255,255,255,.5);color:rgba(36,27,58,.7);transform:scale(.9)}
 .energy{display:flex;align-items:center;gap:6px;background:#fff;border-radius:18px;padding:6px 12px;flex:1;max-width:200px}
 .energy-ico{font-size:22px}
 .energy-bar{flex:1;height:14px;background:#e1efff;border-radius:10px;overflow:hidden}
@@ -1784,34 +1786,57 @@ button{font-family:inherit;font-weight:inherit;color:inherit;cursor:pointer;bord
   }
 
   // 마우스: 누른 곳으로 펭귄이 따라가요
-  // 터치(태블릿): 화면을 톡 치면 점프, 누른 채 옆으로 밀면 따라가요
+  // 터치(태블릿): 톡 치면 점프, 옆으로 스와이프하면 손가락을 따라 움직이고 휙 밀면 옆 줄로 가요
   const field = $('#runField');
-  let touchStartX = null;
+  let swipe = null;
   function aim(e) {
     const g = geo(), r = field.getBoundingClientRect();
     run.target = Math.max(-0.82, Math.min(0.82, (e.clientX - r.left - g.cx) / g.R));
+  }
+  // dir 쪽으로 가장 가까운 다음 줄 (끝 줄이면 가장자리까지)
+  function nextLane(dir) {
+    const from = run.target != null ? run.target : run.px;
+    const lanes = dir > 0 ? LANE_X.filter(x => x > from + 0.05) : LANE_X.filter(x => x < from - 0.05).reverse();
+    return lanes.length ? lanes[0] : dir * 0.82;
   }
   field.addEventListener('pointerdown', e => {
     if (e.target.closest('.run-pad')) return;
     try { field.setPointerCapture(e.pointerId); } catch (err) { /* 이미 끝난 터치 */ }
     if (e.pointerType === 'mouse') aim(e);
-    else { touchStartX = e.clientX; hop(); }
+    else swipe = { x: e.clientX, px: run.px, t: performance.now(), moved: false };
   });
   field.addEventListener('pointermove', e => {
     if (!field.hasPointerCapture(e.pointerId)) return;
-    if (e.pointerType === 'mouse') aim(e);
-    else if (touchStartX != null && Math.abs(e.clientX - touchStartX) > 14) aim(e);
+    if (e.pointerType === 'mouse') { aim(e); return; }
+    if (!swipe) return;
+    const dx = e.clientX - swipe.x;
+    if (!swipe.moved && Math.abs(dx) > 14) swipe.moved = true;
+    if (swipe.moved) run.target = Math.max(-0.82, Math.min(0.82, swipe.px + dx * 1.6 / geo().R));
   });
-  field.addEventListener('pointerup', () => { touchStartX = null; });
-  // ◀ ▶ 버튼: 꾹 누르고 있는 동안 그쪽으로 가요
-  [['#padL', 'l'], ['#padR', 'r']].forEach(([sel, k]) => {
+  field.addEventListener('pointerup', e => {
+    if (!swipe) return;
+    const dx = e.clientX - swipe.x, quick = performance.now() - swipe.t < 300;
+    if (!swipe.moved) hop();
+    else if (quick && Math.abs(dx) > 30) {
+      const lane = nextLane(Math.sign(dx));
+      if (Math.sign(dx) * (lane - run.target) > 0) run.target = lane;
+    }
+    swipe = null;
+  });
+  field.addEventListener('pointercancel', () => { swipe = null; });
+  // ◀ ▶ 버튼: 톡 누르면 옆 줄로 한 칸, 꾹 누르고 있으면 계속 그쪽으로 가요
+  [['#padL', 'l', -1], ['#padR', 'r', 1]].forEach(([sel, k, dir]) => {
     const pad = $(sel);
+    let holdTimer = null;
     pad.addEventListener('pointerdown', e => {
       e.preventDefault();
-      run.keys[k] = true;
+      if (!run.active) return;
+      run.target = nextLane(dir);
+      clearTimeout(holdTimer);
+      holdTimer = setTimeout(() => { run.keys[k] = true; }, 250);
       try { pad.setPointerCapture(e.pointerId); } catch (err) { /* 이미 끝난 터치 */ }
     });
-    const up = () => { run.keys[k] = false; };
+    const up = () => { clearTimeout(holdTimer); run.keys[k] = false; };
     pad.addEventListener('pointerup', up);
     pad.addEventListener('pointercancel', up);
     pad.addEventListener('lostpointercapture', up);
