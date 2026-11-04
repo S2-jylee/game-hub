@@ -21,11 +21,12 @@
   var TRAY = { x0: 520, x1: 880, y0: 20, y1: 580 };
 
   var DIFFS = {
-    easy: { grid: 3, label: "쉬움", par: 40, scoreMult: 1 },
+    // preview: faint picture under the board; otherwise the piece shapes are outlined instead
+    easy: { grid: 3, label: "쉬움", par: 40, scoreMult: 1, preview: true },
     normal: { grid: 4, label: "보통", par: 90, scoreMult: 1.5 },
     hard: { grid: 5, label: "어려움", par: 170, scoreMult: 2.2 },
     // 5 columns x 10 rows (the pictures are portrait)
-    extreme: { grid: 5, rows: 10, label: "완전어려움", par: 420, scoreMult: 4 }
+    extreme: { grid: 5, rows: 10, label: "매우어려움", par: 420, scoreMult: 4 }
   };
 
   var PROFILES_KEY = "puzzle_profiles_v1";
@@ -406,6 +407,9 @@
     state.gridRows = rows;
     state.total = cols * rows;
     state.snapTol = Math.min(state.artW / cols, state.artH / rows) * 0.28;
+    state.previewOn = !!diff.preview;
+    btnPreview.style.display = diff.preview ? "" : "none";
+    btnPreview.classList.toggle("btn-toggle-on", state.previewOn);
     computeLayout();
 
     artworkDefs.innerHTML = "";
@@ -431,6 +435,14 @@
     layerTarget.appendChild(frame);
 
     var piecesData = buildPiecePaths(rows, cols, state.artW, state.artH);
+    if (!diff.preview) {
+      piecesData.forEach(function (p) {
+        var slot = document.createElementNS(SVG_NS, "path");
+        slot.setAttribute("d", p.d);
+        slot.setAttribute("class", "target-slot");
+        layerTarget.appendChild(slot);
+      });
+    }
     state.pieces = piecesData.map(function (p, i) {
       var clipId = "clip-" + i;
       var clip = document.createElementNS(SVG_NS, "clipPath");
