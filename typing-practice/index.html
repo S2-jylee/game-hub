@@ -188,18 +188,6 @@
     </div>
   </div>
 
-  <!-- 사용자 선택 화면: 처음 들어오면 이름을 고르거나 게스트로 시작한 뒤 홈 화면으로 넘어간다 -->
-  <div class="user-screen show" id="user-screen">
-    <div class="result-card user-card">
-      <h2>🐰 누구인가요?</h2>
-      <p class="level-up-desc">랭킹에 표시될 이름을 골라주세요.</p>
-      <div class="user-list" id="user-list"></div>
-      <input id="name-input" class="name-input" type="text" maxlength="10" placeholder="새 이름을 입력하세요" autocomplete="off">
-      <button id="name-save-btn" type="button">시작하기 🐾</button>
-      <button id="guest-start-btn" class="tool-btn" type="button">게스트로 시작</button>
-    </div>
-  </div>
-
   <div class="result-modal" id="game-over-modal">
     <div class="result-card">
       <h2>💥 게임 종료!</h2>
@@ -216,6 +204,54 @@
 <footer>
   <p>토닥토닥 오늘도 즐겁게 타자연습 💗</p>
 </footer>
+
+<!-- 시작 화면: 다른 게임과 같은 흐름(타이틀 → 누구인가요? → 홈 화면) -->
+<div class="user-screen show" id="user-screen">
+  <!-- 타이틀 -->
+  <section class="start-page active" id="start-title">
+    <div class="title-card">
+      <div class="title-shapes" aria-hidden="true">
+        <span class="ts ts1">⌨️</span>
+        <span class="ts ts2">🐰</span>
+        <span class="ts ts3">🍬</span>
+        <span class="ts ts4">⭐</span>
+      </div>
+      <h1>말랑말랑 타자연습</h1>
+      <p class="subtitle">자리부터 글까지, 즐겁게 타자를 익혀요!</p>
+      <button id="start-btn" class="btn btn-primary btn-huge" type="button">시작하기</button>
+      <button id="howto-btn" class="btn btn-ghost" type="button">놀이 방법</button>
+    </div>
+  </section>
+
+  <!-- 사용자 선택 -->
+  <section class="start-page" id="start-user">
+    <div class="card">
+      <h2>누구인가요?</h2>
+      <div id="user-list" class="user-list"></div>
+      <div class="user-new-row">
+        <input id="name-input" class="user-name-input" type="text" maxlength="10" placeholder="새 이름을 입력하세요" autocomplete="off">
+        <button id="name-save-btn" class="btn btn-primary btn-small" type="button">시작</button>
+      </div>
+      <button id="guest-start-btn" class="btn btn-ghost" type="button">게스트로 시작</button>
+      <button id="user-back-btn" class="btn btn-ghost" type="button">처음으로</button>
+    </div>
+  </section>
+
+  <!-- 놀이 방법 -->
+  <section class="start-page" id="start-howto">
+    <div class="card">
+      <h2>놀이 방법</h2>
+      <ul class="howto-list">
+        <li><span class="ico">⌨️</span><span><b>자리연습</b>: 화면의 글자를 보고 알맞은 손가락으로 쳐요.</span></li>
+        <li><span class="ico">🔤</span><span><b>단어·문장·글연습</b>: 글자를 그대로 따라 치고 <b>Enter</b>로 넘어가요.</span></li>
+        <li><span class="ico">🎮</span><span><b>타자게임</b>: 떨어지는 폭탄의 글자를 치고 <b>Enter</b>로 격침해요.</span></li>
+        <li><span class="ico">🌐</span><span>위의 <b>한글 / ENGLISH</b> 버튼으로 언어를 바꿀 수 있어요.</span></li>
+        <li><span class="ico">🏆</span><span>빨리 끝낼수록 랭킹에서 높은 자리에 올라요!</span></li>
+      </ul>
+      <button id="howto-back-btn" class="btn btn-primary btn-huge" type="button">알겠어요!</button>
+    </div>
+  </section>
+</div>
 
 <script src="script.js"></script>
 </body>

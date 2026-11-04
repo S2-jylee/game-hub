@@ -419,13 +419,25 @@ function startAsPlayer(name) {
   el.userScreen.classList.remove('show');
   showHome();
 }
+// 시작 화면 안의 페이지(타이틀 / 누구인가요? / 놀이 방법) 전환
+function showStartPage(id) {
+  document.querySelectorAll('.start-page').forEach(p => p.classList.toggle('active', p.id === id));
+}
 function buildUserList() {
   el.userList.innerHTML = '';
-  knownPlayers().forEach(name => {
+  const names = knownPlayers();
+  if (names.length === 0) {
+    const hint = document.createElement('div');
+    hint.className = 'user-empty-hint';
+    hint.textContent = '저장된 사용자가 없어요. 새 이름으로 시작해보세요!';
+    el.userList.appendChild(hint);
+    return;
+  }
+  names.forEach(name => {
     const btn = document.createElement('button');
     btn.type = 'button';
     btn.className = 'user-item-btn';
-    btn.textContent = `🙂 ${name}`;
+    btn.textContent = name;
     btn.addEventListener('click', () => startAsPlayer(name));
     el.userList.appendChild(btn);
   });
@@ -1795,6 +1807,15 @@ el.guestStartBtn.addEventListener('click', () => startAsPlayer(''));
 el.nameInput.addEventListener('keydown', e => {
   if (e.key === 'Enter') submitPlayerName();
 });
+document.getElementById('start-btn').addEventListener('click', () => {
+  buildUserList();
+  el.nameInput.value = '';
+  showStartPage('start-user');
+  el.nameInput.focus();
+});
+document.getElementById('howto-btn').addEventListener('click', () => showStartPage('start-howto'));
+document.getElementById('howto-back-btn').addEventListener('click', () => showStartPage('start-title'));
+document.getElementById('user-back-btn').addEventListener('click', () => showStartPage('start-title'));
 
 // ===================== 초기화 =====================
 
@@ -1802,5 +1823,3 @@ initKeyboard();
 initFingerGuide();
 setMode('position');
 showHome();
-buildUserList();
-el.nameInput.focus();

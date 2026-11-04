@@ -830,3 +830,4 @@ html { background: #fff6e8; }
 .level-grid-btn.book-tile .lvl-stars { font-size: 0.78rem; font-weight: 800; }
 .level-grid-btn.book-tile.read { animation: none; box-shadow: none; }
 @keyframes bookpulse { 50% { transform: translateY(-3px) scale(1.04); } }
+.level-grid { padding: 10px 10px 14px; }
