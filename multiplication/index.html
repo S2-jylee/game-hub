@@ -64,10 +64,10 @@ button{font-family:inherit;font-weight:inherit;color:inherit;cursor:pointer;bord
 .bubble{position:relative;background:#fff;border-radius:18px;padding:8px 14px;font-size:18px;max-width:280px}
 .bubble::before{content:"";position:absolute;left:-10px;top:50%;margin-top:-8px;border:8px solid transparent;border-right:12px solid #fff;border-left:0}
 
-.panel{width:100%;max-width:520px;background:var(--card);border-radius:26px;padding:12px 16px 14px}
+.panel{width:100%;max-width:740px;background:var(--card);border-radius:26px;padding:12px 16px 14px}
 .label{font-size:16px;color:var(--muted);margin:2px 2px 6px}
-.dan-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:10px 6px;margin-bottom:10px}
-.dan{height:42px;border-radius:14px;font-size:20px;background:#f1edff;transition:transform .1s}
+.dan-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:10px 10px;margin-bottom:12px}
+.dan{height:52px;border-radius:16px;font-size:22px;background:#f1edff;transition:transform .1s}
 .dan.on{background:var(--yellow)}
 .dan:active{transform:translateY(2px)}
 .buddy-pick{display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap}
@@ -88,6 +88,20 @@ button{font-family:inherit;font-weight:inherit;color:inherit;cursor:pointer;bord
 .m-practice{--mc:#34d399;--mbg:#dcfaec}
 .m-challenge{--mc:#ff9f43;--mbg:#ffecd9}
 .m-penguin{--mc:#60a5fa;--mbg:#e1efff}
+.m-arcade{--mc:#a259ff;--mbg:#efe5ff}
+.arcade-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;margin-bottom:4px}
+.arcade-game{--mc:#60a5fa;--mbg:#e1efff;display:flex;flex-direction:column;align-items:center;gap:4px;border-radius:22px;padding:18px 10px 14px;background:var(--mbg);line-height:1.25;word-break:keep-all;transition:transform .1s}
+.arcade-game:hover{transform:translateY(-3px)}
+.arcade-game:active{transform:translateY(2px)}
+.arcade-game .m-emoji{font-size:56px;line-height:1;animation:breathe 2.4s ease-in-out infinite}
+.arcade-game .m-name{font-family:"CookieRun","Jua",sans-serif;font-size:24px;margin-top:4px}
+.arcade-game small{display:block;font-size:14px;color:var(--muted)}
+.arcade-game .m-go{margin-top:8px;padding:5px 16px;border-radius:999px;background:var(--mc);color:#fff;font-size:16px}
+.arcade-game .best{font-size:13px;color:var(--muted);margin-top:2px}
+.arcade-game.soon{--mbg:#f4f2f8;cursor:default;opacity:.75}
+.arcade-game.soon:hover,.arcade-game.soon:active{transform:none}
+.arcade-game.soon .m-emoji{animation:none;filter:grayscale(.3)}
+.arcade-dans{font-weight:800;color:var(--purple)}
 
 /* ---------- 타이틀 · 사용자 · 방법 (다른 놀이와 같은 모양) ---------- */
 .screen.center{justify-content:safe center}
@@ -128,7 +142,7 @@ button{font-family:inherit;font-weight:inherit;color:inherit;cursor:pointer;bord
   .card{padding:24px 20px}
   .btn-huge{padding:16px 36px;font-size:25px}
 }
-.home-top{width:100%;max-width:520px;display:flex;align-items:center;justify-content:space-between}
+.home-top{width:100%;max-width:740px;display:flex;align-items:center;justify-content:space-between}
 .user-badge{background:#fff;border-radius:999px;padding:6px 14px;font-size:16px}
 .user-badge:empty{display:none}
 .big-btn{width:100%;height:54px;border-radius:20px;font-size:26px;color:#fff;background:linear-gradient(#ff8fc2,#ff5d9e);animation:wiggle 2.5s ease-in-out infinite}
@@ -138,13 +152,15 @@ button{font-family:inherit;font-weight:inherit;color:inherit;cursor:pointer;bord
 .small-btn{flex:1;height:42px;border-radius:14px;font-size:17px;background:#e8f4ff}
 .small-btn:active{transform:translateY(2px)}
 
-.sticker-book{width:100%;max-width:520px;margin-top:10px;background:rgba(255,255,255,.75);border-radius:20px;padding:8px 16px;text-align:center}
+.sticker-book{width:100%;max-width:740px;margin-top:10px;background:rgba(255,255,255,.75);border-radius:20px;padding:8px 16px;text-align:center}
 .sticker-book .list{font-size:24px;letter-spacing:4px;min-height:28px;word-break:break-all}
 .sticker-book .empty{font-size:15px;color:var(--muted)}
 
 /* ---------- 게임 화면 ---------- */
 .hud{width:100%;display:flex;align-items:center;justify-content:space-between;gap:10px}
 .icon-btn{width:42px;height:42px;border-radius:50%;font-size:22px;background:#fff}
+.back-btn{height:42px;padding:0 16px;border-radius:999px;font-size:17px;font-weight:800;color:#3b2d5c;background:#fff;white-space:nowrap}
+.back-btn:active{transform:scale(.94)}
 .hearts{font-size:28px;letter-spacing:2px}
 .hearts .lost{animation:loseHeart .6s ease forwards}
 @keyframes loseHeart{0%{transform:scale(1.4)}100%{transform:scale(1);opacity:.5}}
@@ -182,12 +198,6 @@ button{font-family:inherit;font-weight:inherit;color:inherit;cursor:pointer;bord
 .run-pad.left{left:12px}
 .run-pad.right{right:12px}
 .run-pad.on{background:#fff;transform:scale(.9)}
-.energy{display:flex;align-items:center;gap:6px;background:#fff;border-radius:18px;padding:6px 12px;flex:1;max-width:220px}
-.energy-ico{font-size:22px}
-.energy-bar{flex:1;height:14px;background:#e1efff;border-radius:10px;overflow:hidden}
-#energyFill{height:100%;width:0;border-radius:10px;background:linear-gradient(90deg,#60a5fa,#38bdf8,#7dd3fc);transition:width .3s ease}
-.energy.full{animation:energyFull .7s ease 2}
-@keyframes energyFull{50%{transform:scale(1.12);box-shadow:0 0 0 4px #7dd3fc}}
 
 .balloons{flex:1;width:100%;display:grid;grid-template-columns:repeat(4,1fr);gap:12px;align-items:center;justify-items:center;padding:6px 0 56px;min-height:200px}
 .balloon{--c:#ff7eb6;position:relative;width:min(96px,40vw);aspect-ratio:5/6;
@@ -334,8 +344,8 @@ button{font-family:inherit;font-weight:inherit;color:inherit;cursor:pointer;bord
         <button class="mode m-challenge" data-mode="challenge">
           <span class="m-emoji">⏱️</span><span class="m-name">도전 놀이</span><small>10초 안에! 하트 3개</small><span class="m-go">시작 ▶</span>
         </button>
-        <button class="mode m-penguin" data-mode="penguin">
-          <span class="m-emoji">🐧</span><span class="m-name">펭귄 달리기</span><small>정답 허들로 쌩쌩!</small><span class="m-go">시작 ▶</span>
+        <button class="mode m-arcade" id="arcadeBtn">
+          <span class="m-emoji">🎮</span><span class="m-name">신나는 게임</span><small>구구단 게임 모음</small><span class="m-go">고르기 ▶</span>
         </button>
       </div>
 
@@ -351,10 +361,26 @@ button{font-family:inherit;font-weight:inherit;color:inherit;cursor:pointer;bord
     </div>
   </section>
 
+  <!-- 신나는 게임 고르기 화면 -->
+  <section id="arcade" class="screen hidden">
+    <div class="home-top">
+      <button class="btn btn-ghost btn-small" id="arcadeBack">← 놀이 고르기</button>
+      <span class="user-badge" id="arcadeBadge"></span>
+    </div>
+    <div class="hero">
+      <div class="buddy">🎮</div>
+      <div class="bubble">어떤 구구단 게임을 해볼까?</div>
+    </div>
+    <div class="panel">
+      <div class="label">고른 단: <span class="arcade-dans" id="arcadeDans"></span></div>
+      <div class="arcade-grid" id="arcadeGrid"></div>
+    </div>
+  </section>
+
   <!-- 게임 화면 -->
   <section id="game" class="screen hidden">
     <div class="hud">
-      <button class="icon-btn" id="quitBtn" title="처음으로">🏠</button>
+      <button class="back-btn" id="quitBtn" title="놀이 고르기로 돌아가요">← 뒤로</button>
       <div id="hearts"></div>
       <div class="score" id="scoreBox">⭐ <span id="score">0</span></div>
     </div>
@@ -381,11 +407,8 @@ button{font-family:inherit;font-weight:inherit;color:inherit;cursor:pointer;bord
   <!-- 펭귄 달리기 화면 -->
   <section id="run" class="screen hidden">
     <div class="hud">
-      <button class="icon-btn" id="runQuit" title="처음으로">🏠</button>
+      <button class="back-btn" id="runQuit" title="게임 고르기로 돌아가요">← 뒤로</button>
       <div id="runHearts"></div>
-      <div class="energy" id="runEnergy" title="물고기 에너지: 가득 차면 하트가 하나 돌아와요">
-        <span class="energy-ico">🐟</span><div class="energy-bar"><div id="energyFill"></div></div>
-      </div>
       <div class="score" id="runScoreBox">⭐ <span id="runScore">0</span></div>
     </div>
     <div class="bars">
@@ -450,6 +473,10 @@ button{font-family:inherit;font-weight:inherit;color:inherit;cursor:pointer;bord
   const BUDDIES = ['🐰', '🐻', '🐥', '🐶', '🐱', '🐼'];
   const PRAISE = ['딩동댕! 🔔', '잘했어! 🎉', '최고야! 👍', '우와, 천재다! 🌟', '멋져요! 💖', '정답이야! 🍭'];
   const MODE_NAME = { practice: '연습 놀이', challenge: '도전 놀이', penguin: '펭귄 달리기' };
+  // 신나는 게임 목록: 새 게임은 여기에 한 줄 더하면 고르기 화면에 나와요
+  const ARCADE = [
+    { mode: 'penguin', emoji: '🐧', name: '펭귄 달리기', desc: '정답 허들로 쌩쌩! 통나무는 피해요', mc: '#60a5fa', mbg: '#e1efff' }
+  ];
   const CHEER = ['괜찮아, 다시 골라봐!', '아깝다! 한 번 더!', '틀려도 괜찮아 😊'];
   const STICKERS = ['🐶','🐱','🐼','🦊','🐸','🐵','🐯','🦁','🐨','🐷','🐹','🐧','🦄','🐙','🦖','🐳','🦋','🐞','🐢','🦒','🦔','🐬','🦩','🐿️'];
   // 숫자 끝자리 받침 여부 (영/십,일,삼,육,칠,팔 → 받침 있음)
@@ -601,7 +628,30 @@ button{font-family:inherit;font-weight:inherit;color:inherit;cursor:pointer;bord
   }
   function renderSoundBtn() { $('#soundBtn').textContent = state.sound ? '🔊 소리 켜짐' : '🔇 소리 꺼짐'; }
 
-  document.querySelectorAll('.mode').forEach(btn => {
+  function renderArcade() {
+    const dans = [...state.dans].sort((a, b) => a - b);
+    $('#arcadeDans').textContent = dans.length === 11 ? '전체 (2~12단)' : dans.map(d => d + '단').join(', ');
+    $('#arcadeBadge').textContent = $('#userBadge').textContent;
+    const best = userData().best || {};
+    const g = $('#arcadeGrid'); g.innerHTML = '';
+    ARCADE.forEach(game => {
+      const b = document.createElement('button');
+      b.className = 'arcade-game';
+      b.style.setProperty('--mc', game.mc); b.style.setProperty('--mbg', game.mbg);
+      b.innerHTML = `<span class="m-emoji">${game.emoji}</span><span class="m-name">${game.name}</span><small>${game.desc}</small>` +
+        (best[game.mode] ? `<span class="best">🏆 최고 ${best[game.mode]}점</span>` : '') + '<span class="m-go">시작 ▶</span>';
+      b.onclick = () => { sfx.click(); state.mode = game.mode; startGame(); };
+      g.appendChild(b);
+    });
+    const soon = document.createElement('div');
+    soon.className = 'arcade-game soon';
+    soon.innerHTML = '<span class="m-emoji">🎁</span><span class="m-name">새 게임 준비 중</span><small>곧 더 많은 게임이 나와요!</small>';
+    g.appendChild(soon);
+  }
+  $('#arcadeBtn').onclick = () => { sfx.click(); renderArcade(); show('#arcade'); };
+  $('#arcadeBack').onclick = () => { sfx.click(); show('#home'); };
+
+  document.querySelectorAll('.mode[data-mode]').forEach(btn => {
     btn.onclick = () => {
       sfx.click();
       state.mode = btn.dataset.mode;
@@ -693,7 +743,7 @@ button{font-family:inherit;font-weight:inherit;color:inherit;cursor:pointer;bord
 
   /* ---------- 게임 ---------- */
   function show(id) {
-    ['#intro', '#user', '#home', '#game', '#run', '#result'].forEach(s => $(s).classList.toggle('hidden', s !== id));
+    ['#intro', '#user', '#home', '#arcade', '#game', '#run', '#result'].forEach(s => $(s).classList.toggle('hidden', s !== id));
   }
 
   function buildQuestions() {
@@ -777,7 +827,6 @@ button{font-family:inherit;font-weight:inherit;color:inherit;cursor:pointer;bord
 
     const q = `${a} 곱하기 ${b}${eun(b)}?`;
     talk(q + ' 🎈 풍선을 터뜨려!');
-    speak(`${a} 곱하기 ${b}`);
     if (state.mode === 'challenge') startTimer();
   }
 
@@ -942,10 +991,11 @@ button{font-family:inherit;font-weight:inherit;color:inherit;cursor:pointer;bord
     W: 0, H: 0, raf: 0, last: 0, active: false, tok: 0,
     dist: 0, speed: 8, px: 0, lean: 0, dir: 0, target: null,
     keys: { l: false, r: false }, gates: [], jumpT: 0, fallT: 0,
-    fish: [], fishT: 0, energy: 0, goal: null, gulpT: 0
+    fish: [], fishT: 0, goal: null, gulpT: 0, logs: [], freezeT: 0
   };
   const FISH_FLY = 1.6;     // 물고기가 옆에서 튀어나와 길 위에 떨어지기까지 걸리는 시간(초)
-  const FISH_ENERGY = 25;   // 물고기 한 마리 = 에너지 25 (4마리면 가득)
+  const FISH_BONUS = 20;    // 물고기 한 마리 = 보너스 점수
+  const FREEZE = 1.0;       // 통나무를 밟으면 이만큼(초) 꽁꽁 얼어서 못 움직여요
 
   // 음원 끝 약 5초가 무음이라, 소리가 끝나는 지점에서 곡 처음으로 바로 돌아가요
   const BGM_START = 0.23, BGM_END = 175.8;
@@ -979,12 +1029,11 @@ button{font-family:inherit;font-weight:inherit;color:inherit;cursor:pointer;bord
     show('#run');
     resizeRun();
     Object.assign(run, { active: true, dist: 0, px: 0, lean: 0, dir: 0, target: null, gates: [], jumpT: 0, fallT: 0, stage: 0, banner: null,
-      fish: [], fishT: 2.5, energy: 0, goal: null, gulpT: 0 });
-    renderEnergy();
+      fish: [], fishT: 5, goal: null, gulpT: 0, logs: [], freezeT: 0 });
     run.keys.l = run.keys.r = false;
     run.tok++;
     if (state.sound) { bgm.currentTime = BGM_START; bgm.play().catch(() => {}); }
-    $('#runMsg').textContent = '◀ ▶ 로 움직여서 정답 허들로 가자! 🐟 물고기도 받아먹어요!';
+    $('#runMsg').textContent = '◀ ▶ 로 정답 허들로! 🪵 통나무는 피하고 🐟 물고기는 냠냠!';
     nextRunQuestion();
     run.last = performance.now();
     cancelAnimationFrame(run.raf);
@@ -1008,12 +1057,11 @@ button{font-family:inherit;font-weight:inherit;color:inherit;cursor:pointer;bord
     if (stage !== run.stage || state.i === 0) {
       run.stage = stage;
       run.banner = { text: stage === 0 ? '스테이지 1 출발! 🐧' : `스테이지 ${stage + 1}! 더 빨라져요 🚀`, t: 1.8 };
-      if (stage > 0) $('#runMsg').textContent = '◀ ▶ 로 정답 허들로! 🐟 물고기도 받아먹어요!';
+      if (stage > 0) $('#runMsg').textContent = '◀ ▶ 로 정답 허들로! 🪵 통나무는 피하고 🐟 물고기는 냠냠!';
     }
     $('#runProgressText').textContent = `스테이지 ${stage + 1} / ${RUN_STAGES}  ·  ${state.i + 1} / ${state.total}`;
     run.speed = Z_SPAWN / STAGE_TIME[stage];
     run.gates.push({ z: Z_SPAWN, vals: makeChoices(a, b, 3), ans: a * b, done: false, pick: -1, ok: false });
-    speak(`${a} 곱하기 ${b}`);
   }
 
   function judgeGate(gate) {
@@ -1047,6 +1095,8 @@ button{font-family:inherit;font-weight:inherit;color:inherit;cursor:pointer;bord
       $('#runMsg').textContent = `앗! ${a} × ${b} = ${ans} 이야!`;
       delay = 1700;
     }
+    const goalNext = (state.i + 1) % PER_STAGE === 0 || state.i + 1 >= state.total;
+    if (state.lives > 0 && !goalNext) maybeLog(delay / 1000);
     const tok = run.tok;
     setTimeout(() => {
       if (tok !== run.tok) return;
@@ -1057,12 +1107,7 @@ button{font-family:inherit;font-weight:inherit;color:inherit;cursor:pointer;bord
     }, delay);
   }
 
-  /* ---------- 물고기 에너지 ---------- */
-  function renderEnergy(full) {
-    $('#energyFill').style.width = run.energy + '%';
-    if (full) animate($('#runEnergy'), 'full');
-  }
-
+  /* ---------- 물고기 ---------- */
   function spawnFish() {
     const zStart = run.speed * FISH_FLY;
     // 허들과 같은 때에 떨어지지 않게 해요
@@ -1070,7 +1115,7 @@ button{font-family:inherit;font-weight:inherit;color:inherit;cursor:pointer;bord
     if (clash) { run.fishT = 0.4; return; }
     const side = Math.random() < 0.5 ? -1 : 1;
     run.fish.push({ z: zStart, z0: zStart, x0: side * 1.35, x1: pick(LANE_X) + (Math.random() - 0.5) * 0.2, done: false, caught: false, hue: pick(['#60a5fa', '#fb923c', '#f472b6']) });
-    run.fishT = 2.2 + Math.random() * 1.8;
+    run.fishT = 6 + Math.random() * 4;   // 6~10초에 한 번
   }
 
   function fishPos(fs) {
@@ -1084,30 +1129,36 @@ button{font-family:inherit;font-weight:inherit;color:inherit;cursor:pointer;bord
     const g = geo(), p = proj(g, run.px, 0), r = canvas.getBoundingClientRect();
     const sx = r.left + p.x, sy = r.top + p.y - g.R * 0.35;
     sfx.pop(); tone(990, 0.08, 'triangle', 0.05, 0.12);
-    floatAt(sx, sy, '🐟 냠!');
-    run.energy = Math.min(100, run.energy + FISH_ENERGY);
-    if (run.energy >= 100) {
-      run.energy = 0;
-      renderEnergy(true);
-      if (state.lives < LIVES) {
-        state.lives++;
-        renderHearts();
-        $('#runMsg').textContent = '🐟 에너지 가득! ❤️ 하트가 하나 돌아왔어요!';
-      } else {
-        bumpScore(30);
-        $('#runMsg').textContent = '🐟 에너지 가득! 보너스 +30점!';
-      }
-      sfx.correct();
-      burstAt(sx, sy);
-    } else {
-      renderEnergy();
-    }
+    floatAt(sx, sy, '🐟 냠! +' + FISH_BONUS);
+    bumpScore(FISH_BONUS);
+  }
+
+  /* ---------- 통나무: 밟으면 1초 동안 꽁꽁 ---------- */
+  // 허들을 지나면 가끔 다음 허들 전에 통나무가 굴러와요.
+  // 다음 허들까지 1.5초 넘게 남는 때에만 놓아서, 얼었다 풀려도 정답 칸으로 갈 수 있어요.
+  function maybeLog(delaySec) {
+    if (Math.random() > (run.stage === 0 ? 0.35 : 0.55)) return;
+    const T = Z_SPAWN / run.speed;
+    const tMin = 0.7, tMax = delaySec + T - 1.5;
+    if (tMax < tMin) return;
+    const ta = tMin + Math.random() * (tMax - tMin);
+    run.logs.push({ z: run.speed * ta, x: pick(LANE_X), done: false, age: 0 });
+  }
+
+  function hitLog() {
+    run.freezeT = FREEZE;
+    run.target = null;
+    tone(180, 0.18, 'square', 0, 0.08); tone(1400, 0.25, 'sine', 0.1, 0.06);
+    const g = geo(), p = proj(g, run.px, 0), r = canvas.getBoundingClientRect();
+    floatAt(r.left + p.x, r.top + p.y - g.R * 0.45, '❄️ 꽁꽁!');
+    $('#runMsg').textContent = '앗, 통나무에 걸려서 꽁꽁 얼었어요! 🪵❄️';
   }
 
   /* ---------- 스테이지 끝 이글루 ---------- */
   function startGoal() {
     run.goal = { z: Math.max(30, run.speed * 3.2), phase: 'approach', t: 0, last: state.i >= state.total };
     run.fish = [];
+    run.logs = [];
     $('#runMsg').textContent = '🏠 저기 이글루가 보여요! 조금만 더!';
   }
 
@@ -1149,7 +1200,7 @@ button{font-family:inherit;font-weight:inherit;color:inherit;cursor:pointer;bord
       if (Math.abs(d) < 0.02) run.target = null;
       else dir = Math.max(-1, Math.min(1, d * 8));
     }
-    if (run.fallT > 0 || (run.goal && run.goal.phase === 'wave')) dir = 0;
+    if (run.fallT > 0 || run.freezeT > 0 || (run.goal && run.goal.phase === 'wave')) dir = 0;
     run.dir = dir;
     run.px = Math.max(-0.82, Math.min(0.82, run.px + dir * (1.9 + run.stage * 0.15) * dt));
     run.lean += (dir * 0.22 - run.lean) * Math.min(1, dt * 10);
@@ -1174,6 +1225,19 @@ button{font-family:inherit;font-weight:inherit;color:inherit;cursor:pointer;bord
     });
     run.fish = run.fish.filter(fs => !fs.caught && fs.z > -CAM * 0.6);
     run.gulpT = Math.max(0, run.gulpT - dt);
+    run.logs.forEach(lg => {
+      lg.z -= run.speed * dt;
+      lg.age += dt;
+      if (!lg.done && lg.z <= 0) {
+        lg.done = true;
+        if (Math.abs(run.px - lg.x) < 0.3 && run.jumpT <= 0) hitLog();
+      }
+    });
+    run.logs = run.logs.filter(lg => lg.z > -CAM * 0.6);
+    if (run.freezeT > 0 && (run.freezeT -= dt) <= 0) {
+      run.freezeT = 0;
+      $('#runMsg').textContent = '휴, 다 녹았어요! 다시 달려요 🐧';
+    }
     if (!run.goal || run.goal.phase === 'approach') run.gates.forEach(gt => {
       gt.z -= run.speed * dt;
       if (!gt.done && gt.z <= 0) judgeGate(gt);
@@ -1253,8 +1317,10 @@ button{font-family:inherit;font-weight:inherit;color:inherit;cursor:pointer;bord
     const near = run.gates.filter(gt => gt.z < 0);
     far.forEach(gt => drawGate(g, gt));
     if (run.goal) drawIgloo(g, run.goal.z, t);
+    run.logs.filter(lg => lg.z >= 0).sort((a, b) => b.z - a.z).forEach(lg => drawLog(g, lg));
     run.fish.filter(fs => fs.z >= 0).forEach(fs => drawFish(g, fs));
     drawPenguin(g, t);
+    run.logs.filter(lg => lg.z < 0).forEach(lg => drawLog(g, lg));
     run.fish.filter(fs => fs.z < 0).forEach(fs => drawFish(g, fs));
     near.forEach(gt => drawGate(g, gt));
     if (run.banner) drawBanner(g, run.banner);
@@ -1345,6 +1411,41 @@ button{font-family:inherit;font-weight:inherit;color:inherit;cursor:pointer;bord
         ctx.beginPath(); ctx.arc(bx.x, bx.y, Math.max(1, L * 0.06), 0, Math.PI * 2); ctx.fill();
       }
     }
+  }
+
+  // 길 위에 가로로 누운 통나무 (한 칸 폭)
+  function drawLog(g, lg) {
+    const half = 0.27, rad = 0.055;
+    const L = proj(g, lg.x - half, lg.z, rad), Rr = proj(g, lg.x + half, lg.z, rad), base = proj(g, lg.x, lg.z);
+    if (base.s <= 0) return;
+    const r = Math.max(2, rad * g.R * base.s);
+    ctx.save();
+    ctx.globalAlpha = Math.min(1, lg.age / 0.25);
+    // 그림자
+    ctx.fillStyle = 'rgba(91,127,166,.22)';
+    ctx.beginPath(); ctx.ellipse(base.x, base.y, (Rr.x - L.x) / 2 + r, r * 0.45, 0, 0, Math.PI * 2); ctx.fill();
+    // 몸통
+    const wood = ctx.createLinearGradient(0, L.y - r, 0, L.y + r);
+    wood.addColorStop(0, '#c98a4b'); wood.addColorStop(0.5, '#a0622d'); wood.addColorStop(1, '#7a4520');
+    ctx.fillStyle = wood;
+    ctx.beginPath(); ctx.rect(L.x, L.y - r, Rr.x - L.x, r * 2); ctx.fill();
+    // 나뭇결
+    ctx.strokeStyle = 'rgba(90,50,20,.45)'; ctx.lineWidth = Math.max(1, r * 0.12);
+    for (let k = 1; k <= 3; k++) {
+      const x = L.x + (Rr.x - L.x) * (k / 4);
+      ctx.beginPath(); ctx.moveTo(x - r * 0.4, L.y - r * 0.5); ctx.lineTo(x + r * 0.4, L.y - r * 0.3); ctx.stroke();
+    }
+    // 양쪽 나이테
+    [L.x, Rr.x].forEach(x => {
+      ctx.fillStyle = '#e8b980';
+      ctx.beginPath(); ctx.ellipse(x, L.y, r * 0.55, r, 0, 0, Math.PI * 2); ctx.fill();
+      ctx.strokeStyle = '#a0622d'; ctx.lineWidth = Math.max(1, r * 0.1);
+      ctx.beginPath(); ctx.ellipse(x, L.y, r * 0.3, r * 0.55, 0, 0, Math.PI * 2); ctx.stroke();
+    });
+    // 쌓인 눈
+    ctx.fillStyle = '#ffffff';
+    ctx.beginPath(); ctx.ellipse((L.x + Rr.x) / 2, L.y - r * 0.85, (Rr.x - L.x) * 0.3, r * 0.3, 0, 0, Math.PI * 2); ctx.fill();
+    ctx.restore();
   }
 
   // 스테이지 끝의 이글루 (얼음 벽돌 + 입구 + 깃발)
@@ -1444,7 +1545,7 @@ button{font-family:inherit;font-weight:inherit;color:inherit;cursor:pointer;bord
       ctx.restore();
       return;
     }
-    let y = p.y, rot = run.lean + Math.sin(t * 14) * 0.09;
+    let y = p.y, rot = run.lean + (run.freezeT > 0 ? 0 : Math.sin(t * 14) * 0.09);
     if (run.jumpT > 0) y -= Math.sin(Math.PI * (1 - run.jumpT / 0.55)) * g.R * 0.28;
     if (run.fallT > 0) {
       const k = 1 - run.fallT / 0.9;
@@ -1459,6 +1560,20 @@ button{font-family:inherit;font-weight:inherit;color:inherit;cursor:pointer;bord
       ctx.font = `${size * 0.4}px sans-serif`;
       ctx.textAlign = 'center'; ctx.textBaseline = 'bottom';
       ctx.fillText('💫', 0, -size * 1.02);
+    }
+    if (run.freezeT > 0) {
+      // 얼음 덩어리에 갇혀 덜덜 떨어요
+      ctx.translate(Math.sin(t * 60) * size * 0.015, 0);
+      ctx.globalAlpha = Math.min(1, run.freezeT / 0.25);
+      roundRect(-size * 0.42, -size * 1.05, size * 0.84, size * 1.08, size * 0.14);
+      ctx.fillStyle = 'rgba(186,230,253,.55)'; ctx.fill();
+      ctx.lineWidth = Math.max(2, size * 0.03); ctx.strokeStyle = 'rgba(255,255,255,.95)'; ctx.stroke();
+      ctx.strokeStyle = 'rgba(255,255,255,.8)'; ctx.lineWidth = Math.max(1.5, size * 0.025);
+      ctx.beginPath(); ctx.moveTo(-size * 0.3, -size * 0.9); ctx.lineTo(-size * 0.18, -size * 0.6); ctx.stroke();
+      ctx.font = `${size * 0.3}px sans-serif`;
+      ctx.textAlign = 'center'; ctx.textBaseline = 'bottom';
+      ctx.fillText('❄️', -size * 0.38, -size * 0.95);
+      ctx.fillText('❄️', size * 0.4, -size * 0.7);
     }
     ctx.restore();
   }
@@ -1522,11 +1637,14 @@ button{font-family:inherit;font-weight:inherit;color:inherit;cursor:pointer;bord
   $('#runQuit').onclick = () => {
     stopRun();
     if ('speechSynthesis' in window) speechSynthesis.cancel();
-    show('#home');
+    renderArcade(); show('#arcade');
   };
 
   $('#againBtn').onclick = startGame;
-  $('#homeBtn').onclick = () => { show('#home'); renderStickers(); };
+  $('#homeBtn').onclick = () => {
+    renderStickers();
+    if (ARCADE.some(g => g.mode === state.mode)) { renderArcade(); show('#arcade'); } else show('#home');
+  };
   $('#quitBtn').onclick = () => {
     stopTimer(); state.locked = true;
     if ('speechSynthesis' in window) speechSynthesis.cancel();

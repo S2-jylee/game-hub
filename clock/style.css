@@ -831,3 +831,8 @@ html { background: #fff6e8; }
 .level-grid-btn.book-tile.read { animation: none; box-shadow: none; }
 @keyframes bookpulse { 50% { transform: translateY(-3px) scale(1.04); } }
 .level-grid { padding: 10px 10px 14px; }
+
+/* 가이드북 건너뛰기 */
+.book-foot { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
+.book-skip { background: #fff4cc; color: var(--peach-dark); }
+.book-skip:hover { background: #ffe9a3; }

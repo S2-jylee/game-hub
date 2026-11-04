@@ -1036,3 +1036,8 @@ body.drag-out .program { border-color: var(--red); background: #fff1f1; }
 .sc-garden span { animation: sc-wiggle 3s ease-in-out infinite; animation-delay: var(--d); transform-origin: 50% 100%; }
 @keyframes sc-wiggle { 50% { transform: rotate(8deg); } }
 .feedback:not(:empty) { background: rgba(255,255,255,0.9); padding: 6px 18px; border-radius: 999px; }
+
+/* 가이드북 건너뛰기 */
+.book-foot { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
+.book-skip { background: #fff4cc; color: var(--peach-dark); }
+.book-skip:hover { background: #ffe9a3; }

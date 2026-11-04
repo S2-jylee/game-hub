@@ -29,7 +29,8 @@
           '<button type="button" class="gb-arrow gb-next" title="다음 장">▶</button>' +
         "</div>" +
         '<div class="gb-dots"></div>' +
-        '<button type="button" class="gb-close">← 돌아가기</button>' +
+        '<div class="gb-foot"><button type="button" class="gb-close">← 돌아가기</button>' +
+        '<button type="button" class="gb-skip">건너뛰고 바로 시작 ⏭</button></div>' +
       "</div>";
     document.body.appendChild(root);
     pageEl = root.querySelector(".gb-page");
@@ -41,6 +42,7 @@
     prevBtn.addEventListener("click", function () { turn(-1); });
     nextBtn.addEventListener("click", function () { turn(1); });
     root.querySelector(".gb-close").addEventListener("click", function () { close(true); });
+    root.querySelector(".gb-skip").addEventListener("click", start);
     // 손가락으로 옆으로 밀어도 넘어가요
     var sx = null;
     pageEl.addEventListener("pointerdown", function (e) { sx = e.clientX; });
@@ -91,13 +93,17 @@
       (function (k) { d.addEventListener("click", function () { turn(k - index); }); })(i);
       dotsEl.appendChild(d);
     }
-    var start = pageEl.querySelector(".gb-start");
-    if (start) start.addEventListener("click", function () {
-      var o = cur;
-      markRead(o.id);
-      close(false);
-      if (o.onStart) o.onStart();
-    });
+    var startBtn = pageEl.querySelector(".gb-start");
+    if (startBtn) startBtn.addEventListener("click", start);
+  }
+
+  // 마지막 장의 시작 버튼, 또는 건너뛰기: 읽은 걸로 치고 바로 시작해요
+  function start() {
+    var o = cur;
+    if (!o) return;
+    markRead(o.id);
+    close(false);
+    if (o.onStart) o.onStart();
   }
 
   function turn(delta) {
@@ -113,6 +119,7 @@
     cur = opts;
     index = 0;
     titleEl.textContent = "📖 " + opts.title;
+    root.querySelector(".gb-skip").hidden = !opts.onStart;
     root.classList.add("show");
     render(0);
   }

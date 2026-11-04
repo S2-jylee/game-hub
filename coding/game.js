@@ -1186,6 +1186,11 @@
     if (Math.abs(dx) > 50) turnBook(dx < 0 ? 1 : -1);
   });
   document.getElementById("book-close").addEventListener("click", goToLevelSelect);
+  // 건너뛰기: 읽은 걸로 치고 바로 그 스테이지를 시작해요
+  document.getElementById("book-skip").addEventListener("click", function () {
+    state.guideRead[currentCat().id] = true;
+    startStage(book.startLevel);
+  });
 
   // ---- Mode select (놀이 고르기) --------------------------------------------
   function buildModeGrid() {

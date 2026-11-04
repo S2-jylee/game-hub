@@ -143,3 +143,19 @@
 .gb-tile.gb-wide .gb-tile-ico { font-size: 1.8rem; }
 .gb-tile.gb-wide .gb-tile-name { font-size: 1.25rem; }
 @keyframes gb-pulse-wide { 50% { transform: translateY(-2px) scale(1.01); } }
+
+/* 건너뛰기 */
+.gb-foot { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
+.gb-skip {
+  border: none;
+  border-radius: 999px;
+  background: #fff4cc;
+  color: #e67300;
+  font-family: inherit;
+  font-weight: 800;
+  font-size: 0.85rem;
+  padding: 8px 16px;
+  cursor: pointer;
+}
+.gb-skip:hover { background: #ffe9a3; }
+.gb-skip[hidden] { display: none; }
