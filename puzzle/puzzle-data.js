@@ -43,7 +43,16 @@
     { id: "welcomehome", name: "어서오세요, 우리 집", emoji: "🏠", file: "27-left.png", aspect: 0.9167 },
     { id: "snowman", name: "신나는 눈사람 만들기", emoji: "☃️", file: "12-left.png", aspect: 0.8958 },
     { id: "autumncafe", name: "가을 CAFE", emoji: "🍂", file: "17-left.png", aspect: 0.8958 },
-    { id: "snowboard", name: "스노우보드", emoji: "🛹", file: "18-left.png", aspect: 0.8958 }
+    { id: "snowboard", name: "스노우보드", emoji: "🛹", file: "18-left.png", aspect: 0.8958 },
+    { id: "skischool", name: "신나는 스키 학교", emoji: "⛷️", file: "28-left.png", aspect: 0.8957 },
+    { id: "flowerbaby", name: "꽃향기 맡는 아기", emoji: "🌼", file: "29-left.png", aspect: 0.8957 },
+    { id: "waterpark", name: "신나는 워터파크", emoji: "🌊", file: "30-left.png", aspect: 0.8957 },
+    { id: "airplanetrip", name: "두근두근 비행기 여행", emoji: "✈️", file: "31-left.png", aspect: 0.8957 },
+    { id: "snowonsen", name: "눈 내리는 온천", emoji: "♨️", file: "32-left.png", aspect: 0.8957 },
+    { id: "pinkfield", name: "분홍 꽃밭 사진 찍기", emoji: "📸", file: "33-left.png", aspect: 0.8957 },
+    { id: "toyshop", name: "장난감 가게", emoji: "🧸", file: "34-left.png", aspect: 0.8957 },
+    { id: "autumnhike", name: "가을 산행", emoji: "🍁", file: "35-left.png", aspect: 0.8957 },
+    { id: "mukbang", name: "먹방 유튜버", emoji: "🍜", file: "36-left.png", aspect: 0.8957 }
   ];
   var LEVELS = FIND_PICTURES.map(function (p) {
     var href = "assets/find/" + p.file;

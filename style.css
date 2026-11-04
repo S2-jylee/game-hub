@@ -242,8 +242,8 @@ header, main {
   border: none;
 }
 
-/* ---- 모바일: 위 메뉴를 아이콘만 있는 알약 한 줄로 ---- */
-@media (max-width: 720px) {
+/* ---- 모바일·태블릿: 위 메뉴를 아이콘만 있는 알약 한 줄로 (화면 1180px 이하 또는 터치 기기) ---- */
+@media (max-width: 1180px), (hover: none) and (pointer: coarse) {
   .game-nav { gap: 8px; padding: 6px 10px; }
   .nav-home { width: 36px; height: 36px; font-size: 1.05rem; }
   .nav-menu {
