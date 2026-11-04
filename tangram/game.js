@@ -588,6 +588,13 @@
     bringToFront(piece);
     selectPiece(piece);
     var p = svgPoint(evt);
+    // Pressing right on a corner pins the piece there and swings it around
+    // that corner instead of sliding it.
+    var corner = nearestVertexPx(piece, p);
+    if (corner) {
+      startPivotDrag(piece, corner, evt, wasSelected);
+      return;
+    }
     drag = {
       piece: piece,
       startX: p.x, startY: p.y,
@@ -687,19 +694,53 @@
     pivotGroup.style.display = "";
   }
 
+  // World-space corners of a piece at its current pose: every point sits at
+  // centroid + (mirror) * rotate(angle) * (local - localCentroid), matching
+  // updatePieceTransform.
+  function pieceVerticesPx(piece) {
+    var c = pieceCentroidPx(piece);
+    var rad = piece.current.angleDeg * Math.PI / 180;
+    var cs = Math.cos(rad), sn = Math.sin(rad);
+    var lc = piece.localCentroid, s = state.unitScale;
+    return piece.localShape.map(function (v) {
+      var lx = (v[0] - lc[0]) * s, ly = (v[1] - lc[1]) * s;
+      var rx = lx * cs - ly * sn, ry = lx * sn + ly * cs;
+      return { x: c.x + (piece.current.flip ? -rx : rx), y: c.y + ry };
+    });
+  }
+
+  var VERTEX_GRAB = 30; // px around a corner that counts as pressing that corner
+
+  function nearestVertexPx(piece, p) {
+    var best = null, bestD = VERTEX_GRAB;
+    pieceVerticesPx(piece).forEach(function (v) {
+      var d = Math.sqrt((v.x - p.x) * (v.x - p.x) + (v.y - p.y) * (v.y - p.y));
+      if (d <= bestD) { bestD = d; best = v; }
+    });
+    return best;
+  }
+
   function onBoardPointerDown(evt) {
     if (drag || pivotDrag) return;
     if (evt.target.classList && evt.target.classList.contains("piece-poly")) return;
     var piece = state.selectedId ? findPiece(state.selectedId) : null;
     if (!piece) return;
+    var p = svgPoint(evt);
+    startPivotDrag(piece, nearestVertexPx(piece, p) || p, evt, false);
+  }
+
+  // tapRotate: a tap (no swing) still does the usual 45-degree turn, so a
+  // selected piece tapped on its corner behaves like one tapped anywhere else.
+  function startPivotDrag(piece, pivot, evt, tapRotate) {
     evt.preventDefault();
     pivotDrag = {
       piece: piece,
-      pivot: svgPoint(evt),
+      pivot: pivot,
       startCentroid: pieceCentroidPx(piece),
       startAngle: piece.current.angleDeg,
       lastPointerAngle: null,
-      swept: 0
+      swept: 0,
+      tapRotate: tapRotate
     };
     bringToFront(piece);
     boardSvg.setPointerCapture(evt.pointerId);
@@ -757,11 +798,14 @@
     window.removeEventListener("pointercancel", onBoardPointerUp);
     var piece = pivotDrag.piece;
     var turned = Math.abs(pivotDrag.swept) > 1;
+    var tapRotate = pivotDrag.tapRotate;
     pivotDrag = null;
     updatePivotMarker();
     if (turned) {
       trySnap(piece);
       playClick();
+    } else if (tapRotate) {
+      rotateSelected(1);
     }
   }
 
