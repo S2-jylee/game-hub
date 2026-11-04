@@ -205,7 +205,9 @@ button{font-family:inherit;font-weight:inherit;color:inherit;cursor:pointer;bord
 .run-pad.left{left:12px}
 .run-pad.right{right:12px}
 .run-pad.on{background:#fff;transform:scale(.9)}
-#run .run-pad{bottom:auto;top:50%;margin-top:-33px;background:rgba(255,255,255,.22);color:rgba(36,27,58,.45);box-shadow:none}
+#run .run-pad{bottom:6px;width:56px;height:56px;font-size:22px;background:rgba(255,255,255,.22);color:rgba(36,27,58,.45);box-shadow:none}
+#run .run-pad.left{left:auto;right:calc(50% + 6px)}
+#run .run-pad.right{right:auto;left:calc(50% + 6px)}
 #run .run-pad.on{background:rgba(255,255,255,.5);color:rgba(36,27,58,.7);transform:scale(.9)}
 .energy{display:flex;align-items:center;gap:6px;background:#fff;border-radius:18px;padding:6px 12px;flex:1;max-width:200px}
 .energy-ico{font-size:22px}
