@@ -12,6 +12,14 @@
     coding: "coding/index.html",
     spelling: "spelling/index.html"
   };
+  // GitHub Pages(…github.io)에서는 같은 저장소 안의 게임 폴더를 바로 열어요
+  if (/\.github\.io$/.test(location.hostname)) {
+    GAMES.tangram = "tangram/index.html";
+    GAMES.typing = "typing-practice/index.html";
+    GAMES.memory = "memory/index.html";
+    GAMES.puzzle = "puzzle/index.html";
+    GAMES.findhidden = "spot-the-difference/index.html";
+  }
 
   var homeScreen = document.getElementById("home-screen");
   var gameScreen = document.getElementById("game-screen");
