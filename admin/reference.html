@@ -411,12 +411,15 @@
   function extractInfo(level) {
     var srcL = level.drawLeft.toString();
     var srcR = level.drawRight.toString();
-    var mL = srcL.match(/x:\s*([\d.]+)\s*,\s*y:\s*0\s*,\s*width:\s*([\d.]+)\s*,\s*height:\s*480\s*,\s*href:\s*"([^"]+)"/);
+    // 가로로 긴 그림은 위아래가 비어서 y·height도 읽어요
+    var mL = srcL.match(/x:\s*(-?[\d.]+)\s*,\s*y:\s*(-?[\d.]+)\s*,\s*width:\s*([\d.]+)\s*,\s*height:\s*([\d.]+)\s*,\s*href:\s*"([^"]+)"/);
     var mR = srcR.match(/href:\s*"([^"]+)"/);
     return {
       ox: mL ? parseFloat(mL[1]) : 0,
-      ow: mL ? parseFloat(mL[2]) : 480,
-      hrefLeft: mL ? mL[3] : "",
+      oy: mL ? parseFloat(mL[2]) : 0,
+      ow: mL ? parseFloat(mL[3]) : 480,
+      oh: mL ? parseFloat(mL[4]) : 480,
+      hrefLeft: mL ? mL[5] : "",
       hrefRight: mR ? mR[1] : ""
     };
   }
@@ -440,6 +443,8 @@
     var href = side === "left" ? info.hrefLeft : info.hrefRight;
     var leftPct = (info.ox / 480 * 100).toFixed(3);
     var widthPct = (info.ow / 480 * 100).toFixed(3);
+    var topPct = (info.oy / 480 * 100).toFixed(3);
+    var heightPct = (info.oh / 480 * 100).toFixed(3);
     var areasHtml = "";
     var pinsHtml = diffs.map(function (d, i) {
       var l = (d.x / 480 * 100).toFixed(2);
@@ -454,7 +459,7 @@
     }).join("");
     if (areasHtml) pinsHtml = '<svg class="area-svg" viewBox="0 0 480 480" preserveAspectRatio="none">' + areasHtml + '</svg>' + pinsHtml;
     var tag = side === "left" ? "왼쪽" : "오른쪽";
-    return '<div class="frame" data-level="' + id + '"><div class="panel"><img src="../spot-the-difference/' + href + '" alt="" style="left:' + leftPct + '%;width:' + widthPct + '%;"></div><div class="pins">' + pinsHtml + '</div><div class="candidates" data-level="' + id + '"></div><span class="side-tag">' + tag + '</span></div>';
+    return '<div class="frame" data-level="' + id + '"><div class="panel"><img src="../spot-the-difference/' + href + '" alt="" style="left:' + leftPct + '%;width:' + widthPct + '%;top:' + topPct + '%;height:' + heightPct + '%;"></div><div class="pins">' + pinsHtml + '</div><div class="candidates" data-level="' + id + '"></div><span class="side-tag">' + tag + '</span></div>';
   }
 
   function legendHtml(diffs) {

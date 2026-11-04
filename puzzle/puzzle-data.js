@@ -52,7 +52,19 @@
     { id: "pinkfield", name: "분홍 꽃밭 사진 찍기", emoji: "📸", file: "33-left.png", aspect: 0.8957 },
     { id: "toyshop", name: "장난감 가게", emoji: "🧸", file: "34-left.png", aspect: 0.8957 },
     { id: "autumnhike", name: "가을 산행", emoji: "🍁", file: "35-left.png", aspect: 0.8957 },
-    { id: "mukbang", name: "먹방 유튜버", emoji: "🍜", file: "36-left.png", aspect: 0.8957 }
+    { id: "mukbang", name: "먹방 유튜버", emoji: "🍜", file: "36-left.png", aspect: 0.8957 },
+    { id: "huskywalk", name: "허스키와 눈길 산책", emoji: "🐕", file: "37-left.png", aspect: 0.8958 },
+    { id: "waterfamily", name: "워터파크 가족 나들이", emoji: "🏊", file: "38-left.png", aspect: 0.8958 },
+    { id: "seasidedrive", name: "바닷가 드라이브", emoji: "🚗", file: "39-left.png", aspect: 1.1786 },
+    { id: "tandembike", name: "벚꽃길 2인용 자전거", emoji: "🚲", file: "40-left.png", aspect: 1.1786 },
+    { id: "finishline", name: "결승선 골인", emoji: "🏃", file: "41-left.png", aspect: 0.8958 },
+    { id: "duckboat", name: "오리배 타기", emoji: "🦆", file: "42-left.png", aspect: 0.8958 },
+    { id: "schoolyard", name: "신나는 학교 운동장", emoji: "🏫", file: "43-left.png", aspect: 0.8958 },
+    { id: "sledding", name: "눈썰매 타기", emoji: "🛷", file: "44-left.png", aspect: 0.8958 },
+    { id: "morningbath", name: "머리 말리는 아침", emoji: "💇", file: "45-left.png", aspect: 1.0111 },
+    { id: "taekwondo", name: "태권도 연습", emoji: "🥋", file: "46-left.png", aspect: 0.8958 },
+    { id: "gamenight", name: "가족 게임 시간", emoji: "🎮", file: "47-left.png", aspect: 0.8958 },
+    { id: "supermarket", name: "마트에서 장보기", emoji: "🛒", file: "48-left.png", aspect: 0.8958 }
   ];
   var LEVELS = FIND_PICTURES.map(function (p) {
     var href = "assets/find/" + p.file;
