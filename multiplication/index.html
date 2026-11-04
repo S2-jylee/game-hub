@@ -205,10 +205,10 @@ button{font-family:inherit;font-weight:inherit;color:inherit;cursor:pointer;bord
 .run-pad.left{left:12px}
 .run-pad.right{right:12px}
 .run-pad.on{background:#fff;transform:scale(.9)}
-#run .run-pad{bottom:6px;width:56px;height:56px;font-size:22px;background:rgba(255,255,255,.22);color:rgba(36,27,58,.45);box-shadow:none}
-#run .run-pad.left{left:auto;right:calc(50% + 6px)}
-#run .run-pad.right{right:auto;left:calc(50% + 6px)}
-#run .run-pad.on{background:rgba(255,255,255,.5);color:rgba(36,27,58,.7);transform:scale(.9)}
+#run .run-pad,#catch .run-pad{bottom:6px;width:56px;height:56px;font-size:22px;background:rgba(255,255,255,.22);color:rgba(36,27,58,.45);box-shadow:none}
+#run .run-pad.left,#catch .run-pad.left{left:auto;right:calc(50% + 6px)}
+#run .run-pad.right,#catch .run-pad.right{right:auto;left:calc(50% + 6px)}
+#run .run-pad.on,#catch .run-pad.on{background:rgba(255,255,255,.5);color:rgba(36,27,58,.7);transform:scale(.9)}
 .energy{display:flex;align-items:center;gap:6px;background:#fff;border-radius:18px;padding:6px 12px;flex:1;max-width:200px}
 .energy-ico{font-size:22px}
 .energy-bar{flex:1;height:14px;background:#e1efff;border-radius:10px;overflow:hidden}
@@ -2335,10 +2335,20 @@ button{font-family:inherit;font-weight:inherit;color:inherit;cursor:pointer;bord
     if (e.target.closest('.run-pad') && !cfield.hasPointerCapture(e.pointerId)) return;
     if (e.pointerType === 'mouse' || cfield.hasPointerCapture(e.pointerId)) caim(e);
   });
-  [['#cpadL', 'l'], ['#cpadR', 'r']].forEach(([sel, k]) => {
+  // ◀ ▶ 버튼: 톡 누르면 바구니 한 개만큼, 꾹 누르고 있으면 계속 그쪽으로 가요
+  [['#cpadL', 'l', -1], ['#cpadR', 'r', 1]].forEach(([sel, k, dir]) => {
     const pad = $(sel);
-    pad.addEventListener('pointerdown', e => { e.preventDefault(); pad.setPointerCapture(e.pointerId); cg.keys[k] = true; cg.target = null; });
-    const up = () => { cg.keys[k] = false; };
+    let holdTimer = null;
+    pad.addEventListener('pointerdown', e => {
+      e.preventDefault();
+      try { pad.setPointerCapture(e.pointerId); } catch (err) { /* 이미 끝난 터치 */ }
+      if (!cg.active) return;
+      const g = cgeo(), lo = g.bw / g.W;
+      cg.target = Math.max(lo, Math.min(1 - lo, (cg.target != null ? cg.target : cg.px) + dir * 2 * lo));
+      clearTimeout(holdTimer);
+      holdTimer = setTimeout(() => { cg.keys[k] = true; }, 250);
+    });
+    const up = () => { clearTimeout(holdTimer); cg.keys[k] = false; };
     pad.addEventListener('pointerup', up);
     pad.addEventListener('pointercancel', up);
     pad.addEventListener('lostpointercapture', up);
