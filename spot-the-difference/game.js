@@ -9,13 +9,12 @@
   var MISS_PENALTY = 5;
   var START_HEARTS = 5;
   var START_HINTS = 3;
-  var HINT_DURATION = 2600;
+  var HINT_DURATION = 3600;
   var X_MARK_LIFETIME = 650;
 
   // ---- DOM refs ----------------------------------------------------
   var screens = {
     title: document.getElementById("screen-title"),
-    howto: document.getElementById("screen-howto"),
     game: document.getElementById("screen-game"),
     result: document.getElementById("screen-result")
   };
@@ -237,11 +236,33 @@
       setTimeout(function () { g.parentNode && g.parentNode.removeChild(g); }, 450);
     }, X_MARK_LIFETIME);
   }
+  // 힌트: 하얀 테두리 + 분홍·노랑으로 깜빡이는 표시 + 퍼져 나가는 물결 + 둘레의 반짝이
   function drawHintMark(overlay, d) {
-    var el = d.area
-      ? E(overlay, "polygon", { points: areaPoints(d), class: "hint-mark" })
-      : E(overlay, "circle", { cx: d.x, cy: d.y, r: (d.r || 34) * 0.85, class: "hint-mark" });
-    setTimeout(function () { el.parentNode && el.parentNode.removeChild(el); }, HINT_DURATION);
+    var g = E(overlay, "g", { class: "hint-group" });
+    var cx, cy, R;
+    if (d.area) {
+      var xs = d.area.map(function (p) { return p[0]; }), ys = d.area.map(function (p) { return p[1]; });
+      var x0 = Math.min.apply(null, xs), x1 = Math.max.apply(null, xs), y0 = Math.min.apply(null, ys), y1 = Math.max.apply(null, ys);
+      cx = (x0 + x1) / 2; cy = (y0 + y1) / 2;
+      R = Math.max(18, Math.sqrt((x1 - x0) * (x1 - x0) + (y1 - y0) * (y1 - y0)) / 2);
+      E(g, "polygon", { points: areaPoints(d), class: "hint-halo" });
+      E(g, "polygon", { points: areaPoints(d), class: "hint-mark" });
+    } else {
+      cx = d.x; cy = d.y; R = (d.r || 34) * 0.85;
+      E(g, "circle", { cx: cx, cy: cy, r: R, class: "hint-halo" });
+      E(g, "circle", { cx: cx, cy: cy, r: R, class: "hint-mark" });
+    }
+    for (var k = 0; k < 2; k++) {
+      var ring = E(g, "circle", { cx: cx, cy: cy, r: R, class: "hint-ripple" });
+      ring.style.animationDelay = (k * 0.6) + "s";
+    }
+    for (var s = 0; s < 4; s++) {
+      var a = (s * 90 + 45) * Math.PI / 180, rr = R + 16;
+      var t = E(g, "text", { x: cx + Math.cos(a) * rr, y: cy + Math.sin(a) * rr, class: "hint-sparkle", "text-anchor": "middle", "dominant-baseline": "central" });
+      t.textContent = "✨";
+      t.style.animationDelay = (s * 0.18) + "s";
+    }
+    setTimeout(function () { g.parentNode && g.parentNode.removeChild(g); }, HINT_DURATION);
   }
   function E(parent, tag, attrs) {
     var e = document.createElementNS(SVG_NS, tag);
@@ -582,9 +603,28 @@
   }
 
   // ---- Wire up UI ----------------------------------------------------
-  document.getElementById("btn-start").addEventListener("click", function () { ac(); newGame(); });
-  document.getElementById("btn-howto").addEventListener("click", function () { showScreen("howto"); });
-  document.getElementById("btn-howto-back").addEventListener("click", function () { showScreen("title"); });
+  // ---- 📖 가이드북: 처음 시작할 때 먼저 읽어요 --------------------------------
+  var GUIDE_PAGES = [
+    { icon: "✏️", title: "다른 곳을 콕!",
+      text: "연필로 <b>왼쪽이나 오른쪽 그림, 어디든</b><br>다른 곳을 콕 찍어요." },
+    { icon: "⭕", title: "맞으면 동그라미",
+      text: "정답이면 <b>빨간 색연필 동그라미</b>가 그려져요!" },
+    { icon: "❌", title: "틀리면 엑스",
+      text: "틀리면 <b>엑스 표시</b>가 잠깐 나타났다 사라져요." },
+    { icon: "❤️", title: "하트 5개",
+      text: "에너지는 하트 <b>5개</b>!<br>틀릴 때마다 하나씩 줄어들어요." },
+    { icon: "🧨", title: "심지가 타들어가요",
+      text: "위쪽 심지가 타들어가요. 다 타면 <b>펑!</b> 게임이 끝나요.<br>한 판 클리어하면 <b>+15초</b>, 틀리면 <b>-5초</b>예요." },
+    { icon: "💡", title: "힌트는 3번",
+      text: "힌트는 <b>3번</b>!<br>아직 못 찾은 곳이 반짝반짝 알려줘요." },
+    { icon: "🔒", title: "정답보기는 어른용",
+      text: "<b>정답보기</b>는 어른을 위한 버튼이에요.<br>곱셈 문제를 풀어야 열려요." }
+  ];
+  document.getElementById("btn-start").addEventListener("click", function () {
+    ac();
+    if (GuideBook.isRead("spot")) { newGame(); return; }
+    GuideBook.open({ id: "spot", title: "틀린그림 찾기 가이드북", pages: GUIDE_PAGES, onStart: newGame });
+  });
   document.getElementById("btn-quit").addEventListener("click", quitGame);
   document.getElementById("btn-retry").addEventListener("click", function () { newGame(); });
   document.getElementById("btn-to-title").addEventListener("click", function () { showScreen("title"); });

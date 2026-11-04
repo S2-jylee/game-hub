@@ -9,6 +9,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Jua&family=Gowun+Dodum&family=Nunito:wght@400;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css">
 <link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="guidebook.css">
 </head>
 <body>
 
@@ -39,7 +40,6 @@
     <h1>카드 짝맞추기</h1>
     <p class="subtitle">같은 그림 카드를 찾아 짝을 맞춰요!</p>
     <button id="btn-start" class="btn btn-primary btn-huge">시작하기</button>
-    <button id="btn-howto" class="btn btn-ghost">놀이 방법</button>
   </div>
 </section>
 
@@ -57,20 +57,6 @@
   </div>
 </section>
 
-<!-- 방법 안내 화면 -->
-<section id="screen-howto" class="screen">
-  <div class="card">
-    <h2>놀이 방법</h2>
-    <ul class="howto-list">
-      <li><span class="ico">👉</span><span class="howto-text">카드를 <b>톡 눌러서</b> 뒤집어요.</span></li>
-      <li><span class="ico">🃏</span><span class="howto-text">카드 <b>두 장</b>을 뒤집어서 그림을 확인해요.</span></li>
-      <li><span class="ico">✅</span><span class="howto-text">그림이 <b>같으면</b> 짝이 맞아요! 계속 남아있어요.</span></li>
-      <li><span class="ico">🔄</span><span class="howto-text">다르면 다시 <b>뒤집혀요</b>. 잘 기억해뒀다가 찾아봐요.</span></li>
-      <li><span class="ico">⭐</span><span class="howto-text">모든 짝을 다 찾으면, 얼마나 빨리 잘 찾았는지에 따라 별을 최대 5개까지 받아요!</span></li>
-    </ul>
-    <button id="btn-howto-back" class="btn btn-primary btn-huge">알겠어요!</button>
-  </div>
-</section>
 
 <!-- 스테이지 선택 화면 -->
 <section id="screen-levelselect" class="screen">
@@ -156,6 +142,7 @@
   </div>
 </div>
 
+<script src="guidebook.js"></script>
 <script src="memory-data.js"></script>
 <script src="game.js"></script>
 </body>

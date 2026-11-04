@@ -35,7 +35,6 @@
   var screens = {
     title: document.getElementById("screen-title"),
     user: document.getElementById("screen-user"),
-    howto: document.getElementById("screen-howto"),
     difficulty: document.getElementById("screen-difficulty"),
     levelselect: document.getElementById("screen-levelselect"),
     game: document.getElementById("screen-game"),
@@ -655,10 +654,40 @@
     rankingModal.classList.remove("show", "empty");
   }
 
+  // ---- 📖 가이드북 ----------------------------------------------------------
+  var GUIDE_PAGES = [
+    { icon: "✋", title: "조각을 옮겨요",
+      text: "조각을 <b>손가락으로 끌어서</b><br>그림 위 제자리로 옮겨요." },
+    { icon: "🧲", title: "저절로 착!",
+      text: "제자리 근처에 놓으면<br><b>저절로 착 붙어요</b>." },
+    { icon: "👀", title: "밑그림을 봐요",
+      text: "<b>쉬움</b>에서는 흐릿한 밑그림이,<br>다른 난이도에서는 <b>조각 모양 선</b>이 보여요." },
+    { icon: "⭐", title: "별을 모아요",
+      text: "빨리 맞출수록 별을 더 많이 받아요!<br>최대 <b>5개</b>!" }
+  ];
+  function guideFor(i) {
+    return {
+      id: "puzzle", title: "조각 맞추기 퍼즐 가이드북", pages: GUIDE_PAGES,
+      onStart: function () { startLevel(i); },
+      onClose: buildLevelGrid
+    };
+  }
+
   // ---- Level select ------------------------------------------------------
+  function startLevel(i) {
+    state.totalScore = 0;
+    state.results = [];
+    showScreen("game");
+    loadLevel(i);
+  }
+
   function buildLevelGrid() {
     levelGrid.innerHTML = "";
     var starsMap = loadStars();
+    // 1스테이지 바로 앞의 가이드북 칸: 다 읽으면 아직 별이 없는 첫 그림으로 가요
+    var firstIdx = 0;
+    while (firstIdx < PD.LEVELS.length - 1 && starsMap[PD.LEVELS[firstIdx].id + "_" + state.difficulty]) firstIdx++;
+    levelGrid.appendChild(GuideBook.tile({ id: "puzzle", guide: function () { return guideFor(firstIdx); } }));
     PD.LEVELS.forEach(function (lvl, i) {
       var btn = document.createElement("button");
       btn.className = "level-grid-btn";
@@ -698,10 +727,8 @@
       btn.appendChild(starsEl);
       btn.appendChild(trophy);
       btn.addEventListener("click", function () {
-        state.totalScore = 0;
-        state.results = [];
-        showScreen("game");
-        loadLevel(i);
+        if (!GuideBook.isRead("puzzle")) GuideBook.open(guideFor(i));
+        else startLevel(i);
       });
       levelGrid.appendChild(btn);
     });
@@ -714,8 +741,6 @@
     userNameInput.value = "";
     showScreen("user");
   });
-  document.getElementById("btn-howto").addEventListener("click", function () { showScreen("howto"); });
-  document.getElementById("btn-howto-back").addEventListener("click", function () { showScreen("title"); });
   document.getElementById("btn-diff-back").addEventListener("click", function () { showScreen("title"); });
 
   document.getElementById("btn-user-guest").addEventListener("click", function () {

@@ -3,12 +3,12 @@
 
   // 놀이 종류. step: 나오는 분의 간격 (60 = 정각만, 30 = 30분, 5 = 5분, 1 = 1분)
   var CATEGORIES = [
-    { id: "hour", icon: "🕐", name: "몇 시일까요?", desc: "정각 읽기 · 긴바늘이 12에 있어요", step: 60, color: "pink" },
-    { id: "half", icon: "🕧", name: "몇 시 30분", desc: "30분 읽기 · 긴바늘이 6에 있어요", step: 30, color: "sky" },
-    { id: "five", icon: "🖐️", name: "5분씩 읽기", desc: "긴바늘 숫자 한 칸은 5분", step: 5, color: "mint" },
+    { id: "hour", icon: "🕐", name: "몇 시일까요?", desc: "정각 읽기 · 긴바늘이 12에 있어요", step: 60, color: "pink", guide: "basic" },
+    { id: "half", icon: "🕧", name: "몇 시 30분", desc: "30분 읽기 · 긴바늘이 6에 있어요", step: 30, color: "sky", guide: "basic" },
+    { id: "five", icon: "🖐️", name: "5분씩 읽기", desc: "긴바늘 숫자 한 칸은 5분", step: 5, color: "mint", guide: "basic" },
     { id: "one", icon: "🔍", name: "1분까지 읽기", desc: "작은 눈금 한 칸은 1분", step: 1, color: "peach", guide: "one" },
     { id: "day", icon: "🌙", name: "24시간 읽기", desc: "오후 3시는 15시!", step: 60, color: "lavender", guide: "day" },
-    { id: "full", icon: "🕰️", name: "전체 시간 확인하기", desc: "오전(AM)·오후(PM) 시계를 24시간으로", step: 1, color: "red" }
+    { id: "full", icon: "🕰️", name: "전체 시간 확인하기", desc: "오전(AM)·오후(PM) 시계를 24시간으로", step: 1, color: "red", guide: "day" }
   ];
 
   // 문제 종류
@@ -113,9 +113,24 @@
     });
   });
 
-  // 문제 풀기 전에 읽는 원리 책. 마지막 장(“자, 이제 문제를 풀어볼까?”)은 자동으로 붙어요
+  // 문제 풀기 전에 읽는 가이드북. 마지막 장(“자, 이제 문제를 풀어볼까?”)은 자동으로 붙어요
   //  clock: { h, m, labels(5분… 도움 숫자), ticks: [시작분, 끝분](색칠할 작은 눈금), count(눈금 옆에 분 숫자), badge(24시간의 시), noHands }
   var GUIDES = {
+    basic: {
+      title: "시계 읽는 법",
+      pages: [
+        { title: "바늘이 두 개 있어요", clock: { h: 3, m: 0 },
+          text: "🩷 <b>짧은바늘</b>은 몇 <b>시</b>인지 알려줘요.<br>💙 <b>긴바늘</b>은 몇 <b>분</b>인지 알려줘요." },
+        { title: "긴바늘이 12에 있으면", clock: { h: 3, m: 0 },
+          text: "긴바늘이 <b>12</b>를 가리키면 딱 '<b>몇 시</b>'예요.<br>짧은바늘이 <b>3</b>에 있으니까 <b>3시</b>!" },
+        { title: "숫자 한 칸은 5분", clock: { h: 2, m: 30, labels: true },
+          text: "긴바늘은 숫자 한 칸마다 <b>5분</b>씩 가요.<br>긴바늘이 <b>6</b>에 있으면 <b>30분</b>!<br>짧은바늘은 2와 3 사이에 있으니까 <b>2시 30분</b>이에요." },
+        { title: "바늘을 끌어서 맞춰요", clock: { h: 10, m: 10 },
+          text: "시계를 보고 알맞은 시각을 <b>톡</b> 눌러요.<br>바늘 맞추기 문제에서는 바늘을 <b>끌어서</b> 맞추고 <b>확인</b>을 눌러요." },
+        { title: "듣고, 별 모으기", clock: { h: 9, m: 0 },
+          text: "🔊 스피커를 누르면 문제를 소리로 읽어줘요.<br>한 번에 많이 맞히고 빨리 풀수록<br>⭐ 별을 최대 <b>5개</b>까지 받아요!" }
+      ]
+    },
     one: {
       title: "1분까지 읽는 법",
       pages: [

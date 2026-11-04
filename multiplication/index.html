@@ -182,6 +182,12 @@ button{font-family:inherit;font-weight:inherit;color:inherit;cursor:pointer;bord
 .run-pad.left{left:12px}
 .run-pad.right{right:12px}
 .run-pad.on{background:#fff;transform:scale(.9)}
+.energy{display:flex;align-items:center;gap:6px;background:#fff;border-radius:18px;padding:6px 12px;flex:1;max-width:220px}
+.energy-ico{font-size:22px}
+.energy-bar{flex:1;height:14px;background:#e1efff;border-radius:10px;overflow:hidden}
+#energyFill{height:100%;width:0;border-radius:10px;background:linear-gradient(90deg,#60a5fa,#38bdf8,#7dd3fc);transition:width .3s ease}
+.energy.full{animation:energyFull .7s ease 2}
+@keyframes energyFull{50%{transform:scale(1.12);box-shadow:0 0 0 4px #7dd3fc}}
 
 .balloons{flex:1;width:100%;display:grid;grid-template-columns:repeat(4,1fr);gap:12px;align-items:center;justify-items:center;padding:6px 0 56px;min-height:200px}
 .balloon{--c:#ff7eb6;position:relative;width:min(96px,40vw);aspect-ratio:5/6;
@@ -284,7 +290,6 @@ button{font-family:inherit;font-weight:inherit;color:inherit;cursor:pointer;bord
       <h1>구구단 놀이터</h1>
       <p class="subtitle">풍선을 터뜨리며 구구단을 외워요!</p>
       <button id="introStart" class="btn btn-primary btn-huge">시작하기</button>
-      <button id="introHowto" class="btn btn-ghost">놀이 방법</button>
     </div>
   </section>
 
@@ -302,20 +307,6 @@ button{font-family:inherit;font-weight:inherit;color:inherit;cursor:pointer;bord
     </div>
   </section>
 
-  <!-- 놀이 방법 화면 -->
-  <section id="howto" class="screen center hidden">
-    <div class="card">
-      <h2>놀이 방법</h2>
-      <ul class="howto-list">
-        <li><span class="ico">🔢</span><span class="howto-text">연습하고 싶은 <b>단</b>을 골라요. 여러 개 골라도 돼요.</span></li>
-        <li><span class="ico">🌱</span><span class="howto-text"><b>연습 놀이</b>: 정답 풍선을 터뜨려요. 틀려도 힌트를 보고 다시 골라요.</span></li>
-        <li><span class="ico">⏱️</span><span class="howto-text"><b>도전 놀이</b>: 10초 안에 정답 풍선을! 하트 3개를 다 쓰면 끝나요.</span></li>
-        <li><span class="ico">🐧</span><span class="howto-text"><b>펭귄 달리기</b>: ◀ ▶ 또는 화면을 눌러 펭귄을 정답 허들로 보내요.</span></li>
-        <li><span class="ico">🏅</span><span class="howto-text">별 3개를 받으면 <b>동물 스티커</b>를 모을 수 있어요!</span></li>
-      </ul>
-      <button id="howtoBack" class="btn btn-primary btn-huge">알겠어요!</button>
-    </div>
-  </section>
 
   <!-- 놀이 고르기 화면 -->
   <section id="home" class="screen hidden">
@@ -392,6 +383,9 @@ button{font-family:inherit;font-weight:inherit;color:inherit;cursor:pointer;bord
     <div class="hud">
       <button class="icon-btn" id="runQuit" title="처음으로">🏠</button>
       <div id="runHearts"></div>
+      <div class="energy" id="runEnergy" title="물고기 에너지: 가득 차면 하트가 하나 돌아와요">
+        <span class="energy-ico">🐟</span><div class="energy-bar"><div id="energyFill"></div></div>
+      </div>
       <div class="score" id="runScoreBox">⭐ <span id="runScore">0</span></div>
     </div>
     <div class="bars">
@@ -664,8 +658,6 @@ button{font-family:inherit;font-weight:inherit;color:inherit;cursor:pointer;bord
     $('#userNameInput').value = '';
     show('#user');
   };
-  $('#introHowto').onclick = () => { sfx.click(); show('#howto'); };
-  $('#howtoBack').onclick = () => { sfx.click(); show('#intro'); };
   $('#userNewStart').onclick = submitNewUser;
   $('#userNameInput').addEventListener('keydown', e => { if (e.key === 'Enter') submitNewUser(); });
   $('#userGuest').onclick = () => { sfx.click(); enterAs(null); };
@@ -701,7 +693,7 @@ button{font-family:inherit;font-weight:inherit;color:inherit;cursor:pointer;bord
 
   /* ---------- 게임 ---------- */
   function show(id) {
-    ['#intro', '#user', '#howto', '#home', '#game', '#run', '#result'].forEach(s => $(s).classList.toggle('hidden', s !== id));
+    ['#intro', '#user', '#home', '#game', '#run', '#result'].forEach(s => $(s).classList.toggle('hidden', s !== id));
   }
 
   function buildQuestions() {
@@ -949,8 +941,11 @@ button{font-family:inherit;font-weight:inherit;color:inherit;cursor:pointer;bord
   const run = {
     W: 0, H: 0, raf: 0, last: 0, active: false, tok: 0,
     dist: 0, speed: 8, px: 0, lean: 0, dir: 0, target: null,
-    keys: { l: false, r: false }, gates: [], jumpT: 0, fallT: 0
+    keys: { l: false, r: false }, gates: [], jumpT: 0, fallT: 0,
+    fish: [], fishT: 0, energy: 0, goal: null, gulpT: 0
   };
+  const FISH_FLY = 1.6;     // 물고기가 옆에서 튀어나와 길 위에 떨어지기까지 걸리는 시간(초)
+  const FISH_ENERGY = 25;   // 물고기 한 마리 = 에너지 25 (4마리면 가득)
 
   // 음원 끝 약 5초가 무음이라, 소리가 끝나는 지점에서 곡 처음으로 바로 돌아가요
   const BGM_START = 0.23, BGM_END = 175.8;
@@ -983,11 +978,13 @@ button{font-family:inherit;font-weight:inherit;color:inherit;cursor:pointer;bord
     renderHearts();
     show('#run');
     resizeRun();
-    Object.assign(run, { active: true, dist: 0, px: 0, lean: 0, dir: 0, target: null, gates: [], jumpT: 0, fallT: 0, stage: 0, banner: null });
+    Object.assign(run, { active: true, dist: 0, px: 0, lean: 0, dir: 0, target: null, gates: [], jumpT: 0, fallT: 0, stage: 0, banner: null,
+      fish: [], fishT: 2.5, energy: 0, goal: null, gulpT: 0 });
+    renderEnergy();
     run.keys.l = run.keys.r = false;
     run.tok++;
     if (state.sound) { bgm.currentTime = BGM_START; bgm.play().catch(() => {}); }
-    $('#runMsg').textContent = '◀ ▶ 로 움직여서 정답 허들로 가자! 🐧';
+    $('#runMsg').textContent = '◀ ▶ 로 움직여서 정답 허들로 가자! 🐟 물고기도 받아먹어요!';
     nextRunQuestion();
     run.last = performance.now();
     cancelAnimationFrame(run.raf);
@@ -1011,7 +1008,7 @@ button{font-family:inherit;font-weight:inherit;color:inherit;cursor:pointer;bord
     if (stage !== run.stage || state.i === 0) {
       run.stage = stage;
       run.banner = { text: stage === 0 ? '스테이지 1 출발! 🐧' : `스테이지 ${stage + 1}! 더 빨라져요 🚀`, t: 1.8 };
-      if (stage > 0) { sfx.win(); $('#runMsg').textContent = `🎉 스테이지 ${stage}${eul(stage)} 통과했어요!`; }
+      if (stage > 0) $('#runMsg').textContent = '◀ ▶ 로 정답 허들로! 🐟 물고기도 받아먹어요!';
     }
     $('#runProgressText').textContent = `스테이지 ${stage + 1} / ${RUN_STAGES}  ·  ${state.i + 1} / ${state.total}`;
     run.speed = Z_SPAWN / STAGE_TIME[stage];
@@ -1051,7 +1048,92 @@ button{font-family:inherit;font-weight:inherit;color:inherit;cursor:pointer;bord
       delay = 1700;
     }
     const tok = run.tok;
-    setTimeout(() => { if (tok !== run.tok) return; state.i++; nextRunQuestion(); }, delay);
+    setTimeout(() => {
+      if (tok !== run.tok) return;
+      state.i++;
+      // 스테이지 마지막 문제를 지나면 이글루까지 달려가요
+      if (state.lives > 0 && state.i % PER_STAGE === 0) startGoal();
+      else nextRunQuestion();
+    }, delay);
+  }
+
+  /* ---------- 물고기 에너지 ---------- */
+  function renderEnergy(full) {
+    $('#energyFill').style.width = run.energy + '%';
+    if (full) animate($('#runEnergy'), 'full');
+  }
+
+  function spawnFish() {
+    const zStart = run.speed * FISH_FLY;
+    // 허들과 같은 때에 떨어지지 않게 해요
+    const clash = run.gates.some(gt => !gt.done && Math.abs(gt.z - zStart) < run.speed * 0.9);
+    if (clash) { run.fishT = 0.4; return; }
+    const side = Math.random() < 0.5 ? -1 : 1;
+    run.fish.push({ z: zStart, z0: zStart, x0: side * 1.35, x1: pick(LANE_X) + (Math.random() - 0.5) * 0.2, done: false, caught: false, hue: pick(['#60a5fa', '#fb923c', '#f472b6']) });
+    run.fishT = 2.2 + Math.random() * 1.8;
+  }
+
+  function fishPos(fs) {
+    const p = Math.min(1, Math.max(0, 1 - fs.z / fs.z0));
+    return { x: fs.x0 + (fs.x1 - fs.x0) * p, h: Math.sin(Math.PI * p) * 0.55 + 0.18 * p, p };
+  }
+
+  function catchFish(fs) {
+    fs.caught = true;
+    run.gulpT = 0.35;
+    const g = geo(), p = proj(g, run.px, 0), r = canvas.getBoundingClientRect();
+    const sx = r.left + p.x, sy = r.top + p.y - g.R * 0.35;
+    sfx.pop(); tone(990, 0.08, 'triangle', 0.05, 0.12);
+    floatAt(sx, sy, '🐟 냠!');
+    run.energy = Math.min(100, run.energy + FISH_ENERGY);
+    if (run.energy >= 100) {
+      run.energy = 0;
+      renderEnergy(true);
+      if (state.lives < LIVES) {
+        state.lives++;
+        renderHearts();
+        $('#runMsg').textContent = '🐟 에너지 가득! ❤️ 하트가 하나 돌아왔어요!';
+      } else {
+        bumpScore(30);
+        $('#runMsg').textContent = '🐟 에너지 가득! 보너스 +30점!';
+      }
+      sfx.correct();
+      burstAt(sx, sy);
+    } else {
+      renderEnergy();
+    }
+  }
+
+  /* ---------- 스테이지 끝 이글루 ---------- */
+  function startGoal() {
+    run.goal = { z: Math.max(30, run.speed * 3.2), phase: 'approach', t: 0, last: state.i >= state.total };
+    run.fish = [];
+    $('#runMsg').textContent = '🏠 저기 이글루가 보여요! 조금만 더!';
+  }
+
+  function updateGoal(dt) {
+    const gl = run.goal;
+    gl.t += dt;
+    if (gl.phase === 'approach') {
+      gl.z -= run.speed * dt;
+      run.dist += run.speed * dt;
+      run.target = 0;
+      if (gl.z <= 4.2) {
+        gl.z = 4.2; gl.phase = 'wave'; gl.t = 0;
+        const stage = state.i / PER_STAGE;
+        sfx.win();
+        const g = geo(), p = proj(g, 0, 0), r = canvas.getBoundingClientRect();
+        burstAt(r.left + p.x, r.top + p.y - g.R * 0.4);
+        if (gl.last) { confetti(30); speak('도착! 다 해냈어요!'); }
+        else speak('도착!');
+        $('#runMsg').textContent = gl.last ? '🎉 마지막 이글루 도착! 다 해냈어요!' : `🏠 이글루 도착! 스테이지 ${stage}${eul(stage)} 통과했어요!`;
+        run.banner = { text: gl.last ? '🎉 모든 스테이지 도착!' : `🏠 스테이지 ${stage} 도착!`, t: 1.8 };
+      }
+    } else if (gl.t > (gl.last ? 3.2 : 2.6)) {
+      run.goal = null;
+      if (gl.last) finish();
+      else nextRunQuestion();
+    }
   }
 
   function runFrame(now) {
@@ -1067,16 +1149,32 @@ button{font-family:inherit;font-weight:inherit;color:inherit;cursor:pointer;bord
       if (Math.abs(d) < 0.02) run.target = null;
       else dir = Math.max(-1, Math.min(1, d * 8));
     }
-    if (run.fallT > 0) dir = 0;
+    if (run.fallT > 0 || (run.goal && run.goal.phase === 'wave')) dir = 0;
     run.dir = dir;
     run.px = Math.max(-0.82, Math.min(0.82, run.px + dir * (1.9 + run.stage * 0.15) * dt));
     run.lean += (dir * 0.22 - run.lean) * Math.min(1, dt * 10);
     $('#padL').classList.toggle('on', dir < -0.1);
     $('#padR').classList.toggle('on', dir > 0.1);
 
-    // 앞으로 달리기
-    run.dist += run.speed * dt;
-    run.gates.forEach(gt => {
+    if (run.goal) {
+      updateGoal(dt);
+      if (!run.active) return;
+    } else {
+      // 앞으로 달리기
+      run.dist += run.speed * dt;
+      // 옆에서 물고기가 튀어나와요
+      if ((run.fishT -= dt) <= 0) spawnFish();
+    }
+    run.fish.forEach(fs => {
+      fs.z -= run.speed * dt;
+      if (!fs.done && fs.z <= 0) {
+        fs.done = true;
+        if (Math.abs(run.px - fs.x1) < 0.3) catchFish(fs);
+      }
+    });
+    run.fish = run.fish.filter(fs => !fs.caught && fs.z > -CAM * 0.6);
+    run.gulpT = Math.max(0, run.gulpT - dt);
+    if (!run.goal || run.goal.phase === 'approach') run.gates.forEach(gt => {
       gt.z -= run.speed * dt;
       if (!gt.done && gt.z <= 0) judgeGate(gt);
     });
@@ -1154,7 +1252,10 @@ button{font-family:inherit;font-weight:inherit;color:inherit;cursor:pointer;bord
     const far = run.gates.filter(gt => gt.z >= 0).sort((a, b) => b.z - a.z);
     const near = run.gates.filter(gt => gt.z < 0);
     far.forEach(gt => drawGate(g, gt));
+    if (run.goal) drawIgloo(g, run.goal.z, t);
+    run.fish.filter(fs => fs.z >= 0).forEach(fs => drawFish(g, fs));
     drawPenguin(g, t);
+    run.fish.filter(fs => fs.z < 0).forEach(fs => drawFish(g, fs));
     near.forEach(gt => drawGate(g, gt));
     if (run.banner) drawBanner(g, run.banner);
   }
@@ -1210,9 +1311,139 @@ button{font-family:inherit;font-weight:inherit;color:inherit;cursor:pointer;bord
     ctx.restore();
   }
 
+  // 옆에서 튀어나오는 물고기 (그림자 + 몸통 + 꼬리 + 눈)
+  function drawFish(g, fs) {
+    const { x, h, p: k } = fishPos(fs);
+    const base = proj(g, x, fs.z), p = proj(g, x, fs.z, h);
+    if (base.s <= 0) return;
+    const L = g.R * 0.27 * p.s;
+    ctx.save();
+    ctx.globalAlpha = 0.25 * Math.min(1, k * 3);
+    ctx.fillStyle = '#5b7fa6';
+    ctx.beginPath(); ctx.ellipse(base.x, base.y, L * 0.5, L * 0.13, 0, 0, Math.PI * 2); ctx.fill();
+    ctx.restore();
+    ctx.save();
+    ctx.translate(p.x, p.y);
+    const dirX = fs.x1 > fs.x0 ? 1 : -1;
+    ctx.scale(dirX, 1);
+    ctx.rotate((0.5 - k) * 1.4 + Math.sin(fs.z * 3) * 0.15);
+    ctx.fillStyle = fs.hue;
+    ctx.beginPath(); ctx.moveTo(-L * 0.42, 0); ctx.lineTo(-L * 0.75, -L * 0.24); ctx.lineTo(-L * 0.75, L * 0.24); ctx.closePath(); ctx.fill();
+    ctx.beginPath(); ctx.ellipse(0, 0, L * 0.48, L * 0.24, 0, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = 'rgba(255,255,255,.55)';
+    ctx.beginPath(); ctx.ellipse(L * 0.05, L * 0.08, L * 0.3, L * 0.09, 0, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = '#fff';
+    ctx.beginPath(); ctx.arc(L * 0.26, -L * 0.05, L * 0.08, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = '#1f1b2e';
+    ctx.beginPath(); ctx.arc(L * 0.28, -L * 0.05, L * 0.04, 0, Math.PI * 2); ctx.fill();
+    ctx.restore();
+    // 물방울
+    if (k < 0.35) {
+      ctx.fillStyle = 'rgba(125,211,252,.8)';
+      for (let d = 0; d < 3; d++) {
+        const bx = proj(g, fs.x0 + (fs.x1 - fs.x0) * k * 0.6 - dirX * 0.06 * d, fs.z + d * 0.6, h * 0.6);
+        ctx.beginPath(); ctx.arc(bx.x, bx.y, Math.max(1, L * 0.06), 0, Math.PI * 2); ctx.fill();
+      }
+    }
+  }
+
+  // 스테이지 끝의 이글루 (얼음 벽돌 + 입구 + 깃발)
+  function drawIgloo(g, z, t) {
+    const b = proj(g, 0, z), W = g.R * 1.1 * b.s, H = W * 0.62;
+    ctx.save();
+    ctx.translate(b.x, b.y);
+    ctx.fillStyle = 'rgba(91,127,166,.18)';
+    ctx.beginPath(); ctx.ellipse(0, 0, W * 0.62, H * 0.12, 0, 0, Math.PI * 2); ctx.fill();
+    // 돔
+    const dome = ctx.createLinearGradient(0, -H, 0, 0);
+    dome.addColorStop(0, '#ffffff'); dome.addColorStop(1, '#d9eefe');
+    ctx.fillStyle = dome;
+    ctx.beginPath(); ctx.ellipse(0, 0, W * 0.5, H, 0, Math.PI, 0); ctx.closePath(); ctx.fill();
+    ctx.strokeStyle = '#9fd0f5'; ctx.lineWidth = Math.max(1, W * 0.012);
+    ctx.stroke();
+    // 얼음 벽돌 줄
+    ctx.save();
+    ctx.beginPath(); ctx.ellipse(0, 0, W * 0.5, H, 0, Math.PI, 0); ctx.clip();
+    for (let r = 1; r <= 3; r++) {
+      const y = -H * r / 4;
+      ctx.beginPath(); ctx.moveTo(-W, y); ctx.lineTo(W, y); ctx.stroke();
+      for (let c = -4; c <= 4; c++) {
+        const x = (c + (r % 2) * 0.5) * W * 0.18;
+        ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x, y + H / 4); ctx.stroke();
+      }
+    }
+    ctx.restore();
+    // 입구
+    ctx.fillStyle = '#ffffff';
+    ctx.beginPath(); ctx.ellipse(0, 0, W * 0.2, H * 0.5, 0, Math.PI, 0); ctx.closePath(); ctx.fill(); ctx.stroke();
+    ctx.fillStyle = '#3b4a6b';
+    ctx.beginPath(); ctx.ellipse(0, 0, W * 0.13, H * 0.37, 0, Math.PI, 0); ctx.closePath(); ctx.fill();
+    // 깃발
+    const fx = W * 0.05, top = -H * 1.45;
+    ctx.strokeStyle = '#6b5f86'; ctx.lineWidth = Math.max(1, W * 0.015);
+    ctx.beginPath(); ctx.moveTo(fx, -H * 0.98); ctx.lineTo(fx, top); ctx.stroke();
+    const wave = Math.sin(t * 6) * W * 0.03;
+    ctx.fillStyle = '#ff5d73';
+    ctx.beginPath(); ctx.moveTo(fx, top); ctx.lineTo(fx + W * 0.24, top + H * 0.1 + wave); ctx.lineTo(fx, top + H * 0.22); ctx.closePath(); ctx.fill();
+    ctx.restore();
+  }
+
+  // 앞에서 본 펭귄: 웃으면서 날개를 흔들어요 (발 밑 가운데가 0,0)
+  function drawPenguinFront(s, t) {
+    const waveA = -1.9 + Math.sin(t * 9) * 0.45;
+    // 발
+    ctx.fillStyle = '#ff9f43';
+    [-1, 1].forEach(side => { ctx.beginPath(); ctx.ellipse(side * s * 0.14, -s * 0.03, s * 0.12, s * 0.05, 0, 0, Math.PI * 2); ctx.fill(); });
+    // 날개: 왼쪽은 몸에 붙이고, 오른쪽은 번쩍 들어 흔들어요
+    ctx.fillStyle = '#1f1b2e';
+    [[-1, 0.12], [1, waveA]].forEach(([side, rot]) => {
+      ctx.save();
+      ctx.translate(side * s * 0.25, -s * 0.58);
+      ctx.rotate(rot);
+      ctx.beginPath();
+      ctx.moveTo(0, -s * 0.06);
+      ctx.quadraticCurveTo(side * s * 0.26, s * 0.02, side * s * 0.34, s * 0.3);
+      ctx.quadraticCurveTo(side * s * 0.14, s * 0.18, 0, s * 0.14);
+      ctx.closePath(); ctx.fill();
+      ctx.restore();
+    });
+    // 몸통 + 흰 배
+    ctx.beginPath(); ctx.ellipse(0, -s * 0.4, s * 0.31, s * 0.38, 0, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = '#ffffff';
+    ctx.beginPath(); ctx.ellipse(0, -s * 0.34, s * 0.21, s * 0.29, 0, 0, Math.PI * 2); ctx.fill();
+    // 머리 + 얼굴
+    ctx.fillStyle = '#1f1b2e';
+    ctx.beginPath(); ctx.arc(0, -s * 0.74, s * 0.23, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = '#ffffff';
+    ctx.beginPath(); ctx.ellipse(-s * 0.08, -s * 0.73, s * 0.09, s * 0.11, 0, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.ellipse(s * 0.08, -s * 0.73, s * 0.09, s * 0.11, 0, 0, Math.PI * 2); ctx.fill();
+    // 웃는 눈 ^ ^
+    ctx.strokeStyle = '#1f1b2e'; ctx.lineWidth = Math.max(1.5, s * 0.025); ctx.lineCap = 'round';
+    [-1, 1].forEach(side => {
+      ctx.beginPath(); ctx.arc(side * s * 0.08, -s * 0.74, s * 0.04, Math.PI * 1.1, Math.PI * 1.9); ctx.stroke();
+    });
+    // 볼
+    ctx.fillStyle = 'rgba(255,120,150,.6)';
+    [-1, 1].forEach(side => { ctx.beginPath(); ctx.ellipse(side * s * 0.13, -s * 0.66, s * 0.04, s * 0.025, 0, 0, Math.PI * 2); ctx.fill(); });
+    // 웃는 입(부리)
+    ctx.fillStyle = '#ff9f43';
+    ctx.beginPath(); ctx.moveTo(-s * 0.055, -s * 0.67); ctx.quadraticCurveTo(0, -s * 0.6, s * 0.055, -s * 0.67); ctx.quadraticCurveTo(0, -s * 0.7, -s * 0.055, -s * 0.67); ctx.fill();
+    ctx.strokeStyle = '#e67300'; ctx.lineWidth = Math.max(1, s * 0.015);
+    ctx.beginPath(); ctx.moveTo(-s * 0.05, -s * 0.665); ctx.quadraticCurveTo(0, -s * 0.625, s * 0.05, -s * 0.665); ctx.stroke();
+  }
+
   function drawPenguin(g, t) {
     const p = proj(g, run.px, 0);
     const size = Math.min(g.R * 0.42, (g.gy - g.hy) * 0.5);
+    if (run.goal && run.goal.phase === 'wave') {
+      // 이글루 앞에서 돌아서서 콩콩 뛰며 손 흔들기
+      const hop = Math.abs(Math.sin(run.goal.t * 5)) * g.R * 0.05;
+      ctx.save();
+      ctx.translate(p.x, p.y - hop);
+      drawPenguinFront(size, t);
+      ctx.restore();
+      return;
+    }
     let y = p.y, rot = run.lean + Math.sin(t * 14) * 0.09;
     if (run.jumpT > 0) y -= Math.sin(Math.PI * (1 - run.jumpT / 0.55)) * g.R * 0.28;
     if (run.fallT > 0) {
@@ -1222,6 +1453,7 @@ button{font-family:inherit;font-weight:inherit;color:inherit;cursor:pointer;bord
     ctx.save();
     ctx.translate(p.x, y);
     ctx.rotate(rot * 0.7);
+    if (run.gulpT > 0) ctx.scale(1 + run.gulpT * 0.35, 1 - run.gulpT * 0.15);
     drawPenguinBack(size, t);
     if (run.fallT > 0) {
       ctx.font = `${size * 0.4}px sans-serif`;

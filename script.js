@@ -8,7 +8,8 @@
     puzzle: "https://puzzle-lyart-one.vercel.app",
     findhidden: "https://find-hidden-picture.vercel.app",
     multiplication: "multiplication/index.html",
-    clock: "clock/index.html"
+    clock: "clock/index.html",
+    coding: "coding/index.html"
   };
 
   var homeScreen = document.getElementById("home-screen");

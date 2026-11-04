@@ -33,7 +33,6 @@
   var screens = {
     title: document.getElementById("screen-title"),
     user: document.getElementById("screen-user"),
-    howto: document.getElementById("screen-howto"),
     difficulty: document.getElementById("screen-difficulty"),
     levelselect: document.getElementById("screen-levelselect"),
     game: document.getElementById("screen-game"),
@@ -974,10 +973,38 @@
     showScreen("result");
   }
 
+  // ---- 📖 가이드북 ----------------------------------------------------------
+  var GUIDE_PAGES = [
+    { icon: "✋", title: "조각을 옮겨요",
+      text: "조각을 <b>손가락으로 끌어서</b><br>회색 모양 위에 놓아요." },
+    { icon: "🔄", title: "조각을 돌려요",
+      text: "조각의 <b>뾰족한 꼭짓점</b>을 꾹 누른 채 <b>빙글 돌리면</b><br>그 꼭짓점을 중심으로 방향이 바뀌어요.<br>고른 조각을 <b>한 번 더 톡</b> 누르거나 돌리기 버튼을 눌러도 돌아가요." },
+    { icon: "🧲", title: "착 달라붙어요",
+      text: "맞는 자리 가까이 가져가면<br><b>착 달라붙어요!</b>" },
+    { icon: "✅", title: "다 놓았으면 완료!",
+      text: "모양을 다 채웠다고 생각되면<br><b>완료</b> 버튼을 눌러요." }
+  ];
+  function guideFor(i) {
+    return {
+      id: "tangram", title: "탱그램 칠교놀이 가이드북", pages: GUIDE_PAGES,
+      onStart: function () { startLevel(i); },
+      onClose: buildLevelGrid
+    };
+  }
+
   // ---- Level select ------------------------------------------------------
+  function startLevel(i) {
+    showScreen("game");
+    loadLevel(i);
+  }
+
   function buildLevelGrid() {
     levelGrid.innerHTML = "";
     var clearedMap = loadCleared();
+    // 1스테이지 바로 앞의 가이드북 칸: 다 읽으면 아직 못 깬 첫 스테이지로 가요
+    var firstIdx = 0;
+    while (firstIdx < TD.LEVELS.length - 1 && clearedMap[TD.LEVELS[firstIdx].id]) firstIdx++;
+    levelGrid.appendChild(GuideBook.tile({ id: "tangram", guide: function () { return guideFor(firstIdx); } }));
     TD.LEVELS.forEach(function (lvl, i) {
       var btn = document.createElement("button");
       btn.className = "level-grid-btn";
@@ -1008,8 +1035,8 @@
         btn.appendChild(lockEl);
       } else {
         btn.addEventListener("click", function () {
-          showScreen("game");
-          loadLevel(i);
+          if (!GuideBook.isRead("tangram")) GuideBook.open(guideFor(i));
+          else startLevel(i);
         });
       }
       levelGrid.appendChild(btn);
@@ -1023,8 +1050,6 @@
     userNameInput.value = "";
     showScreen("user");
   });
-  document.getElementById("btn-howto").addEventListener("click", function () { showScreen("howto"); });
-  document.getElementById("btn-howto-back").addEventListener("click", function () { showScreen("title"); });
   document.getElementById("btn-diff-back").addEventListener("click", function () { showScreen("title"); });
 
   document.getElementById("btn-user-guest").addEventListener("click", function () {

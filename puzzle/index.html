@@ -9,6 +9,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Jua&family=Gowun+Dodum&family=Nunito:wght@400;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css">
 <link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="guidebook.css">
 </head>
 <body>
 
@@ -38,7 +39,6 @@
     <h1>조각 맞추기 퍼즐</h1>
     <p class="subtitle">조각을 끌어서 그림을 완성해요!</p>
     <button id="btn-start" class="btn btn-primary btn-huge">시작하기</button>
-    <button id="btn-howto" class="btn btn-ghost">놀이 방법</button>
   </div>
 </section>
 
@@ -56,19 +56,6 @@
   </div>
 </section>
 
-<!-- 방법 안내 화면 -->
-<section id="screen-howto" class="screen">
-  <div class="card">
-    <h2>놀이 방법</h2>
-    <ul class="howto-list">
-      <li><span class="ico">✋</span><span class="howto-text">조각을 <b>손가락으로 끌어서</b> 그림 위 제자리로 옮겨요.</span></li>
-      <li><span class="ico">🧲</span><span class="howto-text">제자리 근처에 놓으면 <b>저절로 착 붙어요</b>.</span></li>
-      <li><span class="ico">👀</span><span class="howto-text"><b>쉬움</b>에서는 흐릿한 밑그림이, 다른 난이도에서는 <b>조각 모양 선</b>이 보여요.</span></li>
-      <li><span class="ico">⭐</span><span class="howto-text">빨리 맞출수록 별을 더 많이 받아요! 최대 5개!</span></li>
-    </ul>
-    <button id="btn-howto-back" class="btn btn-primary btn-huge">알겠어요!</button>
-  </div>
-</section>
 
 <!-- 난이도 선택 화면 -->
 <section id="screen-difficulty" class="screen">
@@ -197,6 +184,7 @@
   </div>
 </div>
 
+<script src="guidebook.js"></script>
 <script src="puzzle-data.js"></script>
 <script src="game.js"></script>
 </body>

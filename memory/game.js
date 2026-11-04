@@ -9,7 +9,6 @@
   var screens = {
     title: document.getElementById("screen-title"),
     user: document.getElementById("screen-user"),
-    howto: document.getElementById("screen-howto"),
     levelselect: document.getElementById("screen-levelselect"),
     game: document.getElementById("screen-game"),
     result: document.getElementById("screen-result")
@@ -451,10 +450,42 @@
     table.innerHTML = rows.join("");
   }
 
+  // ---- 📖 가이드북 ----------------------------------------------------------
+  var GUIDE_PAGES = [
+    { icon: "👉", title: "카드를 뒤집어요",
+      text: "카드를 <b>톡 눌러서</b> 뒤집어요." },
+    { icon: "🃏", title: "두 장을 비교해요",
+      text: "카드 <b>두 장</b>을 뒤집어서 그림을 확인해요." },
+    { icon: "✅", title: "같으면 짝!",
+      text: "그림이 <b>같으면</b> 짝이 맞아요!<br>맞힌 카드는 계속 남아 있어요." },
+    { icon: "🔄", title: "다르면 다시 뒤집혀요",
+      text: "그림이 다르면 다시 <b>뒤집혀요</b>.<br>어디에 무슨 그림이 있었는지 잘 기억해 뒀다가 찾아봐요." },
+    { icon: "⭐", title: "별을 모아요",
+      text: "모든 짝을 다 찾으면, 얼마나 빨리 잘 찾았는지에 따라<br>별을 최대 <b>5개</b>까지 받아요!" }
+  ];
+  function guideFor(i) {
+    return {
+      id: "memory", title: "카드 짝맞추기 가이드북", pages: GUIDE_PAGES,
+      onStart: function () { startLevel(i); },
+      onClose: buildLevelGrid
+    };
+  }
+
   // ---- Stage select ------------------------------------------------------
+  function startLevel(i) {
+    state.totalScore = 0;
+    state.results = [];
+    showScreen("game");
+    loadLevel(i);
+  }
+
   function buildLevelGrid() {
     levelGrid.innerHTML = "";
     var starsMap = loadStars();
+    // 1스테이지 바로 앞의 가이드북 칸: 다 읽으면 아직 별이 없는 첫 스테이지로 가요
+    var firstIdx = 0;
+    while (firstIdx < MD.LEVELS.length - 1 && starsMap[MD.LEVELS[firstIdx].id]) firstIdx++;
+    levelGrid.appendChild(GuideBook.tile({ id: "memory", guide: function () { return guideFor(firstIdx); } }));
     MD.LEVELS.forEach(function (lvl, i) {
       var btn = document.createElement("button");
       btn.className = "level-grid-btn";
@@ -495,10 +526,8 @@
         trophy.style.display = "none";
       } else {
         btn.addEventListener("click", function () {
-          state.totalScore = 0;
-          state.results = [];
-          showScreen("game");
-          loadLevel(i);
+          if (!GuideBook.isRead("memory")) GuideBook.open(guideFor(i));
+          else startLevel(i);
         });
       }
       levelGrid.appendChild(btn);
@@ -512,8 +541,6 @@
     userNameInput.value = "";
     showScreen("user");
   });
-  document.getElementById("btn-howto").addEventListener("click", function () { showScreen("howto"); });
-  document.getElementById("btn-howto-back").addEventListener("click", function () { showScreen("title"); });
 
   document.getElementById("btn-user-guest").addEventListener("click", function () {
     currentUser = null;

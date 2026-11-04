@@ -692,7 +692,7 @@ h1 { font-family: "CookieRun", "Jua", sans-serif; font-size: 2.6rem; margin: 6px
 .ampm-badge.pm { background: #efe5ff; color: var(--lavender-dark); }
 .mode-red { background: var(--red); }
 
-/* ---- 원리 책 ---- */
+/* ---- 가이드북 ---- */
 .book {
   width: 94%;
   max-width: 940px;
@@ -819,7 +819,7 @@ html { background: #fff6e8; }
 @keyframes sc-sway { 50% { transform: rotate(-8deg) translateY(-4px); } }
 .sc-twinkle { color: #ffe27a; }
 
-/* 1단계 앞의 원리 책 칸 */
+/* 1단계 앞의 가이드북 칸 */
 .level-grid-btn.book-tile {
   background: linear-gradient(135deg, var(--pink), var(--lavender));
   box-shadow: 0 0 0 4px #fff, 0 0 0 7px var(--pink);

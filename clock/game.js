@@ -11,7 +11,6 @@
   var screens = {
     title: document.getElementById("screen-title"),
     user: document.getElementById("screen-user"),
-    howto: document.getElementById("screen-howto"),
     mode: document.getElementById("screen-mode"),
     book: document.getElementById("screen-book"),
     levelselect: document.getElementById("screen-levelselect"),
@@ -375,7 +374,7 @@
     setTime: null,    // 바늘 맞추기: 지금 바늘이 가리키는 시각
     stageStartTime: 0,
     timerHandle: null,
-    guideRead: {},    // 이번에 원리 책을 다 읽은 놀이 (다시 들어오면 바로 문제부터)
+    guideRead: {},    // 이번에 가이드북을 다 읽은 놀이 (다시 들어오면 바로 문제부터)
     token: 0          // 나가거나 다시 시작하면 바뀌어서, 기다리던 다음 문제 예약을 무효로 만들어요
   };
 
@@ -929,7 +928,7 @@
     table.innerHTML = rows.join("");
   }
 
-  // ---- 원리 책 ----------------------------------------------------------------
+  // ---- 가이드북 ----------------------------------------------------------------
   var book = { pages: [], index: 0, startLevel: 0 };
   var bookPageEl = document.getElementById("book-page");
   var bookPrev = document.getElementById("book-prev");
@@ -1107,13 +1106,13 @@
     levelSelectTitle.textContent = cat.icon + " " + cat.name;
     levelGrid.innerHTML = "";
     var starsMap = loadStars();
-    // 원리 책이 있는 놀이는 1단계 바로 앞에 큰 책 칸을 둬요. 읽고 나면 1단계로 이어져요
+    // 1단계 바로 앞에 큰 가이드북 칸을 둬요. 읽고 나면 1단계로 이어져요
     if (cat.guide) {
       var read = !!state.guideRead[cat.id];
       var bookBtn = document.createElement("button");
       bookBtn.type = "button";
       bookBtn.className = "level-grid-btn book-tile" + (read ? " read" : "");
-      bookBtn.innerHTML = '<div class="lvl-num">📖</div><div class="lvl-name">원리 책</div>' +
+      bookBtn.innerHTML = '<div class="lvl-num">📖</div><div class="lvl-name">가이드북</div>' +
         '<div class="lvl-stars">' + (read ? "✔ 다 읽었어요" : "먼저 읽어요!") + "</div>";
       bookBtn.addEventListener("click", function () { openBook(0); });
       levelGrid.appendChild(bookBtn);
@@ -1174,8 +1173,6 @@
     userNameInput.value = "";
     showScreen("user");
   });
-  document.getElementById("btn-howto").addEventListener("click", function () { showScreen("howto"); });
-  document.getElementById("btn-howto-back").addEventListener("click", function () { showScreen("title"); });
 
   document.getElementById("btn-user-guest").addEventListener("click", function () {
     currentUser = null;

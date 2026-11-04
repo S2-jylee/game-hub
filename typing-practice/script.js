@@ -1813,8 +1813,6 @@ document.getElementById('start-btn').addEventListener('click', () => {
   showStartPage('start-user');
   el.nameInput.focus();
 });
-document.getElementById('howto-btn').addEventListener('click', () => showStartPage('start-howto'));
-document.getElementById('howto-back-btn').addEventListener('click', () => showStartPage('start-title'));
 document.getElementById('user-back-btn').addEventListener('click', () => showStartPage('start-title'));
 
 // ===================== 초기화 =====================

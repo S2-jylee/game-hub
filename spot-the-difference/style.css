@@ -451,13 +451,35 @@ h1 { font-family: "CookieRun", "Jua", sans-serif; font-size: 2.6rem; margin: 6px
 }
 .mark-x.fading { opacity: 0; }
 
+.hint-group { pointer-events: none; }
+.hint-halo { fill: none; stroke: #fff; stroke-width: 11; opacity: 0.95; }
 .hint-mark {
-  fill: rgba(255, 212, 0, 0.35);
-  stroke: var(--yellow-dark);
-  stroke-width: 3;
-  animation: hint-blink 0.55s ease-in-out infinite alternate;
+  fill: rgba(255, 230, 0, 0.45);
+  stroke: #ff2d95;
+  stroke-width: 5;
+  stroke-linejoin: round;
+  animation: hint-blink 0.45s ease-in-out infinite alternate;
 }
-@keyframes hint-blink { from { opacity: 0.25; } to { opacity: 0.9; } }
+@keyframes hint-blink {
+  from { fill: rgba(255, 230, 0, 0.25); stroke: #ff2d95; }
+  to { fill: rgba(255, 45, 149, 0.4); stroke: #ffd400; }
+}
+.hint-ripple {
+  fill: none;
+  stroke: #ff2d95;
+  stroke-width: 4;
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: hint-ripple 1.2s ease-out infinite backwards;
+}
+@keyframes hint-ripple { from { transform: scale(1); opacity: 0.9; } to { transform: scale(2.1); opacity: 0; } }
+.hint-sparkle {
+  font-size: 28px;
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: hint-twinkle 0.7s ease-in-out infinite alternate backwards;
+}
+@keyframes hint-twinkle { from { transform: scale(0.5) rotate(-20deg); opacity: 0.3; } to { transform: scale(1.25) rotate(20deg); opacity: 1; } }
 
 .answer-mark {
   fill: rgba(162, 89, 255, 0.22);
