@@ -181,7 +181,7 @@
         { icon: "🍎", title: "그림을 보고 단어를 떠올려요", text: "위에 나온 <b>그림</b>과 <b>뜻</b>을 보고 어떤 영어 단어인지 생각해요.<br>🔊 를 누르면 단어를 읽어줘요." },
         { icon: "🚂", title: "기차를 움직여요", text: "<b>방향키(← ↑ → ↓)</b>를 누르면 기차가 그쪽으로 칙칙폭폭 달려요.<br>태블릿은 화면을 <b>밀거나</b> 방향 버튼을 눌러요." },
         { icon: "🔤", title: "글자를 순서대로 먹어요", text: "단어의 <b>첫 글자부터 차례대로</b> 먹어요.<br>맞는 글자를 먹으면 <b>기차 칸</b>이 하나씩 늘어나요!<br>예) a → p → p → l → e" },
-        { icon: "⚠️", title: "조심해요!", text: "<b>틀린 글자</b>를 먹거나 <b>벽</b>에 부딪히면 ❤️ 하트가 하나 줄어요.<br>부딪히면 기차가 멈추니까, 다른 방향키를 눌러 다시 출발해요." },
+        { icon: "⚠️", title: "조심해요!", text: "<b>틀린 글자</b>를 먹거나 <b>벽</b>, 기차에 붙인 <b>알파벳 칸</b>에 부딪히면 ❤️ 하트가 하나 줄어요.<br>부딪히면 기차가 멈추니까, 다른 방향키를 눌러 다시 출발해요." },
         { icon: "🏆", title: "단어 8개에 도전!", text: "한 판에 단어 <b>8개</b>를 완성해요.<br>한 번도 안 틀리고 완성하면 <b>보너스 점수</b>! 하트 3개를 다 쓰면 끝나요." }
       ],
       startText: "자, 기차 출발해 볼까?",
@@ -313,8 +313,13 @@
   }
 
   /* ---------- 조작 ---------- */
-  // 기차는 자기 칸 위를 지나가도 괜찮아요 (구석에 갇히지 않게). 벽에 부딪힐 때만 멈춰요.
+  // 벽이나, 기차에 붙인 알파벳 칸에 머리가 부딪히면 멈추고 하트가 하나 줄어요.
   function isWall(x, y) { return x < 0 || y < 0 || x >= COLS || y >= ROWS; }
+  // 머리가 (x, y)로 갈 때 부딪히는 기차 칸이 있나요? (한 칸 가면 꼬리는 비켜나요)
+  function hitsCar(x, y, grow) {
+    var body = grow ? G.snake.slice(1) : G.snake.slice(1, -1);
+    return body.some(function (s) { return s.x === x && s.y === y; });
+  }
   function input(d) {
     if (!G.active || G.freezeT > 0 || !DIRS[d]) return;
     if (!G.moving) {
@@ -322,6 +327,7 @@
       var h = G.snake[0], nx = h.x + DIRS[d][0], ny = h.y + DIRS[d][1], back = G.snake[1];
       if (isWall(nx, ny)) { sfx.no(); msg("그쪽은 벽이에요! 다른 방향을 눌러요"); return; }
       if (back && back.x === nx && back.y === ny) { sfx.no(); msg("기차는 뒤로 갈 수 없어요! 다른 방향을 눌러요"); return; }
+      if (hitsCar(nx, ny, false)) { sfx.no(); msg("그쪽은 기차 칸이 있어요! 다른 방향을 눌러요"); return; }
       G.dir = d; G.queue = []; G.moving = true; G.acc = G.level.step; // 다음 프레임에 바로 한 칸
       if (G.idx === 0 && G.cars.length === 0) msg("칙칙폭폭! 🚂 \"" + G.word.ko + "\" 의 첫 글자를 먹어요");
       return;
@@ -342,6 +348,7 @@
     if (isWall(nx, ny)) { crash(); return; }
     var lt = letterAt(nx, ny);
     var grow = !!lt && lt.ch === G.word.en[G.idx];
+    if (hitsCar(nx, ny, grow)) { crash(true); return; }
     var old = G.snake;
     G.snake = [{ x: nx, y: ny }].concat(grow ? old : old.slice(0, -1));
     G.prev = G.snake.map(function (s, i) { return old[Math.min(i, old.length - 1)]; });
@@ -396,14 +403,14 @@
       : "앗, '" + lt.ch + "' 는 \"" + G.word.ko + "\" 에 없는 글자예요!");
   }
 
-  function crash() {
+  function crash(car) {
     sfx.bump();
     G.moving = false; G.queue = []; G.acc = 0;
     G.prev = G.snake.slice();
     G.crashT = 0.6;
     G.freezeT = 0.4;   // 부딪히자마자 또 부딪히지 않게 잠깐 쉬어요
     if (loseLife()) return;
-    msg("쿵! 벽에 부딪혔어요 💫 다른 방향키를 눌러 다시 출발해요");
+    msg(car ? "쿵! 기차 칸에 부딪혔어요 💫 다른 방향키를 눌러 다시 출발해요" : "쿵! 벽에 부딪혔어요 💫 다른 방향키를 눌러 다시 출발해요");
   }
 
   function wordDone() {

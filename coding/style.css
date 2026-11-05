@@ -1041,3 +1041,4 @@ body.drag-out .program { border-color: var(--red); background: #fff1f1; }
 .book-foot { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
 .book-skip { background: #fff4cc; color: var(--peach-dark); }
 .book-skip:hover { background: #ffe9a3; }
+.code-limit.over { background: #ffe4e4; color: var(--red-dark); box-shadow: 0 0 0 2px var(--red); }

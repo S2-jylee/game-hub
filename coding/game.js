@@ -451,11 +451,12 @@
     if (level.limit) {
       codeLimitEl.hidden = false;
       codeLimitEl.textContent = "블록 " + used + " / " + level.limit + "개";
-      codeLimitEl.classList.toggle("full", used >= level.limit);
+      codeLimitEl.classList.toggle("full", used === level.limit);
+      codeLimitEl.classList.toggle("over", used > level.limit);
     } else {
       codeLimitEl.hidden = false;
       codeLimitEl.textContent = "블록 " + used + "개";
-      codeLimitEl.classList.remove("full");
+      codeLimitEl.classList.remove("full", "over");
     }
     hudBlocksVal.textContent = level.limit ? used + " / " + level.limit : used;
     var nowEl = programEl.querySelector(".now, .err");
@@ -469,7 +470,8 @@
     return state.sel.j >= 0 ? it.body[state.sel.j] : it;
   }
   function loopSelected() { var it = selectedItem(); return it && it.body ? it : null; }
-  function atLimit() { var l = currentLevel().limit; return !!l && usedBlocks() >= l; }
+  // 블록 개수 제한은 실행할 때만 확인해요. 만드는 동안에는 자유롭게 넣고 빼고 옮길 수 있어요
+  function overLimit() { var l = currentLevel().limit; return !!l && usedBlocks() > l; }
 
   function selectRef(ref) {
     if (state.running) return;
@@ -494,9 +496,6 @@
       it.c = c;
       state.popRef = state.sel;
       state.sel = null;
-    } else if (atLimit()) {
-      limitWarn();
-      return;
     } else if (it && it.body) {
       it.body.push({ c: c });
       state.popRef = { i: state.sel.i, j: it.body.length - 1 };
@@ -509,7 +508,6 @@
 
   function addLoop() {
     if (state.running) return;
-    if (atLimit()) { limitWarn(); return; }
     if (state.sel && state.sel.j >= 0) state.sel = null;
     var loopIt = loopSelected();
     if (loopIt) {
@@ -524,7 +522,7 @@
 
   function limitWarn() {
     playMiss();
-    say("hint", "블록은 " + currentLevel().limit + "개까지만 쓸 수 있어요. 🔁 반복으로 줄여 봐요!");
+    say("hint", "블록이 " + usedBlocks() + "개예요. " + currentLevel().limit + "개까지만 쓸 수 있어요. 🔁 반복으로 줄여 봐요!");
     animate(codeLimitEl, "err");
   }
 
@@ -561,11 +559,10 @@
   function renderPalette() {
     paletteEl.innerHTML = "";
     var level = currentLevel();
-    var replacing = selectedItem() && !selectedItem().body;
     level.cmds.forEach(function (c) {
       var b = blockButton(c);
       b.innerHTML = CD.CMD[c].icon + "<small>" + CD.CMD[c].name + "</small>";
-      b.disabled = state.running || (!replacing && atLimit());
+      b.disabled = state.running;
       b.addEventListener("pointerdown", function (evt) { if (!b.disabled) watchDrag(evt, { item: { c: c } }, b); });
       b.addEventListener("click", function () { if (!dragJustEnded()) addCmd(c); });
       paletteEl.appendChild(b);
@@ -575,7 +572,7 @@
       lb.type = "button";
       lb.className = "blk blk-loop";
       lb.innerHTML = "🔁<small>반복</small>";
-      lb.disabled = state.running || atLimit() || !!loopSelected();
+      lb.disabled = state.running || !!loopSelected();
       lb.addEventListener("pointerdown", function (evt) { if (!lb.disabled) watchDrag(evt, { item: { loop: 2, body: [] } }, lb); });
       lb.addEventListener("click", function () { if (!dragJustEnded()) addLoop(); });
       paletteEl.appendChild(lb);
@@ -709,7 +706,6 @@
     var item;
     if (payload.item) {
       if (!t) { renderProgram(); return; }
-      if (atLimit()) { limitWarn(); renderProgram(); return; }
       item = JSON.parse(JSON.stringify(payload.item));
     } else {
       // 원래 자리에서 빼요
@@ -777,6 +773,7 @@
       say("hint", "먼저 아래 블록을 눌러서 코드를 만들어요!");
       return;
     }
+    if (overLimit()) { limitWarn(); return; }
     var hasEmptyLoop = state.prog.some(function (it) { return it.body && !it.body.length; });
     if (hasEmptyLoop) {
       playMiss();

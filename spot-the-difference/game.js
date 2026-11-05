@@ -6,6 +6,7 @@
   var START_TIME = 120;
   var GAUGE_MAX = 150;
   var CLEAR_BONUS = 15;
+  var FIND_BONUS = 1;     // 다른 곳 하나 찾을 때마다 +1초
   var MISS_PENALTY = 5;
   var START_HEARTS = 5;
   var START_HINTS = 3;
@@ -442,6 +443,7 @@
     drawCircleMark(overlayLeft, d);
     drawCircleMark(overlayRight, d);
     playCorrect();
+    addTime(FIND_BONUS);
     updateProgress();
     if (state.foundCount === state.level.diffs.length) {
       roundClear();
@@ -628,7 +630,7 @@
     { icon: "❤️", title: "하트 5개",
       text: "에너지는 하트 <b>5개</b>!<br>틀릴 때마다 하나씩 줄어들어요." },
     { icon: "🧨", title: "심지가 타들어가요",
-      text: "위쪽 심지가 타들어가요. 다 타면 <b>펑!</b> 게임이 끝나요.<br>한 판 클리어하면 <b>+15초</b>, 틀리면 <b>-5초</b>예요." },
+      text: "위쪽 심지가 타들어가요. 다 타면 <b>펑!</b> 게임이 끝나요.<br>하나 찾을 때마다 <b>+1초</b>, 한 판 클리어하면 <b>+15초</b>, 틀리면 <b>-5초</b>예요." },
     { icon: "💡", title: "힌트는 3번",
       text: "힌트는 <b>3번</b>!<br>아직 못 찾은 곳이 반짝반짝 알려줘요." },
     { icon: "🔒", title: "정답보기는 어른용",
