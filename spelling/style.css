@@ -291,3 +291,5 @@ html, body {
 .hearts { white-space: nowrap; }
 @media (max-width: 480px) { .hearts { font-size: 0.95rem; letter-spacing: -1px; } }
 #btn-quit { white-space: nowrap; flex: none; }
+
+.back-link { display: inline-block; text-decoration: none; margin-top: 4px; }

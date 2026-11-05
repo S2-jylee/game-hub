@@ -10,7 +10,7 @@
     multiplication: "multiplication/index.html",
     clock: "clock/index.html",
     coding: "coding/index.html",
-    spelling: "spelling/index.html"
+    english: "english/index.html"
   };
   // GitHub Pages(…github.io)에서는 같은 저장소 안의 게임 폴더를 바로 열어요
   if (/\.github\.io$/.test(location.hostname)) {
