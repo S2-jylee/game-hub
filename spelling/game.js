@@ -7,7 +7,7 @@
   var GRADES = window.SPELL_GRADES, LEVELS = window.SPELL_LEVELS;
   var grade = GRADES[0];          // 고른 학년
   var COLS = 13, ROWS = 9;        // 맵 칸 수 (세로 화면에서는 판을 시작할 때 9칸 너비로 바꿔요)
-  var LIVES = 3;                  // 한 판 하트 수
+  var LIVES = 5;                  // 한 판 하트 수
   var PER_ROUND = 8;              // 한 판 단어 수
   var COLORS = ["#ff7eb6", "#ffbe0b", "#60a5fa", "#34d399", "#a78bfa", "#ff9f43"];
   var DIRS = { up: [0, -1], down: [0, 1], left: [-1, 0], right: [1, 0] };
@@ -182,7 +182,7 @@
         { icon: "🚂", title: "기차를 움직여요", text: "<b>방향키(← ↑ → ↓)</b>를 누르면 기차가 그쪽으로 칙칙폭폭 달려요.<br>태블릿은 화면을 <b>밀거나</b> 방향 버튼을 눌러요." },
         { icon: "🔤", title: "글자를 순서대로 먹어요", text: "단어의 <b>첫 글자부터 차례대로</b> 먹어요.<br>맞는 글자를 먹으면 <b>기차 칸</b>이 하나씩 늘어나요!<br>예) a → p → p → l → e" },
         { icon: "⚠️", title: "조심해요!", text: "<b>틀린 글자</b>를 먹거나 <b>벽</b>, 기차에 붙인 <b>알파벳 칸</b>에 부딪히면 ❤️ 하트가 하나 줄어요.<br>부딪히면 기차가 멈추니까, 다른 방향키를 눌러 다시 출발해요." },
-        { icon: "🏆", title: "단어 8개에 도전!", text: "한 판에 단어 <b>8개</b>를 완성해요.<br>한 번도 안 틀리고 완성하면 <b>보너스 점수</b>! 하트 3개를 다 쓰면 끝나요." }
+        { icon: "🏆", title: "단어 8개에 도전!", text: "한 판에 단어 <b>8개</b>를 완성해요.<br>한 번도 안 틀리고 완성하면 <b>보너스 점수</b>! 하트 5개를 다 쓰면 끝나요." }
       ],
       startText: "자, 기차 출발해 볼까?",
       startLabel: "출발! 🚂",

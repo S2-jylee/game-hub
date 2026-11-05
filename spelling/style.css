@@ -286,3 +286,8 @@ html, body {
 @media (max-width: 640px) {
   .grade-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
 }
+
+/* 하트 5개가 좁은 화면에서도 한 줄에 */
+.hearts { white-space: nowrap; }
+@media (max-width: 480px) { .hearts { font-size: 0.95rem; letter-spacing: -1px; } }
+#btn-quit { white-space: nowrap; flex: none; }
