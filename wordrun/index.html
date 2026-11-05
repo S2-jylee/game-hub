@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>그림 문 달리기</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Jua&family=Gowun+Dodum&family=Nunito:wght@400;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css">
+<link rel="stylesheet" href="../spelling/style.css">
+<link rel="stylesheet" href="../spelling/guidebook.css">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="scene" aria-hidden="true">
+  <span class="sc-bit" style="--x:6%;--s:34px;--dur:21s;--d:-4s">🐧</span>
+  <span class="sc-bit" style="--x:20%;--s:28px;--dur:25s;--d:-13s">🦁</span>
+  <span class="sc-bit" style="--x:34%;--s:40px;--dur:23s;--d:-8s">a</span>
+  <span class="sc-bit" style="--x:50%;--s:30px;--dur:27s;--d:-17s">🍌</span>
+  <span class="sc-bit" style="--x:64%;--s:36px;--dur:22s;--d:-2s">❄️</span>
+  <span class="sc-bit" style="--x:78%;--s:28px;--dur:26s;--d:-11s">z</span>
+  <span class="sc-bit" style="--x:90%;--s:38px;--dur:24s;--d:-20s">🚪</span>
+</div>
+
+<!-- 타이틀 화면 -->
+<section id="screen-title" class="screen active">
+  <div class="title-card">
+    <div class="title-shapes" aria-hidden="true">
+      <span class="ts ts1">🐧</span>
+      <span class="ts ts2">🦁</span>
+      <span class="ts ts3">🍌</span>
+      <span class="ts ts4">🚪</span>
+    </div>
+    <h1>그림 문 달리기</h1>
+    <p class="subtitle">영어 단어를 보고 맞는 그림 문으로 쌩쌩!</p>
+    <button id="btn-start" class="btn btn-primary btn-huge">시작하기</button>
+    <div><a class="btn btn-ghost back-link" href="../english/index.html">← 영어 놀이</a></div>
+  </div>
+</section>
+
+<!-- 사용자 선택 화면 -->
+<section id="screen-user" class="screen">
+  <div class="card">
+    <h2>누구인가요?</h2>
+    <div id="user-list" class="user-list"></div>
+    <div class="user-new-row">
+      <input id="user-name-input" class="user-name-input" type="text" maxlength="10" placeholder="새 이름을 입력하세요">
+      <button id="btn-user-new" class="btn btn-primary btn-small">시작</button>
+    </div>
+    <button id="btn-user-guest" class="btn btn-ghost">게스트로 시작</button>
+    <button id="btn-user-back" class="btn btn-ghost">처음으로</button>
+  </div>
+</section>
+
+<!-- 학년 고르기 -->
+<section id="screen-grade" class="screen">
+  <div class="card card-wide">
+    <h2>몇 학년이에요? <span class="user-badge diff-tag"></span></h2>
+    <p class="grade-note">학년에 맞는 영어 단어가 나와요 · 1학년은 문이 2개예요</p>
+    <div id="grade-grid" class="grade-grid"></div>
+    <div class="row-buttons">
+      <button id="btn-guide" class="btn btn-ghost">📖 가이드북</button>
+      <button id="btn-grade-back" class="btn btn-ghost">처음으로</button>
+    </div>
+  </div>
+</section>
+
+<!-- 게임 화면 -->
+<section id="screen-game" class="screen">
+  <div class="hud">
+    <button id="btn-quit" class="btn btn-ghost btn-small">← 나가기</button>
+    <div id="hearts" class="hearts"></div>
+    <button id="btn-music" class="btn-round btn-music" type="button" title="배경 음악">🎵</button>
+    <div class="hud-item"><span class="hud-label">문제</span><span id="hud-q" class="hud-value">1 / 15</span></div>
+    <div class="hud-item hud-score" id="hud-score-box"><span class="hud-label">점수</span><span id="hud-score" class="hud-value">0</span></div>
+  </div>
+  <div class="q-card">
+    <div class="q-main">
+      <div id="q-word" class="q-word">Lion</div>
+      <div id="q-sub" class="q-sub">뜻에 맞는 그림 문으로 달려요!</div>
+    </div>
+    <button id="btn-say" class="btn-round" type="button" title="다시 듣기">🔊</button>
+  </div>
+  <div id="game-msg" class="game-msg"></div>
+  <div id="field" class="field">
+    <canvas id="run-canvas"></canvas>
+    <button class="run-pad left" id="pad-l" type="button" aria-label="왼쪽">◀</button>
+    <button class="run-pad right" id="pad-r" type="button" aria-label="오른쪽">▶</button>
+  </div>
+</section>
+
+<!-- 결과 화면 -->
+<section id="screen-result" class="screen">
+  <div class="card">
+    <h2 id="result-title">참 잘했어요!</h2>
+    <div id="result-stars" class="result-stars"></div>
+    <div id="result-text" class="result-text"></div>
+    <div id="result-words" class="result-words"></div>
+    <div class="row-buttons">
+      <button id="btn-again" class="btn btn-primary">🔁 다시 하기</button>
+      <button id="btn-result-grade" class="btn btn-ghost">학년 고르기</button>
+    </div>
+  </div>
+</section>
+
+<script src="../spelling/words-data.js"></script>
+<script src="../spelling/guidebook.js"></script>
+<script src="game.js"></script>
+</body>
+</html>

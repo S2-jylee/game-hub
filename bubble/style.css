@@ -1,0 +1,83 @@
+/* 🎈 알파벳 버블 팝: 스펠링 기차 스타일(../spelling/style.css) 위에 더해요 */
+html, body { background: linear-gradient(#bfe6ff, #fff7fb 75%); }
+.sc-bit { color: #db2777; }
+.title-card h1, .card h2 { color: #db2777; }
+.back-link { display: inline-block; text-decoration: none; margin-top: 4px; }
+
+.grade-note { margin: -4px 0 14px; color: var(--text-soft); font-size: 0.95rem; }
+.grade-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+.grade-btn {
+  display: flex; flex-direction: column; align-items: center; gap: 4px;
+  border: none; border-radius: 22px; padding: 16px 10px 14px; cursor: pointer; font-family: inherit;
+  background: var(--bg); color: var(--text-dark); transition: transform 0.15s ease;
+}
+.grade-btn:hover { transform: translateY(-4px); }
+.grade-btn .gr-emoji { font-size: 2.4rem; line-height: 1; }
+.grade-btn .gr-name { font-family: "CookieRun", "Jua", sans-serif; font-size: 1.4rem; color: var(--c); }
+.grade-btn .gr-desc { font-size: 0.8rem; color: var(--text-soft); }
+@media (max-width: 640px) { .grade-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; } }
+
+/* ---- 게임 ---- */
+#screen-game { justify-content: flex-start; padding: 10px 16px 14px; max-width: 1100px; margin: 0 auto; gap: 8px; }
+#btn-quit { white-space: nowrap; flex: none; }
+.time-box { flex: 1; display: flex; align-items: center; gap: 8px; background: #fff; border-radius: 16px; padding: 6px 12px; box-shadow: 0 2px 8px rgba(36, 27, 58, 0.06); min-width: 0; }
+.time-ico { font-size: 1.2rem; }
+.time-bar { flex: 1; height: 14px; background: #fde7f3; border-radius: 10px; overflow: hidden; }
+#time-fill { height: 100%; width: 100%; border-radius: 10px; background: linear-gradient(90deg, #f472b6, #fb923c); }
+#time-fill.hurry { background: #ef4444; }
+#time-text { font-weight: 800; min-width: 2em; text-align: right; }
+.time-box.plus { animation: bump 0.4s ease; }
+
+.q-card {
+  width: 100%; display: flex; align-items: center; gap: 14px; background: #fff; border-radius: 22px;
+  padding: 8px 18px; box-shadow: var(--shadow);
+}
+.q-card.pop { animation: qpop 0.35s ease; }
+@keyframes qpop { 40% { transform: scale(1.04); } }
+.q-emoji { font-size: 2.6rem; line-height: 1; flex: none; }
+.q-main { flex: 1; min-width: 0; }
+.q-slots { display: flex; gap: 6px; flex-wrap: wrap; }
+.slot {
+  width: 44px; height: 50px; border-radius: 12px; background: #f4f1fb; border-bottom: 4px solid #d9d2ea;
+  display: flex; align-items: center; justify-content: center;
+  font-family: "Nunito", sans-serif; font-weight: 800; font-size: 1.8rem; color: #c4bcd6;
+}
+.slot.done { background: var(--c, #f472b6); color: #fff; border-bottom-color: rgba(0, 0, 0, 0.18); animation: bump 0.35s ease; }
+.slot.next { color: #db2777; border-bottom-color: #f472b6; animation: nextBlink 1s ease-in-out infinite; }
+.q-sub { font-size: 0.9rem; color: var(--text-soft); font-weight: 700; margin-top: 4px; }
+
+/* 풍선이 떠다니는 하늘 */
+.sky {
+  flex: 1; min-height: 0; width: 100%; position: relative; border-radius: 24px; overflow: hidden; touch-action: none;
+  background: linear-gradient(#8fd3ff, #e5f6ff 80%, #c8f0b0 80%, #a7e08a); box-shadow: var(--shadow);
+}
+.cloud { position: absolute; height: 34px; background: rgba(255, 255, 255, 0.9); border-radius: 40px; pointer-events: none; }
+.cloud::before, .cloud::after { content: ""; position: absolute; background: inherit; border-radius: 50%; }
+.cloud::before { width: 52%; height: 150%; top: -70%; left: 14%; }
+.cloud::after { width: 38%; height: 120%; top: -48%; right: 12%; }
+
+.balloon {
+  --c: #ff7eb6; position: absolute; left: 0; top: 0; width: var(--w); height: calc(var(--w) * 1.2);
+  margin: calc(var(--w) * -0.6) 0 0 calc(var(--w) * -0.5);
+  border: none; padding: 0; cursor: pointer; touch-action: none;
+  border-radius: 50% 50% 48% 48% / 55% 55% 45% 45%;
+  background: radial-gradient(circle at 32% 28%, rgba(255, 255, 255, 0.75) 0 9%, transparent 10%), var(--c);
+  box-shadow: inset -10px -12px 0 rgba(0, 0, 0, 0.12);
+  font-family: "Nunito", sans-serif; font-weight: 800; font-size: calc(var(--w) * 0.5); color: #fff;
+  text-shadow: 0 2px 0 rgba(0, 0, 0, 0.15); will-change: transform;
+}
+.balloon span { display: block; pointer-events: none; }
+.balloon::after { content: ""; position: absolute; left: 50%; bottom: -9px; margin-left: -7px; border: 7px solid transparent; border-bottom: 10px solid var(--c); border-top: 0; }
+.balloon::before { content: ""; position: absolute; left: 50%; top: calc(100% + 8px); width: 2px; height: calc(var(--w) * 0.5); background: rgba(59, 45, 92, 0.3); }
+.balloon.wrong { filter: grayscale(0.85) brightness(1.1); }
+.balloon.wrong span { animation: shake 0.45s ease; }
+@keyframes shake { 20%, 60% { transform: translateX(-8px); } 40%, 80% { transform: translateX(8px); } }
+.balloon.hint { box-shadow: 0 0 0 5px #fff, 0 0 0 10px #facc15, inset -10px -12px 0 rgba(0, 0, 0, 0.12); }
+.balloon.pop { pointer-events: none; transition: opacity 0.25s ease; opacity: 0; }
+.pop-bit { position: fixed; pointer-events: none; z-index: 50; font-size: 22px; animation: fly 0.8s ease-out forwards; }
+@keyframes fly { to { transform: translate(var(--x), var(--y)) rotate(var(--r)) scale(0.4); opacity: 0; } }
+
+@media (max-width: 560px) {
+  .slot { width: 34px; height: 40px; font-size: 1.4rem; }
+  .q-emoji { font-size: 2rem; }
+}
