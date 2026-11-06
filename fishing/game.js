@@ -52,6 +52,7 @@
     win() { [523, 659, 784, 1047, 784, 1047].forEach((f, i) => tone(f, 0.18, "triangle", i * 0.1, 0.12)); }
   };
   function speak(text, lang) {
+    if (GuideBook.defer(() => speak(text, lang))) return;   // 방법 팝업이 닫히면 읽어줘요
     if (!SOUND || !("speechSynthesis" in window)) return;
     try {
       speechSynthesis.cancel();
@@ -156,9 +157,10 @@
       startText: "자, 낚시하러 가 볼까?", startLabel: "출발! 🎣", onStart
     };
   }
+  // 게임 화면을 먼저 열고, 그 위에 방법 팝업을 띄워요. '확인'을 누르면 출발 (팝업이 떠 있는 동안은 멈춰 있어요)
   function choose() {
-    if (!GuideBook.isRead(GUIDE_ID)) GuideBook.open(guide(startGame));
-    else startGame();
+    startGame();
+    GuideBook.intro(guide(null), () => $("#btn-quit").click());
   }
   $("#btn-guide").addEventListener("click", () => GuideBook.open(guide(null)));
 
@@ -329,7 +331,7 @@
   /* ---------- 매 프레임 ---------- */
   function frame(now) {
     if (!G.active) return;
-    const dt = Math.min(0.05, (now - G.last) / 1000);
+    const dt = GuideBook.isOpen() ? 0 : Math.min(0.05, (now - G.last) / 1000);
     G.last = now; G.t += dt;
     const W = G.W, H = G.H, R = fishR();
     // 배 움직이기

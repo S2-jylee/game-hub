@@ -202,3 +202,18 @@
 .gb-pop.gb-many .gb-pop-list { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
 .gb-pop.gb-many .gb-pop-list li { margin: 0; }
 @media (max-width: 700px) { .gb-pop.gb-many .gb-pop-list { grid-template-columns: 1fr; } }
+
+/* 위쪽 이모지가 숨쉬듯 커질 때 팝업 폭을 넘어서 가로 스크롤이 생겼다 없어졌다 하지 않게 */
+.gb-pop { overflow-x: hidden; }
+.gb-pop-emoji { display: inline-block; }
+
+/* 레벨 · 학년 · 미션 고르기 화면의 타이틀 위에 늘 있는 '게임 방법' 버튼 */
+.gb-top-row { display: flex; justify-content: center; width: 100%; margin: 0 0 10px; }
+.gb-top-btn {
+  display: inline-flex; align-items: center; gap: 6px; border: none; border-radius: 999px; cursor: pointer;
+  padding: 8px 20px; font-family: inherit; font-weight: 800; font-size: 15px; color: #fff;
+  background: linear-gradient(135deg, #d81b7a, #7c2ce0); box-shadow: 0 4px 12px rgba(124, 44, 224, 0.25);
+  transition: transform 0.12s ease;
+}
+.gb-top-btn:hover { transform: translateY(-2px); }
+.gb-top-btn:active { transform: scale(0.95); }

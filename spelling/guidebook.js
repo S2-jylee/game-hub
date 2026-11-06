@@ -1,7 +1,7 @@
-// 📖 놀이 방법 팝업: 구구단 놀이터의 펭귄 달리기 안내처럼, 게임을 시작할 때마다 한 장짜리 팝업으로 방법을 보여주고
-// '확인'을 누르면 시작해요. 영어 놀이(스펠링 기차 · 징검다리 · 버블 팝 · 꿀벌 · 낚시 · 디펜스 · 바구니 · 펭귄)와
-// 그 구구단 버전이 같이 써요. 틀린그림 찾기(spot-the-difference/)에도 같은 파일을 복사해서 써요 (따로 배포돼서).
-// (탱그램 · 카드 · 퍼즐은 자기 폴더의 예전 가이드북 책을 그대로 써요)
+// 📖 놀이 방법 팝업: 구구단 놀이터의 펭귄 달리기 안내처럼, 게임 화면이 열리면 그 위에 한 장짜리 팝업으로
+// 방법을 보여주고 '확인'을 누르면 시작해요. 팝업이 떠 있는 동안 게임은 멈춰 있어요 (GuideBook.isOpen()).
+// 영어 놀이(스펠링 기차 · 징검다리 · 버블 팝 · 꿀벌 · 낚시 · 디펜스 · 바구니 · 펭귄)와 그 구구단 버전이 같이 써요.
+// 다른 게임들(틀린그림 · 탱그램 · 카드 · 퍼즐 · 시계 · 코딩 · 타자)은 따로 배포돼서 자기 폴더에 같은 파일을 복사해서 써요.
 (function () {
   "use strict";
 
@@ -63,14 +63,38 @@
     markRead(o.id);
     close(false);
     if (o.onStart) o.onStart();
+    var d = deferred;
+    deferred = null;
+    if (d) d();
   }
 
   // opts: { id, title, pages: [{icon, title, text}], startLabel, onStart, onClose }
   function open(opts) {
     if (!root) build();
     cur = opts;
+    deferred = null;
+    // 입력칸에 글자가 들어가지 않게 포커스를 빼 둬요
+    if (document.activeElement && document.activeElement !== document.body && document.activeElement.blur) document.activeElement.blur();
     render();
     root.classList.add("show");
+  }
+
+  // 게임 화면을 연 다음에 불러요: 그 위에 팝업을 띄우고, '확인'을 누를 때까지 게임은 멈춰 있어요.
+  // onBack: '← 돌아가기'(또는 Esc)를 누르면 불러요 (보통 고르기 화면으로 돌아가요)
+  function intro(opts, onBack) {
+    if (!opts.onStart) opts.onStart = function () {};
+    if (onBack) opts.onClose = onBack;
+    open(opts);
+  }
+
+  function isOpen() { return !!(root && root.classList.contains("show")); }
+
+  // 팝업이 떠 있는 동안 나와야 할 일(단어 읽어주기 같은 것)은 '확인'을 누른 뒤로 미뤄요
+  var deferred = null;
+  function defer(fn) {
+    if (!isOpen()) return false;
+    deferred = fn;
+    return true;
   }
 
   function close(byUser) {
@@ -78,6 +102,7 @@
     root.classList.remove("show");
     var o = cur;
     cur = null;
+    if (byUser) deferred = null;
     if (byUser && o && o.onClose) o.onClose();
   }
 
@@ -91,5 +116,5 @@
     return btn;
   }
 
-  window.GuideBook = { open: open, close: close, isRead: isRead, markRead: markRead, tile: tile };
+  window.GuideBook = { open: open, intro: intro, close: close, isOpen: isOpen, defer: defer, isRead: isRead, markRead: markRead, tile: tile };
 })();

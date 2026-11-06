@@ -65,6 +65,7 @@
   };
   // 영어 단어는 영어 목소리로 읽어요 (구구단 기차는 우리말로)
   function speakEn(text) {
+    if (GuideBook.defer(function () { speakEn(text); })) return;   // 방법 팝업이 닫히면 읽어줘요
     if (!("speechSynthesis" in window) || (MATH && !ML.sound)) return;
     try {
       speechSynthesis.cancel();
@@ -212,9 +213,10 @@
       onStart: onStart
     };
   }
+  // 게임 화면을 먼저 열고, 그 위에 방법 팝업을 띄워요. '확인'을 누르면 출발 (팝업이 떠 있는 동안은 멈춰 있어요)
   function chooseLevel(lv) {
-    if (!GuideBook.isRead(GUIDE_ID)) GuideBook.open(guide(function () { startRound(lv); }));
-    else startRound(lv);
+    startRound(lv);
+    GuideBook.intro(guide(null), function () { $("#btn-quit").click(); });
   }
   $("#btn-guide").addEventListener("click", function () { GuideBook.open(guide(null)); });
   $("#btn-grade-guide").addEventListener("click", function () { GuideBook.open(guide(null)); });
@@ -550,7 +552,7 @@
   /* ---------- 매 프레임 ---------- */
   function frame(now) {
     if (!G.active) return;
-    var dt = Math.min(0.05, (now - G.last) / 1000);
+    var dt = GuideBook.isOpen() ? 0 : Math.min(0.05, (now - G.last) / 1000);
     G.last = now; G.t += dt;
 
     if (G.freezeT > 0 && (G.freezeT -= dt) <= 0) {

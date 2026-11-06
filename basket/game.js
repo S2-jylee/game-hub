@@ -52,6 +52,7 @@
     win() { [523, 659, 784, 659, 784, 1047].forEach((f, i) => tone(f, 0.22, 'triangle', i * 0.13)); }
   };
   function say(text, lang) {
+    if (GuideBook.defer(() => say(text, lang))) return;   // 방법 팝업이 닫히면 읽어줘요
     if (!state.sound || !('speechSynthesis' in window)) return;
     try {
       speechSynthesis.cancel();
@@ -161,10 +162,8 @@
       g.appendChild(b);
     });
   }
-  function choose() {
-    if (!GuideBook.isRead(GUIDE_ID)) GuideBook.open(GUIDE(startGame));
-    else startGame();
-  }
+  // 게임 화면을 먼저 열고, 그 위에 방법 팝업을 띄워요 (구구단 놀이터의 펭귄 달리기처럼)
+  function choose() { startGame(); }
   $('#guideBtn').onclick = () => GuideBook.open(GUIDE(null));
 
   // 같은 학년 단어를 섞어서 n개 (모자라면 다시 섞어서 이어 붙여요)
@@ -257,8 +256,11 @@
     cg.last = performance.now();
     cancelAnimationFrame(cg.raf);
     cg.raf = requestAnimationFrame(catchFrame);
+    // 방법 팝업을 띄워요. 확인을 누를 때까지 멈춰 있어요 (구구단 놀이터의 펭귄 달리기처럼)
+    GuideBook.intro(GUIDE(null), () => $('#catchQuit').onclick());
   }
   function stopCatch() {
+    GuideBook.close(false);
     cg.active = false;
     cancelAnimationFrame(cg.raf);
   }
@@ -387,7 +389,7 @@
 
   function catchFrame(now) {
     if (!cg.active) return;
-    const dt = Math.min(0.05, (now - cg.last) / 1000);
+    const dt = GuideBook.isOpen() ? 0 : Math.min(0.05, (now - cg.last) / 1000);
     cg.last = now; cg.t += dt;
     const g = cgeo();
 

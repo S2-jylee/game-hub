@@ -54,6 +54,7 @@
     win: function () { [523, 659, 784, 1047, 784, 1047].forEach(function (f, i) { tone(f, 0.18, "triangle", i * 0.1, 0.12); }); }
   };
   function speakEn(text) {
+    if (GuideBook.defer(function () { speakEn(text); })) return;   // 방법 팝업이 닫히면 읽어줘요
     if (!("speechSynthesis" in window) || (MATH && !ML.sound)) return;
     try {
       speechSynthesis.cancel();
@@ -209,9 +210,10 @@
       onStart: onStart
     };
   }
+  // 게임 화면을 먼저 열고, 그 위에 방법 팝업을 띄워요. '확인'을 누르면 출발 (팝업이 떠 있는 동안은 멈춰 있어요)
   function choose() {
-    if (!GuideBook.isRead(GUIDE_ID)) GuideBook.open(guide(startRound));
-    else startRound();
+    startRound();
+    GuideBook.intro(guide(null), function () { $("#btn-quit").click(); });
   }
   $("#btn-guide").addEventListener("click", function () { GuideBook.open(guide(null)); });
 
@@ -445,7 +447,7 @@
 
   function frame(now) {
     if (!G.active) return;
-    var dt = Math.min(0.05, (now - G.last) / 1000);
+    var dt = GuideBook.isOpen() ? 0 : Math.min(0.05, (now - G.last) / 1000);
     G.last = now;
     G.time -= dt;
     renderTime();

@@ -663,12 +663,9 @@
     { icon: "⭐", title: "별을 모아요",
       text: "빨리 맞출수록 별을 더 많이 받아요!<br>최대 <b>5개</b>!" }
   ];
-  function guideFor(i) {
-    return {
-      id: "puzzle", title: "조각 맞추기 퍼즐 가이드북", pages: GUIDE_PAGES,
-      onStart: function () { startLevel(i); },
-      onClose: buildLevelGrid
-    };
+  // onStart 가 있으면 '확인' 버튼(게임 시작 때), 없으면 '닫기' 버튼(고르기 화면의 📖 게임 방법)
+  function guide(onStart) {
+    return { id: "puzzle", title: "조각 맞추기 퍼즐", icon: "🧩", pages: GUIDE_PAGES, startLabel: "확인", onStart: onStart };
   }
 
   // ---- Level select ------------------------------------------------------
@@ -677,15 +674,13 @@
     state.results = [];
     showScreen("game");
     loadLevel(i);
+    // 게임 화면 위에 방법 팝업을 띄우고, '확인'을 누르면 시간이 0초부터 흘러가요 (구구단 놀이터의 펭귄 달리기처럼)
+    GuideBook.intro(guide(startTimer), function () { stopTimer(); goToLevelSelect(); });
   }
 
   function buildLevelGrid() {
     levelGrid.innerHTML = "";
     var starsMap = loadStars();
-    // 1스테이지 바로 앞의 가이드북 칸: 다 읽으면 아직 별이 없는 첫 그림으로 가요
-    var firstIdx = 0;
-    while (firstIdx < PD.LEVELS.length - 1 && starsMap[PD.LEVELS[firstIdx].id + "_" + state.difficulty]) firstIdx++;
-    levelGrid.appendChild(GuideBook.tile({ id: "puzzle", guide: function () { return guideFor(firstIdx); } }));
     PD.LEVELS.forEach(function (lvl, i) {
       var btn = document.createElement("button");
       btn.className = "level-grid-btn";
@@ -725,14 +720,16 @@
       btn.appendChild(starsEl);
       btn.appendChild(trophy);
       btn.addEventListener("click", function () {
-        if (!GuideBook.isRead("puzzle")) GuideBook.open(guideFor(i));
-        else startLevel(i);
+        startLevel(i);
       });
       levelGrid.appendChild(btn);
     });
   }
 
   // ---- Wire up UI ----------------------------------------------------
+  Array.prototype.forEach.call(document.querySelectorAll(".gb-top-btn"), function (b) {
+    b.addEventListener("click", function () { GuideBook.open(guide(null)); });
+  });
   document.getElementById("btn-start").addEventListener("click", function () {
     ac();
     buildUserList();

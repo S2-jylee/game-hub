@@ -498,3 +498,11 @@ html { background: #fff1f7; }
 
 /* 다른 놀이처럼 고르기 화면 위에 큰 제목 */
 .page-title { margin: 0 0 14px; text-align: center; }
+
+/* 난이도 고르기: 시계 · 코딩 놀이처럼 흰 상자 없이 큰 제목 */
+.menu-plain { width: 94%; max-width: 900px; max-height: 96vh; overflow-y: auto; overflow-x: hidden; text-align: center; padding: 10px 4px 16px; }
+.menu-plain .page-title { display: flex; align-items: center; justify-content: center; gap: 12px; flex-wrap: wrap; margin: 4px 0 6px; }
+.menu-plain .page-title .diff-tag { font-family: "Pretendard", sans-serif; font-size: 1rem; }
+.menu-sub { font-family: "CookieRun", "Jua", sans-serif; font-size: 1.4rem; color: var(--text-soft); margin: 0 0 6px; }
+.menu-plain .btn-ghost { background: rgba(255, 255, 255, 0.85); }
+.menu-plain .btn-ghost:hover { background: #fff; }

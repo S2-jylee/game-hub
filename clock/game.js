@@ -214,6 +214,8 @@
   function playMiss() { beep(260, 0.14, 0, "sawtooth", 0.09); }
 
   function speak(text) {
+    // 가이드북이 게임 화면을 덮고 있는 동안에는 기다렸다가 '시작'을 누르면 읽어줘요
+    if (text && bookIsOpen() && !book.readOnly) { book.pendingSay = text; return; }
     if (!("speechSynthesis" in window)) return;
     try {
       speechSynthesis.cancel();
@@ -982,20 +984,41 @@
     return html + '<div class="pm-cell">낮 12시 = <b>12시</b></div></div>';
   }
 
-  function openBook(levelIndex) {
+  // 가이드북은 게임 화면 위에 팝업으로 떠요 (구구단 놀이터의 펭귄 달리기처럼).
+  // readOnly: 스테이지 고르기 화면의 '📖 게임 방법'으로 열었을 때 (마지막 장에 '닫기')
+  function bookIsOpen() { return screens.book.classList.contains("open"); }
+  function openBook(levelIndex, readOnly) {
     var guide = CD.GUIDES[currentCat().guide];
     book.pages = guide.pages.concat([{ start: true }]);
     book.index = 0;
     book.startLevel = levelIndex;
+    book.readOnly = !!readOnly;
+    book.pendingSay = null;
     document.getElementById("book-title").textContent = "📖 " + guide.title;
-    showScreen("book");
+    document.getElementById("book-close").textContent = readOnly ? "닫기" : "← 스테이지 고르기";
+    document.getElementById("book-skip").hidden = !!readOnly;
+    screens.book.classList.add("open");
     renderBookPage(0);
+  }
+  function closeBook() { screens.book.classList.remove("open"); }
+  // 시작: 팝업을 닫고 시간을 0초부터 재요. 기다리던 소리도 이제 읽어줘요
+  function beginStage() {
+    var say = book.pendingSay;
+    book.pendingSay = null;
+    state.guideRead[currentCat().id] = true;
+    closeBook();
+    startTimer();
+    if (say) speak(say);
   }
 
   function renderBookPage(dir) {
     var page = book.pages[book.index], last = book.pages.length - 1;
     var html;
-    if (page.start) {
+    if (page.start && book.readOnly) {
+      html = '<div class="bp-start-emoji">📖✔️</div>' +
+        '<div class="bp-start-text">다 읽었어요!</div>' +
+        '<button id="book-done" class="btn btn-primary btn-huge" type="button">닫기</button>';
+    } else if (page.start) {
       var lvl = currentCat().stages[book.startLevel];
       html = '<div class="bp-start-emoji">🐰✏️</div>' +
         '<div class="bp-start-text">자, 이제 문제를 풀어볼까?</div>' +
@@ -1033,10 +1056,9 @@
       bookDots.appendChild(d);
     });
     var startBtn = document.getElementById("book-start");
-    if (startBtn) startBtn.addEventListener("click", function () {
-      state.guideRead[currentCat().id] = true;
-      startStage(book.startLevel);
-    });
+    if (startBtn) startBtn.addEventListener("click", beginStage);
+    var doneBtn = document.getElementById("book-done");
+    if (doneBtn) doneBtn.addEventListener("click", closeBook);
   }
 
   function turnBook(delta) {
@@ -1049,7 +1071,7 @@
   bookPrev.addEventListener("click", function () { turnBook(-1); });
   bookNext.addEventListener("click", function () { turnBook(1); });
   document.addEventListener("keydown", function (evt) {
-    if (!screens.book.classList.contains("active")) return;
+    if (!bookIsOpen()) return;
     if (evt.key === "ArrowRight") turnBook(1);
     if (evt.key === "ArrowLeft") turnBook(-1);
   });
@@ -1062,12 +1084,16 @@
     swipeX = null;
     if (Math.abs(dx) > 50) turnBook(dx < 0 ? 1 : -1);
   });
-  document.getElementById("book-close").addEventListener("click", goToLevelSelect);
-  // 건너뛰기: 읽은 걸로 치고 바로 그 스테이지를 시작해요
-  document.getElementById("book-skip").addEventListener("click", function () {
-    state.guideRead[currentCat().id] = true;
-    startStage(book.startLevel);
+  document.getElementById("book-close").addEventListener("click", function () {
+    var readOnly = book.readOnly;
+    closeBook();
+    if (readOnly) return;
+    book.pendingSay = null;
+    leaveGame();
+    goToLevelSelect();
   });
+  // 건너뛰기: 읽은 걸로 치고 바로 그 스테이지를 시작해요
+  document.getElementById("book-skip").addEventListener("click", beginStage);
 
   // ---- Mode select (놀이 고르기) --------------------------------------------
   function buildModeGrid() {
@@ -1099,6 +1125,9 @@
     state.results = [];
     showScreen("game");
     loadLevel(i);
+    // 게임 화면 위에 가이드북을 띄워요. '시작'을 누를 때까지 시간은 멈춰 있어요
+    stopTimer();
+    openBook(i);
   }
 
   function buildLevelGrid() {
@@ -1106,17 +1135,6 @@
     levelSelectTitle.textContent = cat.icon + " " + cat.name;
     levelGrid.innerHTML = "";
     var starsMap = loadStars();
-    // 1단계 바로 앞에 큰 가이드북 칸을 둬요. 읽고 나면 1단계로 이어져요
-    if (cat.guide) {
-      var read = !!state.guideRead[cat.id];
-      var bookBtn = document.createElement("button");
-      bookBtn.type = "button";
-      bookBtn.className = "level-grid-btn book-tile" + (read ? " read" : "");
-      bookBtn.innerHTML = '<div class="lvl-num">📖</div><div class="lvl-name">가이드북</div>' +
-        '<div class="lvl-stars">' + (read ? "✔ 다 읽었어요" : "먼저 읽어요!") + "</div>";
-      bookBtn.addEventListener("click", function () { openBook(0); });
-      levelGrid.appendChild(bookBtn);
-    }
     cat.stages.forEach(function (lvl, i) {
       var btn = document.createElement("button");
       btn.className = "level-grid-btn";
@@ -1156,10 +1174,7 @@
         btn.appendChild(lockEl);
         trophy.style.display = "none";
       } else {
-        btn.addEventListener("click", function () {
-          if (cat.guide && !state.guideRead[cat.id]) openBook(i);
-          else startStage(i);
-        });
+        btn.addEventListener("click", function () { startStage(i); });
       }
       levelGrid.appendChild(btn);
     });
@@ -1198,6 +1213,7 @@
 
   document.getElementById("btn-mode-title").addEventListener("click", function () { showScreen("title"); });
   document.getElementById("btn-levelselect-mode").addEventListener("click", goToModeSelect);
+  document.getElementById("btn-guide").addEventListener("click", function () { openBook(0, true); });
 
   document.getElementById("btn-quit").addEventListener("click", function () {
     leaveGame();

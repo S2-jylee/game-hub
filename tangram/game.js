@@ -978,27 +978,22 @@
     { icon: "✅", title: "다 놓았으면 완료!",
       text: "모양을 다 채웠다고 생각되면<br><b>완료</b> 버튼을 눌러요." }
   ];
-  function guideFor(i) {
-    return {
-      id: "tangram", title: "탱그램 칠교놀이 가이드북", pages: GUIDE_PAGES,
-      onStart: function () { startLevel(i); },
-      onClose: buildLevelGrid
-    };
+  // onStart 가 있으면 '확인' 버튼(게임 시작 때), 없으면 '닫기' 버튼(고르기 화면의 📖 게임 방법)
+  function guide(onStart) {
+    return { id: "tangram", title: "탱그램 칠교놀이", icon: "🧩", pages: GUIDE_PAGES, startLabel: "확인", onStart: onStart };
   }
 
   // ---- Level select ------------------------------------------------------
   function startLevel(i) {
     showScreen("game");
     loadLevel(i);
+    // 게임 화면 위에 방법 팝업을 띄우고, '확인'을 누르면 시간이 0초부터 흘러가요 (구구단 놀이터의 펭귄 달리기처럼)
+    GuideBook.intro(guide(startTimer), function () { stopTimer(); goToLevelSelect(); });
   }
 
   function buildLevelGrid() {
     levelGrid.innerHTML = "";
     var clearedMap = loadCleared();
-    // 1스테이지 바로 앞의 가이드북 칸: 다 읽으면 아직 못 깬 첫 스테이지로 가요
-    var firstIdx = 0;
-    while (firstIdx < TD.LEVELS.length - 1 && clearedMap[TD.LEVELS[firstIdx].id]) firstIdx++;
-    levelGrid.appendChild(GuideBook.tile({ id: "tangram", guide: function () { return guideFor(firstIdx); } }));
     TD.LEVELS.forEach(function (lvl, i) {
       var btn = document.createElement("button");
       btn.className = "level-grid-btn";
@@ -1029,8 +1024,7 @@
         btn.appendChild(lockEl);
       } else {
         btn.addEventListener("click", function () {
-          if (!GuideBook.isRead("tangram")) GuideBook.open(guideFor(i));
-          else startLevel(i);
+          startLevel(i);
         });
       }
       levelGrid.appendChild(btn);
@@ -1038,6 +1032,9 @@
   }
 
   // ---- Wire up UI ----------------------------------------------------
+  Array.prototype.forEach.call(document.querySelectorAll(".gb-top-btn"), function (b) {
+    b.addEventListener("click", function () { GuideBook.open(guide(null)); });
+  });
   document.getElementById("btn-start").addEventListener("click", function () {
     ac();
     buildUserList();

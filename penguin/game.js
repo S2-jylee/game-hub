@@ -52,6 +52,7 @@
     win() { [523, 659, 784, 659, 784, 1047].forEach((f, i) => tone(f, 0.22, 'triangle', i * 0.13)); }
   };
   function say(text, lang) {
+    if (GuideBook.defer(() => say(text, lang))) return;   // 방법 팝업이 닫히면 읽어줘요
     if (!state.sound || !('speechSynthesis' in window)) return;
     try {
       speechSynthesis.cancel();
@@ -161,10 +162,8 @@
       g.appendChild(b);
     });
   }
-  function choose() {
-    if (!GuideBook.isRead(GUIDE_ID)) GuideBook.open(GUIDE(startGame));
-    else startGame();
-  }
+  // 게임 화면을 먼저 열고, 그 위에 방법 팝업을 띄워요 (구구단 놀이터의 펭귄 달리기처럼)
+  function choose() { startGame(); }
   $('#guideBtn').onclick = () => GuideBook.open(GUIDE(null));
 
   // 같은 학년 단어를 섞어서 n개 (모자라면 다시 섞어서 이어 붙여요)
@@ -254,12 +253,11 @@
     $('#runMsg').textContent = '';
     setRunQ(null);
     drawRun(0);
-    // 시작하기 전에 안내 팝업을 먼저 보여줘요. 확인을 누르면 출발!
-    beginRun();
+    // 시작하기 전에 방법 팝업을 먼저 보여줘요. 확인을 누르면 출발!
+    GuideBook.intro(GUIDE(beginRun), () => $('#runQuit').onclick());
   }
   function beginRun() {
     if (run.active || $('#run').classList.contains('hidden')) return;
-    $('#runIntro').classList.add('hidden');
     run.active = true;
     if (state.sound) { bgm.currentTime = BGM_START; bgm.play().catch(() => {}); }
     $('#runMsg').textContent = '◀ ▶ 로 정답 허들로! 🪵 통나무는 스페이스(화면 톡)로 점프!';
@@ -267,10 +265,8 @@
     run.last = performance.now();
     run.raf = requestAnimationFrame(runFrame);
   }
-  $('#runIntroOk').onclick = beginRun;
-  $('#runIntroBack').onclick = () => $('#runQuit').onclick();
   function stopRun() {
-    $('#runIntro').classList.add('hidden');
+    GuideBook.close(false);
     run.active = false; run.tok++;
     cancelAnimationFrame(run.raf);
     bgm.pause();
@@ -967,7 +963,6 @@
   const RUN_KEYS = { ArrowLeft: 'l', a: 'l', A: 'l', ArrowRight: 'r', d: 'r', D: 'r' };
   document.addEventListener('keydown', e => {
     // 안내 팝업이 떠 있으면 스페이스·엔터로도 확인
-    if (!$('#runIntro').classList.contains('hidden') && (e.code === 'Space' || e.key === 'Enter')) { e.preventDefault(); beginRun(); return; }
     if (run.active && (e.code === 'Space' || e.key === ' ' || e.key === 'ArrowUp' || e.key === 'w' || e.key === 'W')) { e.preventDefault(); if (!e.repeat) hop(); return; }
     if (!run.active || !RUN_KEYS[e.key]) return;
     run.keys[RUN_KEYS[e.key]] = true; e.preventDefault();

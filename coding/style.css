@@ -1047,3 +1047,20 @@ body.drag-out .program { border-color: var(--red); background: #fff1f1; }
 .menu-plain { width: 94%; max-width: 900px; max-height: 96vh; overflow-y: auto; text-align: center; padding: 10px 4px 16px; }
 .page-title { display: flex; align-items: center; justify-content: center; gap: 12px; flex-wrap: wrap; margin: 4px 0 18px; }
 .page-title .diff-tag { font-family: "Pretendard", sans-serif; font-size: 1rem; }
+
+/* 가이드북: 스테이지를 시작하면 게임 화면 위에 팝업으로 떠요 (구구단 놀이터의 펭귄 달리기처럼) */
+#screen-book.open { display: flex; position: fixed; inset: 0; z-index: 500; padding: 12px; box-sizing: border-box; background: rgba(59, 45, 92, 0.45); }
+#screen-book.open .book { box-shadow: 0 12px 40px rgba(36, 27, 58, 0.25); animation: bookPopIn 0.25s ease; }
+@keyframes bookPopIn { from { transform: scale(0.92); opacity: 0; } }
+.book-skip[hidden] { display: none; }
+
+/* 스테이지 고르기 화면의 타이틀 위에 늘 있는 '게임 방법' 버튼 */
+.gb-top-row { display: flex; justify-content: center; width: 100%; margin: 0 0 10px; }
+.gb-top-btn {
+  display: inline-flex; align-items: center; gap: 6px; border: none; border-radius: 999px; cursor: pointer;
+  padding: 8px 20px; font-family: inherit; font-weight: 800; font-size: 15px; color: #fff;
+  background: linear-gradient(135deg, #d81b7a, #7c2ce0); box-shadow: 0 4px 12px rgba(124, 44, 224, 0.25);
+  transition: transform 0.12s ease;
+}
+.gb-top-btn:hover { transform: translateY(-2px); }
+.gb-top-btn:active { transform: scale(0.95); }

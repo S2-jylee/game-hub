@@ -260,7 +260,11 @@ html, body {
 .dp-left { left: 0; top: 58px; }
 .dp-right { right: 0; top: 58px; }
 @media (max-width: 760px) {
-  .play-row { flex-direction: row; }
+  .play-row { flex-direction: row; align-items: stretch; }
+  .board-wrap { height: auto; }
+  #screen-game { padding: 8px 10px 10px; gap: 6px; }
+  .hint-card { padding: 6px 12px; gap: 10px; border-radius: 18px; }
+  .btn-round { width: 40px; height: 40px; font-size: 1.1rem; }
   .dpad { width: 150px; height: 150px; right: 10px; bottom: 10px; }
   .dp { width: 50px; height: 50px; }
   .dp-up, .dp-down { left: 50px; }
@@ -289,7 +293,12 @@ html, body {
 
 /* 하트 5개가 좁은 화면에서도 한 줄에 */
 .hearts { white-space: nowrap; }
-@media (max-width: 480px) { .hearts { font-size: 0.95rem; letter-spacing: -1px; } }
+@media (max-width: 480px) {
+  .hearts { font-size: 0.95rem; letter-spacing: -1px; flex: 1 1 0; min-width: 0; overflow: hidden; }
+  .hud { gap: 6px; }
+  .hud-item { min-width: 54px; padding: 3px 8px; }
+  #btn-quit { padding: 7px 12px; }
+}
 #btn-quit { white-space: nowrap; flex: none; }
 
 .back-link { display: inline-block; text-decoration: none; margin-top: 4px; }

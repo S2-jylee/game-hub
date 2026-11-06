@@ -62,6 +62,7 @@
       <button class="btn btn-ghost btn-small" id="gradeBack">← 처음으로</button>
       <span class="user-badge" id="userBadge"></span>
     </div>
+    <div class="gb-top-row"><button id="guideBtn" class="gb-top-btn" type="button">📖 게임 방법</button></div>
     <div class="hero">
       <div class="buddy">🐧</div>
       <div class="bubble">몇 학년 단어로 해볼까?</div>
@@ -69,7 +70,6 @@
     <div class="panel grade-panel">
       <div class="arcade-grid" id="gradeGrid"></div>
       <div class="row">
-        <button class="small-btn" id="guideBtn">📖 게임 방법</button>
         <button class="small-btn" id="soundBtn">🔊 소리 켜짐</button>
       </div>
     </div>
@@ -115,19 +115,6 @@
     </div>
   </section>
 </main>
-<div class="modal hidden" id="runIntro">
-  <div class="modal-box run-intro">
-    <div class="run-intro-emoji">🐧</div>
-    <h3>알파벳 펭귄 달리기</h3>
-    <ul class="run-intro-list">
-      <li><span>⬅️➡️</span><span>펭귄을 움직여서 <b>맞는 단어 허들</b>로 가요!</span></li>
-      <li><span>🐟</span><span><b>물고기</b>를 먹고 게이지를 채우면 <b>❤️ 하트 반 개</b>가 차요!</span></li>
-      <li><span>🪵</span><span><b>통나무</b>는 <b>스페이스바</b> 또는 <b>화면 터치</b>로 점프해서 피할 수 있어요!</span></li>
-    </ul>
-    <button class="btn btn-primary btn-huge" id="runIntroOk">확인</button>
-    <div><button class="btn btn-ghost btn-small" id="runIntroBack">← 학년 고르기</button></div>
-  </div>
-</div>
 
 <script src="../spelling/words-data.js"></script>
 <script src="../spelling/guidebook.js"></script>

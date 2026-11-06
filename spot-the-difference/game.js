@@ -567,7 +567,8 @@
     updateFuse();
     showScreen("game");
     startRound();
-    startTimer();
+    // 게임 화면 위에 방법 팝업을 띄우고, '확인'을 누르면 심지에 불이 붙어요 (구구단 놀이터의 펭귄 달리기처럼)
+    GuideBook.intro({ id: "spot", title: "틀린그림 찾기", icon: "🔍", pages: GUIDE_PAGES, startLabel: "확인", onStart: startTimer }, quitGame);
   }
 
   function starsFor(rounds) {
@@ -619,7 +620,7 @@
   }
 
   // ---- Wire up UI ----------------------------------------------------
-  // ---- 📖 가이드북: 처음 시작할 때 먼저 읽어요 --------------------------------
+  // ---- 📖 놀이 방법: 게임을 시작할 때마다 게임 화면 위에 팝업으로 보여줘요 -------------
   var GUIDE_PAGES = [
     { icon: "✏️", title: "다른 곳을 콕!",
       text: "연필로 <b>왼쪽이나 오른쪽 그림, 어디든</b><br>다른 곳을 콕 찍어요." },
@@ -638,8 +639,7 @@
   ];
   document.getElementById("btn-start").addEventListener("click", function () {
     ac();
-    if (GuideBook.isRead("spot")) { newGame(); return; }
-    GuideBook.open({ id: "spot", title: "틀린그림 찾기", pages: GUIDE_PAGES, startLabel: "시작! 🔍", onStart: newGame });
+    newGame();
   });
   document.getElementById("btn-quit").addEventListener("click", quitGame);
   document.getElementById("btn-retry").addEventListener("click", function () { newGame(); });

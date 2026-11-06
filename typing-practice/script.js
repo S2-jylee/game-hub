@@ -774,6 +774,50 @@ function enterMode(mode) {
   state.view = 'practice';
   document.body.classList.remove('home-active');
   setMode(mode);
+  openModeGuide(mode);
+}
+
+// ===================== 📖 놀이 방법 팝업 =====================
+// 연습을 시작하면 그 화면 위에 방법 팝업을 띄우고, '확인'을 누르면 바로 칠 수 있어요 (구구단 놀이터의 펭귄 달리기처럼).
+// 팝업이 떠 있는 동안에는 키 입력이 연습으로 가지 않아요.
+const MODE_GUIDES = {
+  position: { icon: '⌨️', title: '자리연습', pages: [
+    { icon: '👀', title: '글자를 봐요', text: '화면 가운데 큰 글자의 <b>키를 눌러요</b>. 오른쪽 작은 글자는 다음 차례예요.' },
+    { icon: '🖐️', title: '손가락 안내', text: '아래 자판의 손 그림이 <b>어느 손가락</b>으로 칠지 알려줘요.' },
+    { icon: '🔢', title: '자리 단계', text: '<b>기본자리 · 윗자리 · 아랫자리</b>를 골라요. 여러 개를 같이 골라도 돼요.' },
+    { icon: '🌐', title: '한글 · 영어', text: '위쪽 <b>한글 / ENGLISH</b> 버튼으로 바꿔서 연습해요.' }] },
+  rowword: { icon: '🔤', title: '자리별 단어연습', pages: [
+    { icon: '🔤', title: '짧은 단어', text: '고른 <b>자리 단계</b>의 키로 만든 짧은 단어가 나와요.' },
+    { icon: '⌨️', title: '그대로 쳐요', text: '나온 단어를 <b>그대로</b> 쳐요. 오타가 나면 다시 고쳐서 쳐요.' },
+    { icon: '✅', title: '다 쳤으면 Enter', text: '끝까지 다 쳤으면 <b>Enter</b>를 눌러 속도와 정확도를 확인해요.' }] },
+  randomword: { icon: '🍭', title: '무작위 단어연습', pages: [
+    { icon: '🍭', title: '여러 가지 단어', text: '여러 가지 단어가 <b>무작위</b>로 나와요.' },
+    { icon: '⌨️', title: '그대로 쳐요', text: '나온 단어를 <b>그대로</b> 쳐요. 오타가 나면 다시 고쳐서 쳐요.' },
+    { icon: '✅', title: '다 쳤으면 Enter', text: '끝까지 다 쳤으면 <b>Enter</b>를 눌러 속도와 정확도를 확인해요.' }] },
+  sentence: { icon: '📝', title: '문장연습', pages: [
+    { icon: '📝', title: '짧은 문장', text: '짧은 문장이 나와요. <b>띄어쓰기</b>와 <b>문장 부호</b>까지 똑같이 쳐요.' },
+    { icon: '❌', title: '오타가 나면', text: '틀린 글자가 있으면 앞으로 못 가요. <b>지우고</b> 다시 쳐요.' },
+    { icon: '✅', title: '다 쳤으면 Enter', text: '끝까지 다 쳤으면 <b>Enter</b>를 눌러 결과와 🏆 랭킹을 확인해요.' }] },
+  passage: { icon: '📖', title: '글연습', pages: [
+    { icon: '📚', title: '글 종류 고르기', text: '<b>소설 · 속담 · 전래동화 · 동시</b> 중에서 골라요.' },
+    { icon: '📖', title: '긴 글', text: '긴 글을 한 글자씩 <b>그대로</b> 쳐요. 오타가 나면 지우고 다시 쳐요.' },
+    { icon: '✅', title: '다 쳤으면 Enter', text: '끝까지 다 쳤으면 <b>Enter</b>를 눌러 결과와 🏆 랭킹을 확인해요.' }] },
+  game: { icon: '🎮', title: '타자게임', pages: [
+    { icon: '💣', title: '폭탄이 떨어져요', text: '하늘에서 <b>글자를 단 폭탄</b>이 떨어져요.' },
+    { icon: '⌨️', title: '쳐서 격침!', text: '폭탄의 글자를 치고 <b>Enter</b>를 누르면 펑! 격침해요.' },
+    { icon: '❤️', title: '하트 3개', text: '폭탄이 바다에 닿으면 ❤️ 하트가 줄어요. 다 쓰면 끝!' },
+    { icon: '🚀', title: '레벨 업', text: '<b>쉬움 · 보통 · 어려움</b>을 고르고 <b>🎮 게임 시작</b>을 눌러요. 갈수록 빨라져요!' }] }
+};
+function openModeGuide(mode) {
+  const g = MODE_GUIDES[mode];
+  if (!g || !window.GuideBook) return;
+  GuideBook.intro({ id: 'typing_' + mode, title: g.title, icon: g.icon, pages: g.pages, startLabel: '확인',
+    onStart: () => { if (mode !== 'position' && mode !== 'game') el.typingPreview.focus(); } }, showHome);
+}
+// 홈 화면(연습 고르기)의 '📖 게임 방법': 모든 연습을 한눈에
+function openHomeGuide() {
+  GuideBook.open({ id: 'typing', title: '말랑말랑 타자연습', icon: '🐰',
+    pages: Object.keys(MODE_GUIDES).map(k => ({ icon: MODE_GUIDES[k].icon, title: MODE_GUIDES[k].title, text: MODE_GUIDES[k].pages[0].text })) });
 }
 
 function startCurrentMode() {
@@ -1724,8 +1768,9 @@ el.langToggle.addEventListener('click', e => {
 
 el.modeTabs.addEventListener('click', e => {
   const btn = e.target.closest('button[data-mode]');
-  if (btn) setMode(btn.dataset.mode);
+  if (btn) { setMode(btn.dataset.mode); openModeGuide(btn.dataset.mode); }
 });
+document.getElementById('btn-home-guide').addEventListener('click', openHomeGuide);
 
 el.stageSelect.addEventListener('click', e => {
   const btn = e.target.closest('button[data-stage]');
