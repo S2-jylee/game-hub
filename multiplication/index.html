@@ -745,10 +745,16 @@ button{font-family:inherit;font-weight:inherit;color:inherit;cursor:pointer;bord
     $('#giEmoji').textContent = it.emoji;
     $('#giTitle').textContent = it.title;
     $('#giList').innerHTML = it.list.map(([ico, txt]) => `<li><span>${ico}</span><span>${txt}</span></li>`).join('');
+    // 펭귄 달리기처럼 게임 화면을 먼저 띄우고, 그 위에 안내 팝업을 올려요. '확인'을 누를 때까지 게임은 멈춰 있어요
+    startGame();
     $('#gameIntro').classList.remove('hidden');
   }
-  $('#giOk').onclick = () => { $('#gameIntro').classList.add('hidden'); startGame(); };
-  $('#giBack').onclick = () => { $('#gameIntro').classList.add('hidden'); };
+  const introOpen = () => !$('#gameIntro').classList.contains('hidden');
+  $('#giOk').onclick = () => { $('#gameIntro').classList.add('hidden'); };
+  $('#giBack').onclick = () => {
+    $('#gameIntro').classList.add('hidden');
+    $(state.mode === 'catch' ? '#catchQuit' : '#quitBtn').onclick();
+  };
   // 안내 팝업이 떠 있으면 스페이스·엔터로도 확인
   document.addEventListener('keydown', e => {
     if ($('#gameIntro').classList.contains('hidden')) return;
@@ -940,9 +946,11 @@ button{font-family:inherit;font-weight:inherit;color:inherit;cursor:pointer;bord
     state.timeLeft = TIME;
     const fill = $('#timerFill');
     fill.classList.remove('hurry');
-    const start = performance.now();
+    let start = performance.now(), prevNow = start;
     let lastSec = TIME;
     const loop = now => {
+      if (introOpen()) start += now - prevNow; // 안내 팝업이 떠 있으면 시간이 멈춰요
+      prevNow = now;
       const left = TIME - (now - start) / 1000;
       fill.style.width = Math.max(0, left / TIME * 100) + '%';
       if (left <= 3) {
@@ -2049,7 +2057,7 @@ button{font-family:inherit;font-weight:inherit;color:inherit;cursor:pointer;bord
 
   function catchFrame(now) {
     if (!cg.active) return;
-    const dt = Math.min(0.05, (now - cg.last) / 1000);
+    const dt = introOpen() ? 0 : Math.min(0.05, (now - cg.last) / 1000); // 안내 팝업이 떠 있으면 멈춰요
     cg.last = now; cg.t += dt;
     const g = cgeo();
 

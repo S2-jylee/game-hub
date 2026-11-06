@@ -224,4 +224,4 @@
 .gb-btns .gb-back { padding: 10px 16px; white-space: nowrap; }
 
 /* 틀린그림 찾기 방법 팝업: 맨 위 아이콘과 제목은 빼요 */
-.gb-pop .gb-pop-emoji, .gb-pop h3 { display: none !important; }
+.gb-pop .gb-pop-emoji { display: none !important; }

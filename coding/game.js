@@ -890,6 +890,8 @@
     completionModal.classList.remove("show", "show-success");
     var p = promptFor(level);
     qText.innerHTML = p.html;
+    // 기본 문구(토끼를 당근까지 데려다줘요!)는 보여주지 않아요. 버그 개수·블록 수·별처럼 꼭 필요한 문제만 보여요
+    qText.parentNode.classList.toggle("q-plain", p.html.indexOf("🐰 토끼를 🥕 당근까지 데려다줘요!") === 0);
     state.sayText = p.say;
     buildBoard(level);
     setRunning(false);

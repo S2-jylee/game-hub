@@ -553,3 +553,6 @@ body .scene .sc-shape, body .scene .sc-twinkle { display: block !important; }
   .hud-value { font-size: 0.9rem; white-space: nowrap; }
   .hud #btn-quit { flex: none; padding: 6px 10px; font-size: 0.75rem; margin-right: 0; }
 }
+
+/* 게임 화면 위쪽 정보줄: 시계·퍼즐처럼 휴대폰에서는 놀이 이름(모양 1 · 2쌍 짝맞추기)을 빼고 ← 나가기 · 스테이지 · 시간만 */
+@media (max-width: 560px), (pointer: coarse) and (max-height: 500px) { #screen-game .hud-name { display: none; } }

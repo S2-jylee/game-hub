@@ -203,3 +203,34 @@ body .q-card .q-main { flex: 1; text-align: center; display: flex; flex-directio
 .position-progress { display: none !important; }
 /* 단어 바구니 · 펭귄 달리기 학년 고르기 판도 하얀 바탕 없이 */
 #grade .panel.grade-panel { background: transparent !important; box-shadow: none !important; padding-left: 0; padding-right: 0; }
+
+/* ---- 단어 바구니 · 펭귄 달리기 학년 타일: 다른 영어 게임 학년 타일과 같은 크기 ---- */
+#grade .arcade-grid { gap: 14px; }
+#grade .arcade-game { padding: 14px 10px 12px; gap: 2px; border-radius: 22px; }
+#grade .arcade-game .m-emoji { font-size: 40px; }
+#grade .arcade-game .m-name { font-size: 24px; margin-top: 2px; }
+#grade .arcade-game small { font-size: 13px; }
+#grade .arcade-game .m-go { margin-top: 6px; padding: 5px 16px; font-size: 14px; }
+@media (max-width: 560px) {
+  #grade .arcade-grid { grid-template-columns: repeat(2, 1fr); gap: 8px; }
+  #grade .arcade-game { padding: 10px 6px; border-radius: 16px; }
+  #grade .arcade-game .m-emoji { font-size: 29px; }
+  #grade .arcade-game .m-name { font-size: 18px; }
+  #grade .arcade-game small { font-size: 11px; }
+  #grade .arcade-game .m-go { margin-top: 4px; padding: 4px 12px; font-size: 12px; }
+}
+
+/* ---- 제목과 첫 타일 사이 간격을 영어 게임 메인과 같게 (약 20px) ---- */
+#screen-levelselect .card { padding-top: 0 !important; }
+#screen-levelselect > h1.game-title { margin-bottom: 10px; }
+#screen-difficulty h1.game-title { margin-bottom: 20px; }
+
+/* ---- 가이드 팝업 제목은 다시 보여요 (시계·코딩 가이드북 머리줄: 제목 + 쪽수, 작게) ---- */
+body .book-head, body .gb-book .gb-head { display: flex !important; justify-content: center; gap: 8px; }
+body .book-title, body .gb-title { font-size: 1.15rem; }
+
+/* ---- 방법 팝업 왼쪽 아이콘: 두 개짜리(⬅️➡️)는 위아래로 쌓아서 모든 줄의 글이 같은 자리에서 시작하게 ---- */
+body .gb-pop-list .gb-li-ico, body .run-intro-list li span:first-child {
+  flex: none; width: 26px; min-width: 26px; white-space: normal; overflow-wrap: anywhere; word-break: break-all;
+  text-align: center; line-height: 1.05;
+}
