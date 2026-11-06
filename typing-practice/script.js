@@ -1805,6 +1805,13 @@ el.resultRestart.addEventListener('click', () => {
   startCurrentMode();
 });
 
+// 결과/게임종료 팝업의 '그만': 팝업을 닫고 연습 고르는 첫 화면으로 돌아가요
+document.querySelectorAll('.result-stop').forEach(btn => btn.addEventListener('click', () => {
+  hideResult();
+  hideGameOver();
+  showHome();
+}));
+
 document.addEventListener('keydown', handlePositionKeydown);
 document.addEventListener('keydown', handleTypingModeKeydown);
 

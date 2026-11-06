@@ -107,7 +107,8 @@ html, body {
   box-shadow: var(--shadow);
 }
 .btn-round:hover { background: #f4eefe; transform: translateY(-2px); }
-.btn-toggle-on { background: linear-gradient(135deg, var(--pink-dark), var(--lavender-dark)); }
+.btn-toggle-on,
+.btn-round.btn-toggle-on:hover { background: linear-gradient(135deg, var(--pink-dark), var(--lavender-dark)); }
 
 /* ---- Title screen ---- */
 .title-card {

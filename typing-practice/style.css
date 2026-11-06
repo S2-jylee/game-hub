@@ -1051,6 +1051,21 @@ body.home-active .home-view { display: block; }
 }
 #result-restart:active { transform: translateY(2px); }
 
+/* 결과 팝업 아래 버튼 줄: [그만] [한번 더!] */
+.result-buttons-row { display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; }
+.result-stop {
+  border: 2px solid #e9defb;
+  background: #fff;
+  color: var(--lavender-dark);
+  font-weight: 800;
+  padding: 14px 26px;
+  border-radius: 18px;
+  cursor: pointer;
+  font-size: 1.1rem;
+  font-family: 'Pretendard', 'Gowun Dodum', sans-serif;
+}
+.result-stop:active { transform: translateY(2px); }
+
 .result-card .tool-btn { margin-top: 10px; }
 
 /* 처음 접속 시 뜨는 시작 화면(타이틀 / 누구인가요? / 놀이 방법).
@@ -1442,5 +1457,14 @@ html, body { overflow-x: clip; }
   #stats-bar .stat .label, #stats-bar .stat .unit { font-size: 0.66rem; }
   #stats-bar .stat .value { font-size: 0.9rem; }
   #stats-bar .stat-divider { display: none !important; }
-  #stats-bar #restart-btn { padding: 5px 8px; font-size: 0.74rem; margin-left: auto; }
+  #stats-bar #restart-btn { padding: 5px 8px; font-size: 0.74rem; margin-left: 0; }
+}
+
+/* 휴대폰: '속도 | 정확도 | 시간 | 새로하기' — 사이사이에 | 를 넣고, 새로하기는 오른쪽 끝으로 밀지 않고 바로 옆에 */
+@media (max-width: 560px) {
+  #stats-bar .stat + .stat::before { content: "|"; color: #d9cff0; font-weight: 300; font-size: 0.95rem; margin-right: 5px; }
+  #stats-bar .stat-divider { display: inline !important; font-size: 0.95rem; }
+}
+@media (max-width: 400px) {
+  #stats-bar .stat + .stat::before { margin-right: 2px; }
 }
