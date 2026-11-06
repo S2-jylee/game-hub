@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<link rel="icon" href="data:,">
+<title>영어 놀이 회화</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Jua&family=Gowun+Dodum&family=Nunito:wght@400;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css">
+<link rel="stylesheet" href="../spelling/style.css">
+<style>
+  /* 영어 놀이 고르기: 타자연습처럼 놀이 카드가 여러 개 */
+  .play-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 16px; width: min(860px, 92vw); margin: 8px auto 0; }
+  .play-card {
+    display: flex; flex-direction: column; align-items: center; gap: 6px; text-decoration: none;
+    border-radius: 26px; padding: 22px 14px 18px; color: #fff; background: var(--bg);
+    box-shadow: 0 8px 20px rgba(36, 27, 58, 0.12); transition: transform 0.15s ease;
+  }
+  .play-card:hover { transform: translateY(-5px); }
+  .play-card:active { transform: translateY(2px); }
+  .play-card .pc-emoji {
+    width: 86px; height: 86px; border-radius: 50%; background: rgba(255, 255, 255, 0.92);
+    display: flex; align-items: center; justify-content: center; font-size: 2.8rem;
+    animation: bob 3.2s ease-in-out infinite;
+  }
+  .play-card .pc-name { font-family: "CookieRun", "Jua", sans-serif; font-size: 1.6rem; margin-top: 4px; }
+  .play-card .pc-desc { font-size: 0.92rem; opacity: 0.95; text-align: center; }
+  /* 휴대폰: 놀이 카드를 가로 2개씩 */
+  @media (max-width: 560px) {
+    .play-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; width: calc(100vw - 24px); }
+    .play-card { padding: 14px 8px 12px; border-radius: 20px; gap: 4px; }
+    .play-card .pc-emoji { width: 56px; height: 56px; font-size: 1.8rem; }
+    .play-card .pc-name { font-size: 1.05rem; text-align: center; }
+    .play-card .pc-desc { font-size: 0.72rem; }
+  }
+  .play-card:nth-child(3n+2) .pc-emoji { animation-delay: 0.5s; }
+  .play-card:nth-child(3n) .pc-emoji { animation-delay: 1s; }
+  .play-card.soon { background: #eceaf1; color: var(--text-soft); box-shadow: none; pointer-events: none; }
+  .play-card.soon .pc-emoji { animation: none; filter: grayscale(0.4); }
+  .english-title { text-align: center; }
+  .english-title h1 { font-family: "CookieRun", "Jua", sans-serif; font-size: 2.6rem; margin: 6px 0 4px; color: var(--lime-dark); }
+  #screen-menu { justify-content: flex-start; overflow-y: auto; padding: 14px 0 20px; }
+  @media (max-width: 560px) { #screen-menu { padding-top: 12px; } }
+  .english-title h1.game-title { margin: 0 0 12px; }
+</style>
+<link rel="stylesheet" href="../shared/game-title.css">
+<link rel="stylesheet" href="../shared/english-bg.css">
+</head>
+<body>
+
+
+<section id="screen-menu" class="screen active">
+  <div class="english-title">
+    <h1 class="game-title">영어 놀이 회화</h1>
+    <p class="subtitle">오늘은 어떤 영어로 말해 볼까요? 💬</p>
+  </div>
+  <div class="play-grid">
+    <a class="play-card" href="pingpong.html" style="--bg:#3b82f6">
+      <span class="pc-emoji">🏓</span>
+      <span class="pc-name">핑퐁 대화 티키타카</span>
+      <span class="pc-desc">친구 말에 가장 자연스러운 대답 레인으로 달려요!</span>
+    </a>
+    <a class="play-card" href="cafe.html" style="--bg:#f59e0b">
+      <span class="pc-emoji">☕</span>
+      <span class="pc-name">주문받아 서빙하기</span>
+      <span class="pc-desc">손님 주문을 잘 듣고 맞는 쟁반을 톡!</span>
+    </a>
+    <a class="play-card" href="sentence.html" style="--bg:#14b8a6">
+      <span class="pc-emoji">🧩</span>
+      <span class="pc-name">문장 퍼즐 조립 달리기</span>
+      <span class="pc-desc">문장 조각을 순서대로 모아 통문장 완성!</span>
+    </a>
+    <a class="play-card" href="adventure.html" style="--bg:#ec4899">
+      <span class="pc-emoji">🗺️</span>
+      <span class="pc-name">어떻게 말할까?</span>
+      <span class="pc-desc">교실 · 놀이터 · 마트 · 공항에서 대화로 도와줘요</span>
+    </a>
+  </div>
+</section>
+
+<script src="../shared/game-title.js"></script>
+<script src="../shared/english-bg.js"></script>
+</body>
+</html>

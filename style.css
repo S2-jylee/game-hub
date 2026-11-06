@@ -330,3 +330,6 @@ header, main {
   .tile-title { font-size: 1rem; }
   .tile-desc { font-size: 0.72rem; }
 }
+
+.tile-talk { background: #ec4899; }
+.tile-talk .tile-emoji { color: #be185d; }

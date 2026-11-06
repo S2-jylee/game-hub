@@ -117,8 +117,11 @@
         if (Talk.G.over) return;
         var right = cur[1][idx];
         // 틀린 조각: 같은 자리의 어색한 표현 + (나중에 나올 조각 또는 다른 어색한 표현)
-        var pool = cur[2].filter(function (w, i) { return i !== idx && w !== right; }).concat(cur[1].slice(idx + 1));
-        var wrong = [cur[2][idx], Talk.shuffle(pool.filter(function (w) { return w !== cur[2][idx] && w !== right; }))[0] || cur[2][(idx + 1) % cur[2].length]];
+        var pool = [];
+        cur[2].concat(cur[1].slice(idx + 1)).forEach(function (w) { if (w !== right && pool.indexOf(w) < 0) pool.push(w); });
+        var first = cur[2][idx] !== right ? cur[2][idx] : null;
+        var rest = Talk.shuffle(pool.filter(function (w) { return w !== first; }));
+        var wrong = first ? [first, rest[0]] : [rest[0], rest[1]];
         var opts = Talk.shuffle([right, wrong[0], wrong[1]]);
         lane.spawn(opts, { correct: opts.indexOf(right) });
       }

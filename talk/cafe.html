@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="ko" data-tts>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<link rel="icon" href="data:,">
+<title>주문받아 서빙하기</title>
+<link href="https://fonts.googleapis.com/css2?family=Jua&family=Gowun+Dodum&family=Nunito:wght@400;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css">
+<link rel="stylesheet" href="../spelling/style.css">
+<link rel="stylesheet" href="../spelling/guidebook.css">
+<link rel="stylesheet" href="talk.css">
+<link rel="stylesheet" href="../shared/game-title.css">
+<link rel="stylesheet" href="../shared/english-bg.css">
+<style>
+  .cafe-counter { position: relative; flex: none; display: flex; flex-direction: column; align-items: center; gap: 6px;
+    background: linear-gradient(#fff7ed, #ffedd5); border-radius: 24px; padding: 12px 12px 14px; box-shadow: inset 0 -10px 0 #fdba74; }
+  .cafe-guest { font-size: 4rem; line-height: 1; transition: transform 0.3s ease; }
+  .cafe-guest.happy { animation: guestHop 0.6s ease; }
+  .cafe-guest.sad { animation: guestShake 0.45s ease; }
+  @keyframes guestHop { 40% { transform: translateY(-16px) scale(1.08); } }
+  @keyframes guestShake { 25%, 75% { transform: rotate(-10deg); } 50% { transform: rotate(10deg); } }
+  .cafe-name { font-size: 0.8rem; font-weight: 800; color: #9a3412; }
+  .cafe-bubble { position: relative; width: 100%; }
+  .cafe-hidden-text { color: var(--text-soft) !important; font-family: "Pretendard", sans-serif !important; font-size: 0.9rem !important; }
+  .cafe-sub-btn { border: none; border-radius: 999px; background: #f4eefd; padding: 5px 12px; font-weight: 800; font-size: 0.78rem; cursor: pointer; margin-top: 4px; }
+  .cafe-trays { flex: 1; min-height: 0; display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; align-content: start; }
+  .cafe-tray {
+    border: 3px solid #e7d5c3; border-radius: 22px; background: #fff; cursor: pointer; padding: 14px 6px 10px;
+    display: flex; flex-direction: column; align-items: center; gap: 6px; font-family: inherit; transition: transform 0.12s;
+    box-shadow: 0 6px 0 #e7d5c3; min-height: 132px; justify-content: center;
+  }
+  .cafe-tray:active { transform: translateY(3px); box-shadow: 0 3px 0 #e7d5c3; }
+  .cafe-tray .ct-food { font-size: 2.2rem; line-height: 1.15; letter-spacing: 2px; word-break: break-all; text-align: center; }
+  .cafe-tray .ct-label { font-family: "Nunito", "Pretendard", sans-serif; font-weight: 800; font-size: 0.8rem; color: #7c2d12; text-align: center; line-height: 1.25; }
+  .cafe-tray.ok { border-color: #22c55e; box-shadow: 0 6px 0 #16a34a; background: #f0fdf4; }
+  .cafe-tray.no { border-color: #ef4444; box-shadow: 0 6px 0 #dc2626; background: #fef2f2; animation: guestShake 0.4s ease; pointer-events: none; opacity: 0.7; }
+  .cafe-coin { position: fixed; z-index: 70; font-size: 1.8rem; pointer-events: none; animation: coinFly 0.9s ease forwards; }
+  @keyframes coinFly { to { transform: translate(var(--dx), var(--dy)) scale(0.5); opacity: 0; } }
+  @media (max-width: 560px) {
+    .cafe-guest { font-size: 3rem; }
+    .cafe-trays { gap: 6px; }
+    .cafe-tray { min-height: 112px; padding: 10px 4px 8px; border-radius: 18px; }
+    .cafe-tray .ct-food { font-size: 1.75rem; letter-spacing: 0; }
+    .cafe-tray .ct-label { font-size: 0.7rem; }
+  }
+</style>
+</head>
+<body>
+<script src="../spelling/guidebook.js"></script>
+<script src="talk-common.js"></script>
+<script>
+(function () {
+  "use strict";
+  var F = {
+    bagel: ["🥯", "bagel"], cheese: ["🧀", "cream cheese"], donut: ["🍩", "donut"], jam: ["🍓", "strawberry jam"],
+    iced: ["🧊☕", "iced americano"], cocoa: ["☕🍫", "hot chocolate"], oj: ["🍊🧃", "orange juice"], aj: ["🍎🧃", "apple juice"],
+    milk: ["🥛", "milk"], tea: ["🍵", "tea"], water: ["💧", "water"], ice: ["🧊", "ice"], cola: ["🥤", "cola"],
+    pizza: ["🍕", "pizza"], burger: ["🍔", "burger"], fries: ["🍟", "fries"], hotdog: ["🌭", "hot dog"], sandwich: ["🥪", "sandwich"],
+    salad: ["🥗", "salad"], soup: ["🍲", "soup"], spaghetti: ["🍝", "spaghetti"], bread: ["🍞", "bread"], rice: ["🍚", "rice"],
+    pancake: ["🥞", "pancakes"], waffle: ["🧇", "waffle"], honey: ["🍯", "honey"], cake: ["🍰", "cake"], pie: ["🥧", "pie"],
+    cookie: ["🍪", "cookie"], icecream: ["🍦", "ice cream"], mushroom: ["🍄", "mushrooms"], coffee: ["☕", "coffee"]
+  };
+  // [손님의 주문, 정답 쟁반, 틀린 쟁반 1, 틀린 쟁반 2]
+  var DATA = {
+    easy: [
+      ["Can I have a donut, please?", ["donut"], ["bagel"], ["cookie"]],
+      ["I'd like an orange juice.", ["oj"], ["milk"], ["cola"]],
+      ["One pizza, please.", ["pizza"], ["burger"], ["sandwich"]],
+      ["Can I get a glass of milk?", ["milk"], ["tea"], ["water"]],
+      ["I want an ice cream, please.", ["icecream"], ["cake"], ["cookie"]],
+      ["A hamburger, please.", ["burger"], ["hotdog"], ["pizza"]],
+      ["Can I have some cookies?", ["cookie", "cookie"], ["donut", "donut"], ["cake"]],
+      ["I'd like a salad, please.", ["salad"], ["soup"], ["spaghetti"]],
+      ["Can I have a cup of tea?", ["tea"], ["coffee"], ["cola"]],
+      ["One hot dog, please.", ["hotdog"], ["burger"], ["sandwich"]],
+      ["I'd like some pancakes.", ["pancake"], ["waffle"], ["bread"]],
+      ["Can I get a sandwich, please?", ["sandwich"], ["pizza"], ["salad"]]
+    ],
+    normal: [
+      ["Could I get a warm bagel with some cream cheese, please?", ["bagel", "cheese"], ["donut", "jam"], ["iced"]],
+      ["Can I have a burger and fries?", ["burger", "fries"], ["burger", "cola"], ["hotdog", "fries"]],
+      ["I'd like pancakes with honey, please.", ["pancake", "honey"], ["pancake", "jam"], ["waffle", "honey"]],
+      ["Could I get spaghetti and a glass of water?", ["spaghetti", "water"], ["spaghetti", "cola"], ["pizza", "water"]],
+      ["May I have a sandwich and an apple juice?", ["sandwich", "aj"], ["sandwich", "oj"], ["salad", "aj"]],
+      ["Two cookies and a hot chocolate, please.", ["cookie", "cookie", "cocoa"], ["cookie", "milk"], ["cookie", "cookie", "iced"]],
+      ["Can I get a piece of cake and some tea?", ["cake", "tea"], ["cake", "milk"], ["pie", "tea"]],
+      ["I'd like some soup and bread, please.", ["soup", "bread"], ["soup", "rice"], ["salad", "bread"]],
+      ["Could I have a pizza and a cola?", ["pizza", "cola"], ["pizza", "water"], ["burger", "cola"]],
+      ["A waffle with strawberry jam, please.", ["waffle", "jam"], ["waffle", "honey"], ["pancake", "jam"]]
+    ],
+    hard: [
+      ["Would you mind bringing me a glass of water without ice?", ["water"], ["water", "ice"], ["cola", "ice"]],
+      ["Could I get a pizza, but no mushrooms, please?", ["pizza"], ["pizza", "mushroom"], ["spaghetti", "mushroom"]],
+      ["I'll have a hot dog and fries, and my sister wants an ice cream.", ["hotdog", "fries", "icecream"], ["hotdog", "fries"], ["hotdog", "icecream", "cola"]],
+      ["Could we have two orange juices and one milk, please?", ["oj", "oj", "milk"], ["oj", "milk", "milk"], ["oj", "oj", "cola"]],
+      ["Can I get a burger without cheese and a small cola?", ["burger", "cola"], ["burger", "cheese", "cola"], ["burger", "fries"]],
+      ["Would it be possible to get some soup and two pieces of bread?", ["soup", "bread", "bread"], ["soup", "bread"], ["salad", "bread", "bread"]],
+      ["I'd like a donut and an iced americano, please.", ["donut", "iced"], ["donut", "cocoa"], ["cookie", "iced"]],
+      ["May I have a green salad and a cup of tea, please?", ["salad", "tea"], ["salad", "coffee"], ["soup", "tea"]],
+      ["Just a bagel, please. No cream cheese, thanks.", ["bagel"], ["bagel", "cheese"], ["donut", "cheese"]],
+      ["Could I have the pancakes with honey and a glass of milk?", ["pancake", "honey", "milk"], ["pancake", "milk"], ["pancake", "honey", "oj"]]
+    ]
+  };
+  var GUESTS = [["🐻", "Bear"], ["🐰", "Bunny"], ["🦊", "Fox"], ["🐼", "Panda"], ["🐨", "Koala"], ["🐯", "Tiger"], ["🐷", "Piggy"], ["🐱", "Kitty"], ["🦁", "Lion"], ["🐸", "Froggy"]];
+
+  Talk.mount({
+    id: "talk_cafe", title: "주문받아 서빙하기", unit: "손님", total: 10, goLabel: "오픈 ▶", startLabel: "가게 오픈! ☕",
+    levels: [
+      { id: "easy", name: "쉬움", emoji: "🐣", desc: "한 가지 주문 · 자막 있음", bg: "#ecfccb", c: "#65a30d" },
+      { id: "normal", name: "보통", emoji: "🐥", desc: "두세 가지 주문 · 자막 있음", bg: "#dbeafe", c: "#2563eb" },
+      { id: "hard", name: "어려움", emoji: "🦅", desc: "정중한 부탁 · 빼 주세요 · 소리만 듣기", bg: "#fce7f3", c: "#db2777" }
+    ],
+    guide: function (lv) {
+      return [
+        { icon: "🐻", title: "손님이 주문해요", text: "동물 손님이 영어로 주문하고 <b>소리</b>로도 들려줘요. 🔊 를 누르면 다시 들어요." },
+        { icon: "🍽️", title: "맞는 쟁반을 톡!", text: "아래 <b>쟁반 3개</b> 중에서 주문과 <b>똑같은</b> 쟁반을 눌러요. 개수와 <b>without / no</b>(빼 주세요)도 잘 들어요." },
+        { icon: "🪙", title: "코인 받기", text: "맞으면 손님이 기뻐하며 <b>코인</b>을 줘요. 틀리면 하트가 하나 줄어요." },
+        lv.id === "hard"
+          ? { icon: "👂", title: "소리만 듣기", text: "어려움은 주문 글자가 숨어 있어요. 잘 들어 보고, 어려우면 <b>자막 보기</b>를 눌러요." }
+          : { icon: "🏆", title: "손님 10명", text: "손님 <b>10명</b>에게 서빙하면 성공!" }
+      ];
+    },
+    create: function (stage, lv) {
+      var list = Talk.shuffle(DATA[lv.id].slice()).slice(0, 10);
+      var guests = Talk.shuffle(GUESTS.slice());
+      stage.innerHTML =
+        '<div class="cafe-counter"><div class="cafe-guest" id="cf-guest">🐻</div><div class="cafe-name" id="cf-name"></div>' +
+        '<div class="talk-bubble cafe-bubble" id="cf-bubble"><div class="tb-main"><div class="tb-text" id="cf-text"></div><div id="cf-subwrap"></div></div></div></div>' +
+        '<div class="talk-msg" id="talk-msg"></div>' +
+        '<div class="cafe-trays" id="cf-trays"></div>';
+      var cur = null, lock = false, timer = 0;
+      Talk.$("#cf-bubble").appendChild(Talk.sayButton(function () { return cur ? cur[0] : ""; }));
+      function trayHtml(items) {
+        var food = items.map(function (k) { return F[k][0]; }).join(" ");
+        var counts = {};
+        items.forEach(function (k) { counts[k] = (counts[k] || 0) + 1; });
+        var label = Object.keys(counts).map(function (k) { return (counts[k] > 1 ? counts[k] + " " : "") + F[k][1]; }).join(" + ");
+        return '<span class="ct-food">' + food + '</span>' + (lv.id === "hard" ? "" : '<span class="ct-label">' + Talk.esc(label) + "</span>");
+      }
+      function coin(from) {
+        var box = Talk.$("#hud-score-box").getBoundingClientRect();
+        for (var i = 0; i < 3; i++) {
+          var c = document.createElement("div");
+          c.className = "cafe-coin"; c.textContent = "🪙";
+          c.style.left = from.left + from.width / 2 - 14 + "px"; c.style.top = from.top + "px";
+          c.style.setProperty("--dx", box.left - from.left - from.width / 2 + 20 + "px");
+          c.style.setProperty("--dy", box.top - from.top + "px");
+          c.style.animationDelay = i * 0.08 + "s";
+          document.body.appendChild(c);
+          (function (el) { setTimeout(function () { el.remove(); }, 1200); })(c);
+        }
+        Talk.sfx.coin();
+      }
+      function ask(i) {
+        cur = list[i]; lock = false;
+        var g = guests[i % guests.length];
+        var ge = Talk.$("#cf-guest");
+        ge.textContent = g[0]; ge.className = "cafe-guest";
+        Talk.$("#cf-name").textContent = g[1] + " 손님";
+        var text = Talk.$("#cf-text"), sub = Talk.$("#cf-subwrap");
+        sub.innerHTML = "";
+        if (lv.id === "hard") {
+          text.textContent = "🎧 잘 듣고 골라요!";
+          text.classList.add("cafe-hidden-text");
+          var sb = document.createElement("button");
+          sb.type = "button"; sb.className = "cafe-sub-btn"; sb.textContent = "자막 보기";
+          sb.addEventListener("click", function () { text.textContent = cur[0]; text.classList.remove("cafe-hidden-text"); sb.remove(); });
+          sub.appendChild(sb);
+        } else {
+          text.textContent = cur[0];
+          text.classList.remove("cafe-hidden-text");
+        }
+        var b = Talk.$("#cf-bubble"); b.classList.remove("pop"); void b.offsetWidth; b.classList.add("pop");
+        Talk.msg("주문에 맞는 쟁반을 눌러요!");
+        Talk.speak(cur[0]);
+        var trays = Talk.shuffle([{ items: cur[1], ok: true }, { items: cur[2] }, { items: cur[3] }]);
+        var box = Talk.$("#cf-trays");
+        box.innerHTML = "";
+        trays.forEach(function (t) {
+          var el = document.createElement("button");
+          el.type = "button"; el.className = "cafe-tray";
+          el.innerHTML = trayHtml(t.items);
+          el.addEventListener("click", function () {
+            if (lock || Talk.paused()) return;
+            var r = el.getBoundingClientRect();
+            if (t.ok) {
+              lock = true;
+              el.classList.add("ok");
+              ge.classList.add("happy");
+              Talk.good(r.left + r.width / 2, r.top);
+              coin(r);
+              Talk.msg("😋 Thank you! 손님이 기뻐해요!");
+              Talk.speak("Thank you!");
+              timer = setTimeout(next, 1500);
+            } else {
+              el.classList.add("no");
+              ge.classList.remove("sad"); void ge.offsetWidth; ge.classList.add("sad");
+              Talk.msg("앗, 주문과 달라요! 다시 잘 들어 봐요 🔊");
+              if (!Talk.bad()) lock = true;
+              else setTimeout(function () { Talk.speak(cur[0]); }, 500);
+            }
+          });
+          box.appendChild(el);
+        });
+      }
+      function next() { if (Talk.G.over) return; if (Talk.next()) ask(Talk.G.q); }
+      return { begin: function () { ask(0); }, stop: function () { clearTimeout(timer); } };
+    }
+  });
+})();
+</script>
+<script src="../shared/game-title.js"></script>
+<script src="../shared/english-bg.js"></script>
+</body>
+</html>
