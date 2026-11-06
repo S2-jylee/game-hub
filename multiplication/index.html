@@ -342,6 +342,17 @@ button{font-family:inherit;font-weight:inherit;color:inherit;cursor:pointer;bord
   #run .energy{padding:5px 10px}
   #run .energy-ico{font-size:17px}
 }
+/* 놀이 안내 팝업: 다른 게임의 방법 팝업과 같은 모양 (맨 위 아이콘 없이, 작은 글씨, 버튼 한 줄) */
+.run-intro{padding:14px 16px 12px;max-width:540px}
+.run-intro .run-intro-emoji{display:none}
+.run-intro h3{font-size:22px;margin:0 0 8px}
+.run-intro-list li{font-size:14px;line-height:1.38;padding:7px 11px;margin-bottom:6px;gap:9px}
+.run-intro-list li span:first-child{font-size:20px}
+.run-intro .gb-btns{display:flex;align-items:center;justify-content:center;gap:8px;margin-top:6px}
+.run-intro .gb-btns .btn{margin:0}
+.run-intro .gb-btns .btn-huge{font-size:19px;padding:11px 34px;border-radius:24px}
+.run-intro .gb-btns .btn-small{padding:10px 16px;font-size:15px;white-space:nowrap}
+@media (max-width:560px){.run-intro h3{font-size:19px}.run-intro-list li{font-size:13px;padding:6px 9px}.run-intro .gb-btns .btn-huge{font-size:17px;padding:10px 28px}}
 </style>
 <link rel="stylesheet" href="../shared/game-title.css">
 </head>
@@ -510,8 +521,7 @@ button{font-family:inherit;font-weight:inherit;color:inherit;cursor:pointer;bord
       <li><span>🐟</span><span><b>물고기</b>를 먹고 게이지를 채우면 <b>❤️ 하트 반 개</b>가 차요!</span></li>
       <li><span>🪵</span><span><b>통나무</b>는 <b>스페이스바</b> 또는 <b>화면 터치</b>로 점프해서 피할 수 있어요!</span></li>
     </ul>
-    <button class="btn btn-primary btn-huge" id="runIntroOk">확인</button>
-    <div><button class="btn btn-ghost btn-small" id="runIntroBack">← 놀이 고르기</button></div>
+    <div class="gb-btns"><button class="btn btn-ghost btn-small" id="runIntroBack">← 놀이 고르기</button><button class="btn btn-primary btn-huge" id="runIntroOk">확인</button></div>
   </div>
 </div>
 
@@ -521,8 +531,7 @@ button{font-family:inherit;font-weight:inherit;color:inherit;cursor:pointer;bord
     <div class="run-intro-emoji" id="giEmoji">🌱</div>
     <h3 id="giTitle">연습 놀이</h3>
     <ul class="run-intro-list" id="giList"></ul>
-    <button class="btn btn-primary btn-huge" id="giOk">확인</button>
-    <div><button class="btn btn-ghost btn-small" id="giBack">← 놀이 고르기</button></div>
+    <div class="gb-btns"><button class="btn btn-ghost btn-small" id="giBack">← 놀이 고르기</button><button class="btn btn-primary btn-huge" id="giOk">확인</button></div>
   </div>
 </div>
 
@@ -1359,7 +1368,7 @@ button{font-family:inherit;font-weight:inherit;color:inherit;cursor:pointer;bord
     }
     if (run.fallT > 0 || run.freezeT > 0 || (run.goal && run.goal.phase === 'wave')) dir = 0;
     run.dir = dir;
-    run.px = Math.max(-0.82, Math.min(0.82, run.px + dir * (1.9 + run.stage * 0.15) * (MOBILE.matches ? MOBILE_SPEED : 1) * dt));
+    run.px = Math.max(-0.82, Math.min(0.82, run.px + dir * (1.9 + run.stage * 0.15) * (MOBILE.matches ? MOBILE_SPEED * 1.2 : 1) * dt));
     run.lean += (dir * 0.22 - run.lean) * Math.min(1, dt * 10);
     $('#padL').classList.toggle('on', dir < -0.1);
     $('#padR').classList.toggle('on', dir > 0.1);

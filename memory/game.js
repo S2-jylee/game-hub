@@ -301,9 +301,14 @@
   function startTimer() {
     stopTimer();
     state.stageStartTime = performance.now();
+    state.lastTick = state.stageStartTime;
     hudTimerVal.textContent = "0.0초";
     state.timerHandle = setInterval(function () {
-      var el = (performance.now() - state.stageStartTime) / 1000;
+      // 방법 팝업(가이드북)이 떠 있는 동안은 시간이 흐르지 않아요. '확인'을 누르면 그때부터 흘러요
+      var now = performance.now();
+      if (document.querySelector(".gb-overlay.show, #screen-book.open")) state.stageStartTime += now - state.lastTick;
+      state.lastTick = now;
+      var el = (now - state.stageStartTime) / 1000;
       hudTimerVal.textContent = el.toFixed(1) + "초";
     }, 100);
   }

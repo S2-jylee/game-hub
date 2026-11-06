@@ -1,0 +1,12 @@
+/* 영어 놀이 공통 배경: 하늘 + 해 + 초록 언덕 (단어 바구니 · 알파벳 펭귄 달리기와 같은 배경)
+   shared/english-bg.js 가 배경을 넣고 <body>에 en-bg-on 을 붙여요 */
+html.en-bg-on, body.en-bg-on { background: linear-gradient(#7cc8ff, #dff4ff 75%) fixed !important; }
+body.en-bg-on > .scene:not(.en-bg) { display: none !important; }
+.en-bg { position: fixed; inset: 0; pointer-events: none; overflow: hidden; z-index: 0; }
+.en-bg .en-sun {
+  position: absolute; top: 22px; right: 26px; width: 84px; height: 84px; border-radius: 50%;
+  background: radial-gradient(circle at 40% 40%, #fff7b0, #ffd23f 70%);
+  box-shadow: 0 0 0 12px #ffe98a66, 0 0 0 26px #ffe98a33;
+}
+.en-bg .en-hills { position: absolute; left: 0; right: 0; bottom: 0; width: 100%; height: 20vh; }
+@media (max-width: 560px) { .en-bg .en-sun { width: 64px; height: 64px; top: 16px; right: 16px; } }

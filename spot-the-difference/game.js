@@ -190,6 +190,8 @@
   function startTimer() {
     stopTimer();
     state.timerHandle = setInterval(function () {
+      // 방법 팝업이 떠 있는 동안은 시간이 줄지 않아요
+      if (document.querySelector(".gb-overlay.show")) return;
       state.timeLeft -= 0.1;
       if (state.timeLeft <= 0) {
         state.timeLeft = 0;

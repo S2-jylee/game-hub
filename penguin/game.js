@@ -465,7 +465,7 @@
 
   // 모바일(좁은 화면 · 가로로 눕힌 폰): 이동 속도를 절반 아래로 줄여요
   const MOBILE = window.matchMedia('(max-width: 560px), (pointer: coarse) and (max-height: 500px)');
-  const MOBILE_SPEED = 0.45;
+  const MOBILE_SPEED = 0.54; // 0.45에서 20% 빠르게
   function runFrame(now) {
     if (!run.active) return;
     const dt = Math.min(0.05, (now - run.last) / 1000);

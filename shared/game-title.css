@@ -189,3 +189,17 @@ body .card.card-wide > h2 { display: none !important; }
 #screen-levelselect { padding-top: 14px; }
 @media (max-width: 560px) { #screen-levelselect { padding-top: 12px; } }
 #screen-levelselect .card { padding-top: 14px; }
+
+/* ---- 문제 칸: 아래 안내 줄(q-sub)은 빼고 문제만 가운데 정렬 ---- */
+body .q-card .q-sub { display: none !important; }
+body .q-card { justify-content: center; text-align: center; }
+body .q-card .q-main { flex: 1; text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+
+/* ---- 스테이지·그림 고르기 화면(카드 짝맞추기·퍼즐·탱그램·코딩·시계)과 영어 게임 학년 고르기: 하얀 바탕 카드 없이 ---- */
+#screen-levelselect .card, body .card.en-main { background: transparent !important; border: none !important; box-shadow: none !important; }
+#screen-levelselect .card { padding-left: 0; padding-right: 0; }
+
+/* ---- 타자연습: 자리연습 아래 진행 막대는 숨겨요 ---- */
+.position-progress { display: none !important; }
+/* 단어 바구니 · 펭귄 달리기 학년 고르기 판도 하얀 바탕 없이 */
+#grade .panel.grade-panel { background: transparent !important; box-shadow: none !important; padding-left: 0; padding-right: 0; }

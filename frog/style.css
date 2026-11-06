@@ -57,3 +57,7 @@ html, body { background: linear-gradient(#d9f5f0, #fffdf6 70%); }
 
 /* 방향(점프) 버튼: 게임판 아래 가운데로 */
 .jump-pad { right: auto; left: 50%; transform: translateX(-50%); }
+
+/* 하트 목숨: 옆 정보칸(문제·점수) 높이에 맞게 크게 */
+.hud .hearts { font-size: 1.55rem; line-height: 1; letter-spacing: 1px; display: flex; align-items: center; }
+@media (max-width: 560px) { .hud .hearts { font-size: 1.35rem; letter-spacing: 0; } }
