@@ -1,0 +1,81 @@
+/* 영어 놀이 회화 공통 스타일 (talk-common.js · lane.js 와 같이 써요) */
+#screen-game { overflow: hidden; }
+.talk-stage { flex: 1; min-height: 0; width: 100%; display: flex; flex-direction: column; gap: 8px; }
+
+/* 🔊 다시 듣기 */
+.talk-say {
+  flex: none; width: 44px; height: 44px; border-radius: 50%; border: none; cursor: pointer;
+  background: #e0efff; font-size: 1.2rem; box-shadow: 0 2px 6px rgba(36, 27, 58, 0.1);
+}
+.talk-say:active { transform: scale(0.92); }
+
+/* 말풍선 (상대방의 말 · 손님의 주문 · 미션) */
+.talk-bubble {
+  display: flex; align-items: center; gap: 10px; width: 100%;
+  background: #fff; border-radius: 20px; padding: 10px 14px; box-shadow: 0 4px 14px rgba(36, 27, 58, 0.08);
+}
+.talk-bubble .tb-who { flex: none; font-size: 2.2rem; line-height: 1; }
+.talk-bubble .tb-main { flex: 1; min-width: 0; }
+.talk-bubble .tb-text { font-family: "Nunito", "Pretendard", sans-serif; font-weight: 800; font-size: 1.15rem; line-height: 1.3; color: #1d4ed8; }
+.talk-bubble .tb-sub { font-size: 0.78rem; color: var(--text-soft); margin-top: 2px; }
+.talk-bubble.pop { animation: tbPop 0.35s ease; }
+@keyframes tbPop { from { transform: scale(0.92); opacity: 0.3; } }
+.talk-msg { flex: none; height: 2.6em; display: flex; align-items: center; justify-content: center; text-align: center;
+  font-size: 0.9rem; font-weight: 700; line-height: 1.3; color: var(--text-dark); overflow: hidden; }
+
+/* ---- 3줄 달리기 트랙 (핑퐁 대화 · 문장 퍼즐 달리기) ---- */
+.lane-field {
+  position: relative; flex: 1; min-height: 280px; width: 100%; border-radius: 24px; overflow: hidden; touch-action: none;
+  background: linear-gradient(#bfe3ff, #e8f5ff 30%, #f3f9ff);
+  box-shadow: inset 0 0 0 3px rgba(255, 255, 255, 0.7);
+}
+.lane-field::before, .lane-field::after {
+  content: ""; position: absolute; top: 0; bottom: 0; width: 0; border-left: 3px dashed rgba(37, 99, 235, 0.22);
+}
+.lane-field::before { left: 33.333%; }
+.lane-field::after { left: 66.666%; }
+.lane-board {
+  position: absolute; top: 0; width: calc(33.333% - 10px); min-height: 66px; padding: 8px 6px; border-radius: 16px;
+  display: flex; align-items: center; justify-content: center; text-align: center;
+  background: #fff; border: 3px solid #93c5fd; box-shadow: 0 4px 0 rgba(37, 99, 235, 0.18);
+  font-family: "Nunito", "Pretendard", sans-serif; font-weight: 800; font-size: 0.92rem; line-height: 1.22; color: #1e3a8a;
+  word-break: keep-all; overflow-wrap: anywhere; will-change: transform;
+}
+.lane-board.ok { background: #dcfce7; border-color: #22c55e; color: #166534; }
+.lane-board.no { background: #fee2e2; border-color: #ef4444; color: #991b1b; }
+.lane-board.fade { transition: opacity 0.35s ease, transform 0.35s ease; opacity: 0; }
+.lane-player {
+  position: absolute; bottom: 16px; width: 33.333%; display: flex; justify-content: center; pointer-events: none;
+  font-size: 2.6rem; line-height: 1; transition: left 0.16s ease; filter: drop-shadow(0 4px 4px rgba(0, 0, 0, 0.18));
+}
+.lane-player.hit { animation: laneHit 0.45s ease; }
+@keyframes laneHit { 25%, 75% { transform: translateX(-6px) rotate(-8deg); } 50% { transform: translateX(6px) rotate(8deg); } }
+.lane-pad {
+  position: absolute; bottom: 10px; width: 56px; height: 56px; border-radius: 50%; z-index: 3; touch-action: none; cursor: pointer;
+  display: flex; align-items: center; justify-content: center; font-size: 22px; user-select: none;
+  background: rgba(255, 255, 255, 0.32); border: 2px solid rgba(255, 255, 255, 0.75); color: rgba(36, 27, 58, 0.55);
+}
+.lane-pad.left { left: 10px; }
+.lane-pad.right { right: 10px; }
+.lane-pad:active { background: rgba(255, 255, 255, 0.7); transform: scale(0.92); }
+.lane-help { position: absolute; left: 0; right: 0; bottom: 78px; text-align: center; font-size: 0.78rem; font-weight: 700; color: rgba(30, 58, 138, 0.55); pointer-events: none; }
+
+/* 문장 퍼즐: 모은 조각 칸 */
+.chunk-row { display: flex; flex-wrap: wrap; gap: 5px; justify-content: center; margin-top: 6px; }
+.chunk-slot {
+  min-width: 46px; min-height: 30px; padding: 4px 9px; border-radius: 10px; background: #f1f5fb; border-bottom: 3px solid #d6deeb;
+  font-family: "Nunito", "Pretendard", sans-serif; font-weight: 800; font-size: 0.9rem; color: transparent;
+  display: flex; align-items: center;
+}
+.chunk-slot.next { border-bottom-color: #60a5fa; animation: nextBlink 1s ease-in-out infinite; }
+.chunk-slot.done { background: #2563eb; color: #fff; border-bottom-color: rgba(0, 0, 0, 0.2); animation: bump 0.3s ease; }
+
+@media (max-width: 560px) {
+  .talk-bubble { padding: 8px 10px; gap: 8px; border-radius: 16px; }
+  .talk-bubble .tb-who { font-size: 1.8rem; }
+  .talk-bubble .tb-text { font-size: 1rem; }
+  .talk-say { width: 38px; height: 38px; font-size: 1.05rem; }
+  .lane-board { font-size: 0.8rem; min-height: 58px; padding: 6px 4px; border-radius: 13px; }
+  .lane-player { font-size: 2.2rem; }
+  .chunk-slot { font-size: 0.8rem; min-height: 26px; padding: 3px 7px; }
+}

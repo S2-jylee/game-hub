@@ -4,7 +4,8 @@
 (function () {
   // 음성 읽기(영어 단어·문제 읽어주기)는 모든 게임에서 꺼요
   try {
-    if (window.speechSynthesis) {
+    // 회화 게임(<html data-tts>)은 듣기가 중요해서 음성을 그대로 둬요
+    if (window.speechSynthesis && !document.documentElement.hasAttribute("data-tts")) {
       window.speechSynthesis.speak = function () {};
       window.speechSynthesis.cancel();
     }

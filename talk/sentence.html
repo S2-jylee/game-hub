@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="ko" data-tts>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<link rel="icon" href="data:,">
+<title>문장 퍼즐 조립 달리기</title>
+<link href="https://fonts.googleapis.com/css2?family=Jua&family=Gowun+Dodum&family=Nunito:wght@400;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css">
+<link rel="stylesheet" href="../spelling/style.css">
+<link rel="stylesheet" href="../spelling/guidebook.css">
+<link rel="stylesheet" href="talk.css">
+<link rel="stylesheet" href="../shared/game-title.css">
+<link rel="stylesheet" href="../shared/english-bg.css">
+</head>
+<body>
+<script src="../spelling/guidebook.js"></script>
+<script src="talk-common.js"></script>
+<script src="lane.js"></script>
+<script>
+(function () {
+  "use strict";
+  // [상황 미션, 순서대로 모을 조각들, 같은 자리의 틀린 조각들(어색한 어순 · 틀린 표현)]
+  var DATA = {
+    easy: [
+      ["친구에게 처음 만나 반갑다고 해 봐!", ["Nice to", "meet you!"], ["Nice for", "meets you!"]],
+      ["친구의 이름을 물어봐!", ["What's", "your name?"], ["Where's", "you name?"]],
+      ["정말 고맙다고 말해 봐!", ["Thank you", "so much!"], ["Thanks you", "very much the!"]],
+      ["친구에게 기분이 어떤지 물어봐!", ["How", "are you?"], ["Who", "is you?"]],
+      ["도와줘서 고맙다고 해 봐!", ["Thanks", "for", "your help!"], ["Thank", "to", "you help!"]],
+      ["내일 보자고 인사해 봐!", ["See you", "tomorrow!"], ["Look you", "yesterday!"]],
+      ["배가 너무 고프다고 말해 봐!", ["I'm", "so hungry."], ["I", "hungry am."]],
+      ["친구에게 미안하다고 해 봐!", ["I'm", "so sorry."], ["I", "sorry so."]],
+      ["친구의 생일을 축하해 줘!", ["Happy", "birthday!"], ["Funny", "birthdays!"]],
+      ["선생님께 아침 인사를 해 봐!", ["Good", "morning!"], ["Well", "mornings!"]]
+    ],
+    normal: [
+      ["친구에게 방과 후에 놀자고 자연스럽게 제안해 봐!", ["Do you want to", "hang out", "after school?"], ["Are you want", "play with me", "before school?"]],
+      ["물을 좀 달라고 부탁해 봐!", ["Can I", "have some", "water, please?"], ["Can I am", "have any", "waters, please?"]],
+      ["친구가 어디에 사는지 물어봐!", ["Where", "do you", "live?"], ["What", "are you", "lives?"]],
+      ["지금 몇 시인지 물어봐!", ["What", "time", "is it?"], ["How", "clock", "it is?"]],
+      ["같이 점심 먹자고 해 봐!", ["Let's", "have lunch", "together!"], ["Let", "has lunch", "togethers!"]],
+      ["무슨 색을 좋아하는지 물어봐!", ["What color", "do you", "like?"], ["Which colors", "are you", "likes?"]],
+      ["창문을 열어 달라고 공손하게 부탁해 봐!", ["Could you", "open the window,", "please?"], ["Could you are", "opens the window,", "pleases?"]],
+      ["친구에게 지금 뭐 하는지 물어봐!", ["What", "are you", "doing?"], ["Where", "do you", "doing?"]],
+      ["넘어진 친구에게 괜찮냐고 물어봐!", ["Are", "you", "okay?"], ["Is", "your", "okays?"]],
+      ["숙제를 다 했는지 물어봐!", ["Did you", "finish", "your homework?"], ["Do you", "finished", "you homework?"]]
+    ],
+    hard: [
+      ["넘어진 친구에게 괜찮은지, 반창고가 필요한지 물어봐!", ["Are you okay?", "Do you", "need", "a band-aid?"], ["Is you okay?", "Does you", "needs", "an band-aid?"]],
+      ["도서관이 어디인지 공손하게 물어봐!", ["Excuse me,", "could you tell me", "where", "the library is?"], ["Excuse to me,", "could you telling me", "what", "is the library?"]],
+      ["이번 주말에 뭘 할 건지 물어봐!", ["What", "are you going to", "do", "this weekend?"], ["Which", "are you go to", "doing", "last weekend?"]],
+      ["친구를 생일 파티에 초대해 봐!", ["Would you like", "to come", "to my", "birthday party?"], ["Would you likes", "coming", "at my", "birthdays party?"]],
+      ["같이 숙제하자고 제안해 봐!", ["How about", "doing", "our homework", "together?"], ["How about to", "do", "we homework", "togethers?"]],
+      ["연필을 잠깐 빌려도 되는지 물어봐!", ["Can I", "borrow", "your pencil", "for a minute?"], ["Can I am", "borrowing", "you pencil", "for an minute?"]],
+      ["이 상자를 같이 들어 달라고 부탁해 봐!", ["Could you", "help me", "with", "this box?"], ["Could you are", "helps me", "to", "this boxes?"]],
+      ["친구에게 어제 뭐 했는지 물어봐!", ["What", "did you", "do", "yesterday?"], ["What", "do you", "did", "tomorrow?"]],
+      ["늦어서 미안하다고, 버스가 느렸다고 말해 봐!", ["I'm sorry", "I'm late.", "The bus", "was slow."], ["I'm sorry to", "I late.", "A bus", "were slow."]],
+      ["학교에 같이 걸어가자고 해 봐!", ["Let's", "walk", "to school", "together!"], ["Let's to", "walking", "at school", "togethers!"]]
+    ]
+  };
+
+  Talk.mount({
+    id: "talk_sentence", title: "문장 퍼즐 조립 달리기", unit: "문장", total: 8, goLabel: "출발 ▶",
+    levels: [
+      { id: "easy", name: "쉬움", emoji: "🐣", desc: "조각 2~3개 · 인사말", bg: "#ecfccb", c: "#65a30d", travel: 6.2 },
+      { id: "normal", name: "보통", emoji: "🐥", desc: "조각 3개 · 물어보기 · 부탁", bg: "#dbeafe", c: "#2563eb", travel: 5.4 },
+      { id: "hard", name: "어려움", emoji: "🦅", desc: "조각 4개 · 긴 문장", bg: "#fce7f3", c: "#db2777", travel: 4.8 }
+    ],
+    guide: function () {
+      return [
+        { icon: "🎯", title: "상황 미션", text: "위에 <b>이렇게 말해 봐!</b> 하는 상황이 나와요. 빈칸 수만큼 문장 조각을 모아요." },
+        { icon: "🧩", title: "조각을 순서대로", text: "트랙 위로 조각 판 3개가 내려와요. <b>문장의 다음 조각</b>이 있는 줄로 가서 먹어요.<br>예) <b>Do you want to</b> → <b>hang out</b> → <b>after school?</b>" },
+        { icon: "◀", title: "줄 바꾸기", text: "<b>◀ ▶</b> · 방향키 · 옆으로 밀기 · 가고 싶은 줄을 <b>톡</b>." },
+        { icon: "🚫", title: "어색한 조각은 장애물", text: "어순이 틀리거나 어색한 표현(예: <b>Are you want</b>)을 밟으면 하트가 하나 줄어요. 문장 <b>8개</b>를 완성하면 성공!" }
+      ];
+    },
+    create: function (stage, lv) {
+      var list = Talk.shuffle(DATA[lv.id].slice()).slice(0, 8);
+      stage.innerHTML =
+        '<div class="talk-bubble" id="sp-bubble"><div class="tb-who">🎯</div><div class="tb-main"><div class="tb-sub" id="sp-mission" style="font-size:.95rem;font-weight:800;color:var(--text-dark)"></div><div class="chunk-row" id="sp-slots"></div></div></div>' +
+        '<div class="talk-msg" id="talk-msg"></div>' +
+        '<div id="sp-field"></div>';
+      var cur = null, idx = 0, missed = false;
+      Talk.$("#sp-bubble").appendChild(Talk.sayButton(function () { return cur ? cur[1].join(" ") : ""; }));
+      function slots() {
+        Talk.$("#sp-slots").innerHTML = cur[1].map(function (c, i) {
+          return '<span class="chunk-slot ' + (i < idx ? "done" : i === idx ? "next" : "") + '">' + Talk.esc(c) + "</span>";
+        }).join("");
+      }
+      var lane = Lane.make(Talk.$("#sp-field"), {
+        player: "🦊", travel: lv.travel,
+        onPass: function (row, at) {
+          var p = lane.playerRect();
+          if (at === row.data.correct) {
+            idx++;
+            slots();
+            if (idx >= cur[1].length) {
+              Talk.good(p.left + p.width / 2, p.top, missed ? 10 : 15);
+              Talk.msg("🎉 <b>" + Talk.esc(cur[1].join(" ")) + "</b>");
+              Talk.speak(cur[1].join(" "));
+              setTimeout(next, 1900);
+            } else {
+              Talk.sfx.coin();
+              Talk.msg("좋아요! 다음 조각은?");
+              setTimeout(spawnRow, 450);
+            }
+            return { correct: row.data.correct };
+          }
+          missed = true;
+          Talk.msg("앗! 다음 조각은 <b>" + Talk.esc(cur[1][idx]) + "</b> 예요");
+          if (Talk.bad()) setTimeout(spawnRow, 1300);
+          return { correct: row.data.correct, hit: true };
+        }
+      });
+      function spawnRow() {
+        if (Talk.G.over) return;
+        var right = cur[1][idx];
+        // 틀린 조각: 같은 자리의 어색한 표현 + (나중에 나올 조각 또는 다른 어색한 표현)
+        var pool = cur[2].filter(function (w, i) { return i !== idx && w !== right; }).concat(cur[1].slice(idx + 1));
+        var wrong = [cur[2][idx], Talk.shuffle(pool.filter(function (w) { return w !== cur[2][idx] && w !== right; }))[0] || cur[2][(idx + 1) % cur[2].length]];
+        var opts = Talk.shuffle([right, wrong[0], wrong[1]]);
+        lane.spawn(opts, { correct: opts.indexOf(right) });
+      }
+      function ask(i) {
+        cur = list[i]; idx = 0; missed = false;
+        Talk.$("#sp-mission").textContent = cur[0];
+        slots();
+        var b = Talk.$("#sp-bubble"); b.classList.remove("pop"); void b.offsetWidth; b.classList.add("pop");
+        Talk.msg("첫 번째 조각을 찾아요!");
+        setTimeout(spawnRow, 600);
+      }
+      function next() { if (Talk.G.over) return; if (Talk.next()) ask(Talk.G.q); }
+      return { begin: function () { ask(0); }, stop: function () { lane.stop(); } };
+    }
+  });
+})();
+</script>
+<script src="../shared/game-title.js"></script>
+<script src="../shared/english-bg.js"></script>
+</body>
+</html>

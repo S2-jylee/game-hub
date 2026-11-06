@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="ko" data-tts>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<link rel="icon" href="data:,">
+<title>핑퐁 대화 티키타카</title>
+<link href="https://fonts.googleapis.com/css2?family=Jua&family=Gowun+Dodum&family=Nunito:wght@400;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css">
+<link rel="stylesheet" href="../spelling/style.css">
+<link rel="stylesheet" href="../spelling/guidebook.css">
+<link rel="stylesheet" href="talk.css">
+<link rel="stylesheet" href="../shared/game-title.css">
+<link rel="stylesheet" href="../shared/english-bg.css">
+</head>
+<body>
+<script src="../spelling/guidebook.js"></script>
+<script src="talk-common.js"></script>
+<script src="lane.js"></script>
+<script>
+(function () {
+  "use strict";
+  // [상대방의 말, 자연스러운 대답(정답), 어색한 대답, 동문서답, 한 줄 도움말]
+  var DATA = {
+    easy: [
+      ["Hi! How are you?", "I'm great, thanks!", "I'm ten years old.", "It's a pencil.", "안부를 물으면 기분을 말해요"],
+      ["Nice to meet you!", "Nice to meet you, too!", "Goodbye, see you!", "It's very big.", "처음 만나면 똑같이 반갑다고 해요"],
+      ["Thank you for the gift!", "You're welcome!", "No, thank you.", "I like pizza.", "고맙다고 하면 You're welcome!"],
+      ["What's your name?", "My name is Mina.", "I'm fine, thank you.", "It's sunny today.", "이름을 물으면 이름을 말해요"],
+      ["See you tomorrow!", "See you!", "Nice to meet you!", "I'm hungry.", "헤어질 때 인사"],
+      ["Can I sit here?", "Sure, go ahead!", "I'm sorry to hear that.", "It's my birthday.", "앉아도 되냐고 물으면 허락해요"],
+      ["I'm sorry I'm late.", "That's okay.", "You're welcome.", "It's blue.", "사과하면 괜찮다고 해요"],
+      ["Do you like ice cream?", "Yes, I love it!", "It's ten o'clock.", "Thank you, too.", "좋아하냐고 물으면 Yes / No"],
+      ["Happy birthday!", "Thank you so much!", "Me too!", "It's on the desk.", "축하를 받으면 고맙다고 해요"],
+      ["Good morning!", "Good morning!", "Good night!", "It's a cat.", "아침 인사에는 아침 인사"],
+      ["How old are you?", "I'm nine years old.", "I'm fine.", "It's red.", "나이를 물으면 나이를 말해요"],
+      ["Where is my bag?", "It's under the chair.", "Yes, it is.", "I'm happy.", "어디 있냐고 물으면 위치를 말해요"]
+    ],
+    normal: [
+      ["I lost my favorite pencil today...", "Oh, I'm so sorry to hear that.", "That's awesome!", "Yes, please.", "속상한 친구에게는 공감해 줘요"],
+      ["I got a perfect score on my test!", "Wow, congratulations!", "Oh no, that's too bad.", "I'm under the table.", "좋은 일에는 축하해 줘요"],
+      ["I'm so tired today.", "You should get some rest.", "Great job!", "It's a banana.", "피곤한 친구에게는 쉬라고 해요"],
+      ["My dog is sick.", "Oh no! I hope he gets better soon.", "Lucky you!", "It's Monday.", "아픈 일에는 빨리 낫기를 빌어요"],
+      ["I'm nervous about the race.", "Don't worry, you can do it!", "That's boring.", "I have two brothers.", "떨리는 친구에게는 응원해요"],
+      ["I made a new friend today!", "That's great to hear!", "I'm sorry about that.", "It's raining.", "기쁜 소식에는 같이 기뻐해요"],
+      ["I can't find my cat.", "Let's look for her together.", "That sounds great!", "I like chocolate.", "곤란한 친구에게는 도와주자고 해요"],
+      ["I fell down and hurt my knee.", "Are you okay?", "Congratulations!", "It's my pencil.", "다친 친구에게는 괜찮냐고 물어요"],
+      ["I won the game!", "Good for you!", "Oh, that's too bad.", "Where is the bus?", "이긴 친구에게는 축하해요"],
+      ["I'm really hungry.", "Let's get something to eat.", "You're welcome.", "It's very cold.", "배고프다면 먹으러 가자고 해요"],
+      ["It's my first day at this school.", "Welcome! I can show you around.", "That's too bad.", "I have a red bike.", "새 친구는 반겨 줘요"],
+      ["I broke my mom's cup...", "Maybe you can tell her you're sorry.", "Wow, that's cool!", "I want a hamburger.", "실수한 친구에게는 방법을 알려줘요"]
+    ],
+    hard: [
+      ["Can you help me carry these books?", "Sure, I'd be happy to help.", "No, it's my book.", "I'm eleven.", "도와 달라고 하면 기꺼이 도와줘요"],
+      ["Would you like some cookies?", "Yes, please. Thank you!", "No, you can't.", "It's next to the park.", "권하면 Yes, please / No, thank you"],
+      ["Do you want to come to my party?", "I'd love to! When is it?", "I'm sorry to hear that.", "I like blue.", "초대를 받으면 기쁘게 대답해요"],
+      ["Could you open the window, please?", "Of course!", "Yes, it's a window.", "I'm hungry.", "부탁을 들으면 Of course!"],
+      ["Excuse me, where is the library?", "It's next to the gym.", "Yes, I like books.", "Thank you, too!", "길을 물으면 위치를 알려줘요"],
+      ["Let's play soccer after school!", "Sounds good! See you there.", "I'm sorry to hear that.", "It's a pencil case.", "제안이 좋으면 Sounds good!"],
+      ["May I borrow your eraser?", "Sure, here you go.", "You're welcome.", "It's Tuesday.", "빌려 달라고 하면 건네줘요"],
+      ["Shall we take a break?", "Good idea. I'm tired.", "Nice to meet you!", "My bag is green.", "쉬자는 말에 찬성해요"],
+      ["I don't understand this question.", "Let me explain it to you.", "Me too, I love it!", "It's cloudy.", "모르는 친구에게 설명해 줘요"],
+      ["Can I try your bike?", "Sure, but be careful!", "No, it's a bike.", "I had rice for lunch.", "타 봐도 되냐고 물으면 허락해요"],
+      ["What should we do this weekend?", "How about going to the zoo?", "Yes, I did.", "It's under the bed.", "뭐 할지 물으면 제안해요"],
+      ["Thank you for helping me today.", "No problem. Anytime!", "I'm sorry I'm late.", "It's five o'clock.", "고맙다는 말에 별거 아니라고 해요"]
+    ]
+  };
+  var WHO = ["🐻", "🐰", "🦊", "🐼", "🐨", "🐯", "🐷", "🐱", "🦁", "🐶"];
+
+  Talk.mount({
+    id: "talk_pingpong", title: "핑퐁 대화 티키타카", total: 10, goLabel: "출발 ▶",
+    levels: [
+      { id: "easy", name: "쉬움", emoji: "🐣", desc: "인사 · 기본 대답", bg: "#ecfccb", c: "#65a30d", travel: 7.5 },
+      { id: "normal", name: "보통", emoji: "🐥", desc: "기분 · 공감 표현", bg: "#dbeafe", c: "#2563eb", travel: 6.5 },
+      { id: "hard", name: "어려움", emoji: "🦅", desc: "부탁 · 제안 · 초대", bg: "#fce7f3", c: "#db2777", travel: 5.5 }
+    ],
+    guide: function () {
+      return [
+        { icon: "💬", title: "친구가 말을 걸어요", text: "위 말풍선에 친구의 말이 나오고 <b>소리</b>로도 들려줘요. 🔊 를 누르면 다시 들어요." },
+        { icon: "🚧", title: "대답 판 3개", text: "트랙 위로 <b>대답 판 3개</b>가 내려와요. 그중 <b>가장 자연스러운 대답</b>을 골라요." },
+        { icon: "◀", title: "줄 바꾸기", text: "<b>◀ ▶</b> · 방향키 · 옆으로 밀기 · 가고 싶은 줄을 <b>톡</b> 눌러서 그 판으로 가요." },
+        { icon: "❤️", title: "틀리면 하트가 줄어요", text: "어색한 대답이나 엉뚱한 대답을 지나가면 하트가 하나 줄어요. <b>10번</b> 대답하면 성공!" }
+      ];
+    },
+    create: function (stage, lv) {
+      var list = Talk.shuffle(DATA[lv.id].slice()).slice(0, 10);
+      stage.innerHTML =
+        '<div class="talk-bubble" id="pp-bubble"><div class="tb-who" id="pp-who">🐻</div><div class="tb-main"><div class="tb-text" id="pp-text"></div><div class="tb-sub" id="pp-sub"></div></div></div>' +
+        '<div class="talk-msg" id="talk-msg"></div>' +
+        '<div id="pp-field"></div>';
+      var bubble = Talk.$("#pp-bubble");
+      var cur = null;
+      bubble.appendChild(Talk.sayButton(function () { return cur ? cur[0] : ""; }));
+      var lane = Lane.make(Talk.$("#pp-field"), {
+        player: "🐰", travel: lv.travel,
+        onPass: function (row, at) {
+          var r = row.data, p = lane.playerRect();
+          if (at === r.correct) {
+            Talk.good(p.left + p.width / 2, p.top);
+            Talk.msg("👍 <b>" + Talk.esc(r.q[1]) + "</b> 자연스러워요!");
+            Talk.speak(r.q[1]);
+            setTimeout(next, 1500);
+            return { correct: r.correct };
+          }
+          Talk.msg("앗! 이럴 땐 <b>" + Talk.esc(r.q[1]) + "</b> 💡 " + Talk.esc(r.q[4]));
+          if (Talk.bad()) setTimeout(next, 2300);
+          return { correct: r.correct, hit: true };
+        }
+      });
+      function ask(i) {
+        cur = list[i];
+        Talk.$("#pp-who").textContent = WHO[i % WHO.length];
+        Talk.$("#pp-text").textContent = cur[0];
+        Talk.$("#pp-sub").textContent = "가장 자연스러운 대답으로 달려가요!";
+        bubble.classList.remove("pop"); void bubble.offsetWidth; bubble.classList.add("pop");
+        Talk.msg("");
+        Talk.speak(cur[0]);
+        var opts = Talk.shuffle([cur[1], cur[2], cur[3]]);
+        setTimeout(function () { if (!Talk.G.over) lane.spawn(opts, { q: cur, correct: opts.indexOf(cur[1]) }); }, 700);
+      }
+      function next() { if (Talk.G.over) return; if (Talk.next()) ask(Talk.G.q); }
+      return { begin: function () { ask(0); }, stop: function () { lane.stop(); } };
+    }
+  });
+})();
+</script>
+<script src="../shared/game-title.js"></script>
+<script src="../shared/english-bg.js"></script>
+</body>
+</html>
