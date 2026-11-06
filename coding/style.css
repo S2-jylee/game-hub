@@ -291,6 +291,7 @@ h1 { font-family: "CookieRun", "Jua", sans-serif; font-size: 2.6rem; margin: 6px
   align-items: center;
   justify-content: center;
   background: rgba(36, 27, 58, 0.42);
+  z-index: 40;
 }
 .completion-modal.show { display: flex; }
 .completion-card {
