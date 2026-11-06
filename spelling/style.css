@@ -335,3 +335,8 @@ html, body {
 .hint-blanks.num .blank.q { color: #4b3a75; font-family: "Pretendard", sans-serif; font-size: 0.95rem; font-weight: 800; }
 .hint-blanks.num .blank.q.next { color: #4d7c0f; }
 @media (max-width: 560px) { .hint-blanks.num .blank.q { font-size: 0.72rem; min-width: 34px; } }
+
+/* 하트 목숨은 한 줄로 (작게) */
+@media (max-width: 560px) {
+  .hearts { display: flex; flex-wrap: nowrap; gap: 0; font-size: 0.8rem; letter-spacing: -1px; }
+}

@@ -13,6 +13,9 @@
   function visible(el) { return !!el && el.getClientRects().length > 0; }
 
   function goHubHome() {
+    // 영어 게임처럼 돌아갈 메뉴(← 영어 놀이)가 있으면 그리로
+    var menu = document.querySelector("a.back-link[href]");
+    if (menu && !/[?&]mul=1/.test(location.search)) { location.href = menu.href; return; }
     if (window.parent !== window) window.parent.postMessage({ type: "hub-home" }, "*");
     else location.href = "../index.html";
   }
@@ -22,7 +25,9 @@
     var cands = screen.querySelectorAll("button, a");
     for (var i = 0; i < cands.length; i++) {
       var b = cands[i], t = (b.textContent || "").trim();
-      if (b.classList.contains("gt-back") || !visible(b)) continue;
+      // 아래 '처음으로/← …' 줄을 화면에서 숨겼어도(영어 게임 메인) 그 버튼을 대신 눌러요. 허브가 숨긴 버튼(style=display:none)은 빼요
+      if (b.classList.contains("gt-back") || b.style.display === "none") continue;
+      if (!visible(b) && !b.closest(".en-main")) continue;
       if (t.charAt(0) === "←" || t === "처음으로" || t.indexOf("처음으로") >= 0) return b;
     }
     return null;

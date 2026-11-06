@@ -47,8 +47,8 @@
       "<h3>" + o.title + "</h3>" +
       '<ul class="gb-pop-list">' + items + "</ul>" +
       (o.onStart
-        ? '<button type="button" class="gb-ok gb-skip">' + (o.startLabel || "확인") + "</button>" +
-          '<div><button type="button" class="gb-back">← 돌아가기</button></div>'
+        ? '<div class="gb-btns"><button type="button" class="gb-back">← 돌아가기</button>' +
+          '<button type="button" class="gb-ok gb-skip">' + (o.startLabel || "확인") + "</button></div>"
         : '<button type="button" class="gb-ok">닫기</button>');
     boxEl.querySelector(".gb-ok").addEventListener("click", function () { if (cur && cur.onStart) start(); else close(true); });
     var back = boxEl.querySelector(".gb-back");

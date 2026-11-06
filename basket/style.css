@@ -337,3 +337,7 @@ button{font-family:inherit;font-weight:inherit;color:inherit;cursor:pointer;bord
   #run .run-pad.right, #catch .run-pad.right { right: 8px; left: auto; }
   .catch-pad { display: flex; }
 }
+
+/* 메인(학년 고르기): 위쪽 "← 처음으로"·이름표 줄은 빼요 (제목 왼쪽 ← 버튼을 써요) */
+#grade .home-top { display: none; }
+.grade-panel .row { margin: 0 0 10px; }

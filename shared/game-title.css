@@ -129,3 +129,45 @@ body .bp-start-text, body .gb-start-text { font-size: 1.4rem; }
   body .bp-text { max-width: none; width: 100%; text-align: center; }
   body .bp-visual { width: min(200px, 55vw); }
 }
+
+/* ---- ← 뒤로 버튼: 모든 게임에서 타자연습과 같은 자리(화면 왼쪽 위)에 고정 ---- */
+.gt-back { position: fixed; left: 12px; top: 12px; transform: none; z-index: 60; box-shadow: 0 2px 8px rgba(36, 27, 58, 0.12); }
+.gt-back:active { transform: scale(0.92); }
+@media (max-width: 560px) { .gt-back { left: 10px; top: 10px; } }
+
+/* ---- 스테이지 클리어 팝업: 세로를 줄이고 '다음 스테이지' 버튼도 작게 ---- */
+body .completion-card { padding: 16px 18px 14px; }
+body .completion-emoji { font-size: 2.2rem; line-height: 1; }
+body .completion-title { font-size: 1.3rem; margin-top: 2px; }
+body .completion-stars { font-size: 1.7rem; margin: 6px 0 0; }
+body .completion-percent, body .completion-sub, body .completion-scoregain { margin-top: 2px; margin-bottom: 0; }
+body .completion-buttons { margin-top: 8px; gap: 4px; flex-direction: row; flex-wrap: wrap; justify-content: center; }
+body .completion-buttons .btn { font-size: 0.9rem; padding: 8px 14px; margin: 0; }
+body .completion-buttons .btn-huge { font-size: 1rem; padding: 10px 24px; border-radius: 999px; width: 100%; }
+
+/* ---- 게임 화면 위쪽 정보줄: ← 나가기 버튼은 맨 왼쪽 ---- */
+.hud #btn-quit { order: -1; margin-right: auto; }
+
+/* ---- 휴대폰: 넓은 카드(card-wide) 좌우 여백을 줄이고, 스테이지 칸은 2개씩 ---- */
+@media (max-width: 560px) {
+  body .card.card-wide { width: calc(100% - 16px); max-width: none; padding-left: 10px; padding-right: 10px; }
+  body .level-grid:has(> .level-grid-btn) { grid-template-columns: repeat(2, 1fr); gap: 8px; }
+}
+
+/* ---- 영어 게임 메인(학년·난이도·미션 고르기): 단어 바구니·펭귄 달리기 메인과 같은 모양 ----
+   제목은 카드 밖 맨 위, 카드는 위쪽에 붙이고, 질문 제목·안내문·아래 '처음으로' 줄은 빼요 (← 버튼을 써요) */
+.screen:has(> .en-main) { justify-content: flex-start; padding: 14px 0 16px; overflow-y: auto; }
+.screen:has(> .en-main) > h1.game-title { margin: 0 0 10px; }
+body .card.en-main { padding: 14px; border-radius: 26px; max-height: none; overflow: visible; }
+.en-main > h2:not(:has(.grade-tag)), .en-main > .grade-note, .en-main > .row-buttons { display: none !important; }
+.en-main > h2:has(.grade-tag) { font-size: 1.1rem; margin: 0 0 10px; }
+/* 학년 타일에도 바구니처럼 '시작 ▶' */
+.en-main .grade-btn::after {
+  content: "시작 ▶"; display: inline-block; margin-top: 6px; padding: 5px 16px; border-radius: 999px;
+  background: var(--c, #7c2ce0); color: #fff; font-weight: 800; font-size: 0.85rem;
+}
+@media (max-width: 560px) {
+  .screen:has(> .en-main) { padding-top: 10px; }
+  body .card.en-main { width: calc(100% - 16px); padding: 10px; }
+  .en-main .grade-btn::after { font-size: 0.75rem; padding: 4px 12px; margin-top: 4px; }
+}

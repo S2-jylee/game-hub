@@ -352,3 +352,11 @@ button{font-family:inherit;font-weight:inherit;color:inherit;cursor:pointer;bord
   #run .energy { padding: 5px 10px; }
   #run .energy-ico { font-size: 17px; }
 }
+
+/* 메인(학년 고르기): 위쪽 "← 처음으로"·이름표 줄은 빼요 (제목 왼쪽 ← 버튼을 써요) */
+#grade .home-top { display: none; }
+.grade-panel .row { margin: 0 0 10px; }
+
+/* ◀ ▶ 버튼: 좌우 끝에서 조금 더 안쪽으로 */
+#run .run-pad.left { left: 32px; }
+#run .run-pad.right { right: 32px; }

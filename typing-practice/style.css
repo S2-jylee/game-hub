@@ -1392,3 +1392,13 @@ html { background: #fff5e6; }
   .prompt-next-label { font-size: 0.72rem; margin-bottom: 3px; }
   .finger-label { font-size: 0.92rem; margin-bottom: 4px; }
 }
+
+/* ---- 휴대폰: 화면 자판(휴대폰 키보드)이 올라오니까 그림 자판·손 그림은 숨겨요. 홈 카드는 2개씩 ---- */
+@media (max-width: 560px) {
+  .keyboard-stage, .virtual-keyboard, .finger-guide { display: none !important; }
+  .tile-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+  .tile { padding: 16px 8px; gap: 6px; border-radius: 20px; }
+  .tile-emoji { width: 56px; height: 56px; font-size: 1.8rem; }
+  .tile-title { font-size: 1rem; }
+  .tile-desc { font-size: 0.75rem; }
+}

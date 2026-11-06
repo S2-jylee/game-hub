@@ -591,7 +591,7 @@
     }
     delBtn.disabled = state.running || !state.prog.length;
     clearBtn.disabled = state.running;
-    clearBtn.textContent = level.prefill ? "↩️ 처음 코드" : "🗑️ 모두";
+    clearBtn.textContent = level.prefill ? "↩️ 처음 코드" : "🗑️ 모두 지우기";
   }
 
   // ---- 끌어다 놓기 ----------------------------------------------------------

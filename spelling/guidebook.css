@@ -217,3 +217,8 @@
 }
 .gb-top-btn:hover { transform: translateY(-2px); }
 .gb-top-btn:active { transform: scale(0.95); }
+
+/* 방법 팝업: '← 돌아가기'와 '확인' 버튼을 한 줄에 */
+.gb-btns { display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 6px; flex-wrap: nowrap; }
+.gb-btns .gb-back, .gb-btns .gb-ok { margin: 0; }
+.gb-btns .gb-back { padding: 10px 16px; white-space: nowrap; }
