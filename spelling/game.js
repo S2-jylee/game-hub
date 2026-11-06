@@ -538,7 +538,7 @@
     return '<div class="rank-title">🏆 ' + grade.grade + "학년 " + G.level.name + " 랭킹</div><ol>" + html + '</ol><div class="rank-note">' + note + "</div>";
   }
 
-  $("#btn-again").addEventListener("click", function () { startRound(G.level); });
+  $("#btn-again").addEventListener("click", function () { chooseLevel(G.level); });
   $("#btn-result-level").addEventListener("click", function () { renderLevels(); show("screen-level"); });
   $("#btn-quit").addEventListener("click", function () {
     G.active = false; cancelAnimationFrame(G.raf);

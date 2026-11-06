@@ -597,7 +597,7 @@
     });
     show("screen-result");
   }
-  $("#btn-again").addEventListener("click", startRound);
+  $("#btn-again").addEventListener("click", choose);
   $("#btn-result-mode").addEventListener("click", function () { if (MATH) { ML.back(); return; } renderModes(); show("screen-mode"); });
   $("#btn-quit").addEventListener("click", function () { stopRound(); if (MATH) { ML.back(); return; } renderModes(); show("screen-mode"); });
 

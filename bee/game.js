@@ -484,7 +484,7 @@
     });
     show("screen-result");
   }
-  $("#btn-again").addEventListener("click", startGame);
+  $("#btn-again").addEventListener("click", choose);
   $("#btn-result-back").addEventListener("click", () => { if (MATH) ML.back(); else { renderGrades(); show("screen-grade"); } });
   $("#btn-quit").addEventListener("click", () => { stopGame(); if (MATH) ML.back(); else { renderGrades(); show("screen-grade"); } });
   $("#btn-say").addEventListener("click", () => { if (G.cur) { if (MATH) speak(G.cur.say, "ko-KR"); else speak(G.cur.say); } });

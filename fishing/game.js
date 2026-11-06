@@ -9,6 +9,7 @@
   const ML = window.MulLink || { on: false }, MATH = ML.on;
   const GRADES = window.SPELL_GRADES;
   const TOTAL = 12, LIVES = 5;
+  const MAX_FISH = 7;          // 바닷속 물고기는 많아야 7마리
   const PROFILES_KEY = "fishing_profiles", GUIDE_ID = MATH ? "fishing_mul" : "fishing";
   const SOUND = !MATH || ML.sound;
   const VOWELS = "AEIOU", CONSONANTS = "BCDFGHKLMNPRSTW";
@@ -246,10 +247,16 @@
     $("#q-sub").textContent = q.sub;
     $("#hud-q").textContent = (G.i + 1) + " / " + TOTAL;
     animate($(".q-card"), "pop");
-    // 바닷속 물고기를 새 문제로 바꿔요: 정답 물고기 1~2마리 + 헷갈리는 물고기
-    G.fish.forEach(f => { f.leave = true; });
-    const vals = shuffle([q.ans].concat(q.decoys.slice(0, 4)));
-    vals.forEach((v, k) => addFish(v, k * 0.5));
+    // 바닷속 물고기는 그대로 계속 헤엄쳐요. 먼저 나와 있던 물고기도 새 정답이면 낚을 수 있어요.
+    // 정답 물고기가 없을 때만 넣고, 헷갈리는 물고기를 몇 마리 더해요
+    const live = G.fish.filter(f => !f.leave && !f.caught);
+    const add = live.some(f => f.v === q.ans) ? [] : [q.ans];
+    const want = live.length ? 3 : 5;
+    shuffle(q.decoys.slice()).forEach(v => { if (add.length < want && !live.some(f => f.v === v) && add.indexOf(v) < 0) add.push(v); });
+    // 너무 많아지면 오래된 물고기부터 천천히 헤엄쳐 나가요 (정답 물고기는 남겨요)
+    let over = live.length + add.length - MAX_FISH;
+    live.forEach(f => { if (over > 0 && f.v !== q.ans) { f.leave = true; over--; } });
+    shuffle(add).forEach((v, k) => addFish(v, k * 0.5));
     G.spawnT = 3;
   }
   function addFish(v, delay) {
@@ -356,7 +363,7 @@
     // 물고기 헤엄
     G.fish.forEach(f => {
       if (f.caught) return;
-      f.x += f.dir * f.speed * dt * (f.leave ? 3 : 1);
+      f.x += f.dir * f.speed * dt;
       if (f.flee > 0) f.flee = Math.max(0, f.flee - dt);
       if (!f.leave && f.speed > 0.1 && f.flee <= 0) f.speed = 0.06;
       // 화면 끝에서 돌아와요 (떠나는 물고기는 그냥 나가요)
@@ -501,7 +508,7 @@
     });
     show("screen-result");
   }
-  $("#btn-again").addEventListener("click", startGame);
+  $("#btn-again").addEventListener("click", choose);
   $("#btn-result-back").addEventListener("click", () => { if (MATH) ML.back(); else { renderGrades(); show("screen-grade"); } });
   $("#btn-quit").addEventListener("click", () => { stopGame(); if (MATH) ML.back(); else { renderGrades(); show("screen-grade"); } });
   $("#btn-say").addEventListener("click", () => { if (G.cur) { if (MATH) speak(G.cur.say, "ko-KR"); else speak(G.cur.say); } });

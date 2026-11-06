@@ -56,6 +56,8 @@
     who.classList.remove("show");
     var g = pendingGame; pendingGame = null;
     if (g) openGame(g);
+    // 게임 안의 이름표로 바꿨으면, 보던 게임을 새 사용자로 다시 열어요
+    else if (gameScreen.classList.contains("active") && currentGame) reloadGame(v);
   }
   function openWho(gameKey) {
     pendingGame = gameKey || null;
@@ -90,12 +92,30 @@
   document.getElementById("who-close").addEventListener("click", function () { pendingGame = null; who.classList.remove("show"); });
   who.addEventListener("click", function (e) { if (e.target === who) { pendingGame = null; who.classList.remove("show"); } });
   document.getElementById("btn-switch-user").addEventListener("click", function () { openWho(null); });
+  // 게임 안의 이름표(👤 게스트 [전환])를 누르면 게임이 알려줘요 → 같은 사용자 전환 팝업
+  window.addEventListener("message", function (e) {
+    if (e.source === gameFrame.contentWindow && e.data && e.data.type === "hub-switch-user") openWho(null);
+  });
   renderUserBtn();
 
+  var currentGame = null;
+  // 보던 게임 페이지를 그대로 새 사용자로 다시 열어요 (다른 주소의 게임은 처음부터)
+  function reloadGame(u) {
+    var href = null;
+    try { href = gameFrame.contentWindow.location.href; } catch (e) { href = null; }
+    if (!href || href === "about:blank") { openGame(currentGame); return; }
+    var url = new URL(href);
+    url.searchParams.set("hub", u);
+    url.searchParams.delete("back");
+    // 구구단 놀이터에서 연 게임(?mul=1)은 기록을 저장할 사용자도 바꿔요
+    if (url.searchParams.has("u")) url.searchParams.set("u", u === "guest" ? "" : u.slice(2));
+    gameFrame.contentWindow.location.replace(url.toString());
+  }
   function openGame(key) {
     if (!GAMES[key]) return;
     var u = currentUser();
     if (!u) { openWho(key); return; }
+    currentGame = key;
     var url = GAMES[key];
     gameFrame.src = url + (url.indexOf("?") < 0 ? "?" : "&") + "hub=" + encodeURIComponent(u);
     Array.prototype.forEach.call(document.querySelectorAll(".nav-item"), function (btn) {
@@ -106,6 +126,7 @@
   }
 
   function goHome() {
+    currentGame = null;
     gameScreen.classList.remove("active");
     homeScreen.classList.add("active");
     gameFrame.src = "";

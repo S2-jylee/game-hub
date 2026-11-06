@@ -3,6 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<link rel="icon" href="data:,">
 <title>구구단 놀이터</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -499,6 +500,17 @@ button{font-family:inherit;font-weight:inherit;color:inherit;cursor:pointer;bord
   </div>
 </div>
 
+<!-- 연습 놀이 · 도전 놀이 · 정답 바구니 시작 전 안내 (펭귄 달리기 안내와 같은 모양) -->
+<div class="modal hidden" id="gameIntro">
+  <div class="modal-box run-intro">
+    <div class="run-intro-emoji" id="giEmoji">🌱</div>
+    <h3 id="giTitle">연습 놀이</h3>
+    <ul class="run-intro-list" id="giList"></ul>
+    <button class="btn btn-primary btn-huge" id="giOk">확인</button>
+    <div><button class="btn btn-ghost btn-small" id="giBack">← 놀이 고르기</button></div>
+  </div>
+</div>
+
 <div class="modal hidden" id="tableModal">
   <div class="modal-box">
     <button class="close-btn" id="closeTable">✖</button>
@@ -680,11 +692,45 @@ button{font-family:inherit;font-weight:inherit;color:inherit;cursor:pointer;bord
         (best[game.mode] ? `<span class="pc-best">🏆 최고 ${best[game.mode]}점</span>` : '');
       b.onclick = () => {
         if (game.href) { location.href = game.href + '?mul=1&u=' + encodeURIComponent(state.guest ? '' : state.user || ''); return; }
-        state.mode = game.mode; startGame();
+        state.mode = game.mode; startWithIntro();
       };
       g.appendChild(b);
     });
   }
+
+  /* ---------- 시작 전 놀이 방법 팝업 (펭귄 달리기는 자기 안내 팝업이 따로 있어요) ---------- */
+  const INTRO = {
+    practice: { emoji: '🌱', title: '연습 놀이', list: [
+      ['🎈', '문제를 보고 <b>정답 풍선</b>을 눌러 터뜨려요!'],
+      ['💡', '틀려도 괜찮아요. <b>힌트</b>를 보고 다시 골라요'],
+      ['⌨️', '키보드 <b>1 ~ 4</b> 번으로도 풍선을 고를 수 있어요']] },
+    challenge: { emoji: '⏱️', title: '도전 놀이', list: [
+      ['🎈', '문제를 보고 <b>정답 풍선</b>을 눌러 터뜨려요!'],
+      ['⏰', '한 문제에 <b>10초</b>! 시간이 지나면 하트가 줄어요'],
+      ['❤️', '틀리면 하트가 하나 줄어요. <b>하트 3개</b>를 다 쓰면 끝!'],
+      ['🔥', '연속으로 맞히면 <b>점수가 쑥쑥</b> 올라가요']] },
+    catch: { emoji: '🧺', title: '정답 바구니', list: [
+      ['⬅️➡️', '<b>← →</b> 방향키나 마우스·손가락으로 바구니를 움직여요'],
+      ['🍎', '<b>정답 열매</b>만 쏙 받아요!'],
+      ['💣', '틀린 열매나 <b>폭탄</b>을 받으면 ❤️ 하트가 하나 줄어요'],
+      ['💎', '<b>❤️ 하트</b>는 하나 채워주고, <b>💎 보석</b>은 +50점! 정답 10개마다 빨라져요']] }
+  };
+  function startWithIntro() {
+    const it = INTRO[state.mode];
+    if (!it) { startGame(); return; }
+    $('#giEmoji').textContent = it.emoji;
+    $('#giTitle').textContent = it.title;
+    $('#giList').innerHTML = it.list.map(([ico, txt]) => `<li><span>${ico}</span><span>${txt}</span></li>`).join('');
+    $('#gameIntro').classList.remove('hidden');
+  }
+  $('#giOk').onclick = () => { $('#gameIntro').classList.add('hidden'); startGame(); };
+  $('#giBack').onclick = () => { $('#gameIntro').classList.add('hidden'); };
+  // 안내 팝업이 떠 있으면 스페이스·엔터로도 확인
+  document.addEventListener('keydown', e => {
+    if ($('#gameIntro').classList.contains('hidden')) return;
+    if (e.code === 'Space' || e.key === 'Enter') { e.preventDefault(); e.stopImmediatePropagation(); $('#giOk').onclick(); }
+    else if (e.key === 'Escape') $('#giBack').onclick();
+  }, true);
 
   /* ---------- 사용자 (이 기기에만 저장, 게스트는 저장 안 함) ---------- */
   const PROFILES_KEY = 'ggd_profiles';
@@ -2282,7 +2328,7 @@ button{font-family:inherit;font-weight:inherit;color:inherit;cursor:pointer;bord
     renderArcade(); show('#home');
   };
 
-  $('#againBtn').onclick = startGame;
+  $('#againBtn').onclick = startWithIntro;
   $('#homeBtn').onclick = () => { renderArcade(); show('#home'); };
   $('#quitBtn').onclick = () => {
     stopTimer(); state.locked = true;
@@ -2313,23 +2359,62 @@ button{font-family:inherit;font-weight:inherit;color:inherit;cursor:pointer;bord
 })();
 </script>
 <!-- hub-user -->
-<!-- 게임 허브에서 고른 사용자(게스트 또는 이름)로 '누구인가요?' 화면을 건너뛰어요 -->
+<!-- 게임 허브 연결: 시작하기 페이지 건너뛰기 · 고른 사용자로 바로 들어가기 · 이름표를 누르면 사용자 전환 -->
+<style>
+.hub-switch { cursor: pointer; background: #fff; color: #241b3a; border-radius: 999px; padding: 4px 12px; box-shadow: 0 3px 10px rgba(36, 27, 58, 0.12); white-space: nowrap; }
+.hub-switch:hover { transform: translateY(-1px); }
+.hub-switch::after { content: "전환"; margin-left: 6px; padding: 1px 7px; border-radius: 999px; background: #a259ff; color: #fff; font-size: 0.72em; font-weight: 800; vertical-align: middle; }
+</style>
 <script>
 (function () {
+  var C = {"start":"introStart","guest":"userGuest","input":"userNameInput","submit":"userNewStart"};
   var hub = null;
   try {
     hub = new URLSearchParams(location.search).get("hub");
     if (hub) sessionStorage.setItem("hub_user", hub); else hub = sessionStorage.getItem("hub_user");
   } catch (e) { /* storage unavailable, ignore */ }
-  var start = document.getElementById("introStart");
-  if (!hub || !start) return;
-  start.addEventListener("click", function () {
-    var guest = document.getElementById("userGuest");
-    // 사용자 화면이 열리지 않는 경우(구구단 놀이터에서 연 놀이 등)는 그대로 둬요
-    if (!guest || !guest.getClientRects().length) return;
+  var $ = function (id) { return id ? document.getElementById(id) : null; };
+  var start = $(C.start);
+  if (!start) return;
+  var shown = function (el) { return !!el && el.getClientRects().length > 0; };
+
+  // 고른 사용자로 '누구인가요?' 화면을 건너뛰어요 (사용자 화면이 열리지 않는 경우는 그대로)
+  if (hub && C.guest) start.addEventListener("click", function () {
+    var guest = $(C.guest);
+    if (!shown(guest)) return;
     if (hub === "guest") { guest.click(); return; }
-    document.getElementById("userNameInput").value = hub.slice(2);
-    document.getElementById("userNewStart").click();
+    $(C.input).value = hub.slice(2);
+    $(C.submit).click();
+  });
+
+  // 시작하기 페이지 건너뛰기: 처음 열면 '시작하기'를 대신 눌러요.
+  // 나중에 '처음으로'로 다시 나오면, 메뉴로 가는 링크(← 영어 놀이 등)가 있으면 그리로, 사용자 화면이 있으면 다시 시작해요
+  var scr = start.closest("section, .screen"), back = scr && scr.querySelector(".back-link, #title-back");
+  var first = true, queued = false;
+  function check() {
+    queued = false;
+    if (!shown(start) || document.querySelector(".gb-overlay.show, .modal:not(.hidden), .who-overlay.show")) return;
+    if (first) { first = false; start.click(); }
+    else if (back) back.click();
+    else if (C.guest) start.click();
+  }
+  check();
+  first = false;
+  // 허브에서 연 게임인데 돌아갈 메뉴 링크가 없으면, 시작 페이지로 가는 '처음으로' 버튼은 할 일이 없어서 숨겨요 (허브의 🏠 를 써요)
+  if (hub && !back) Array.prototype.forEach.call(document.querySelectorAll("#changeUser, #userBack, #btn-diff-back, #btn-user-back, #btn-levelselect-title, #btn-to-title, #btn-mode-title"), function (b) { b.style.display = "none"; });
+  new MutationObserver(function () { if (!queued) { queued = true; requestAnimationFrame(check); } })
+    .observe(document.body, { attributes: true, subtree: true, attributeFilter: ["class", "hidden", "style"] });
+
+  // 이름표(👤 게스트)를 누르면 게임 허브의 '사용자 전환' 팝업이 열려요 (허브 안에서 열었을 때만)
+  if (window.parent === window) return;
+  var BADGES = ".user-badge, .user-badge-copy, #user-badge, .current-user-badge, #userBadge";
+  Array.prototype.forEach.call(document.querySelectorAll(BADGES), function (el) {
+    el.classList.add("hub-switch");
+    el.title = "사용자 전환";
+    el.addEventListener("click", function (e) {
+      e.stopPropagation();
+      window.parent.postMessage({ type: "hub-switch-user" }, "*");
+    });
   });
 })();
 </script>

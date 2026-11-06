@@ -1043,7 +1043,7 @@
     sfx.win();
     confetti(stars * 15);
   }
-  $('#againBtn').onclick = startGame;
+  $('#againBtn').onclick = choose;   // 다시 할 때도 방법 팝업부터
   $('#homeBtn').onclick = () => { renderGrades(); show('#grade'); };
   renderSoundBtn();
 })();

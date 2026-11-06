@@ -159,3 +159,41 @@
 }
 .gb-skip:hover { background: #ffe9a3; }
 .gb-skip[hidden] { display: none; }
+
+/* ---- 놀이 방법 팝업 (구구단 놀이터 펭귄 달리기 안내와 같은 모양) ---- */
+.gb-overlay.gb-intro { background: rgba(59, 45, 92, 0.45); backdrop-filter: none; -webkit-backdrop-filter: none; padding: 16px; }
+.gb-pop {
+  width: 100%; max-width: 540px; max-height: 90vh; overflow-y: auto; background: #fff; border-radius: 26px;
+  padding: 22px 22px 14px; text-align: center; box-shadow: 0 12px 40px rgba(36, 27, 58, 0.25); animation: gbPopIn 0.25s ease;
+}
+@keyframes gbPopIn { from { transform: scale(0.9); opacity: 0; } }
+.gb-pop-emoji { font-size: 56px; line-height: 1; animation: gbBreathe 2.4s ease-in-out infinite; }
+@keyframes gbBreathe { 50% { transform: scale(1.06) rotate(-3deg); } }
+.gb-pop h3 { margin: 6px 0 12px; font-family: "CookieRun", "Jua", sans-serif; font-size: 28px; font-weight: 700; color: #241b3a; }
+.gb-pop-list { list-style: none; padding: 0; margin: 4px 0 8px; text-align: left; }
+.gb-pop-list li { display: flex; align-items: center; gap: 12px; background: #f1f7ff; border-radius: 16px; padding: 11px 15px; margin-bottom: 8px; font-size: 16px; line-height: 1.45; }
+.gb-pop-list .gb-li-ico { font-size: 26px; flex: none; width: 34px; text-align: center; }
+.gb-pop-list b { color: #2563eb; }
+.gb-ok {
+  border: none; border-radius: 24px; padding: 16px 44px; margin: 8px 0 4px; cursor: pointer; font-family: inherit; font-weight: 800; font-size: 24px;
+  color: #fff; background: linear-gradient(135deg, #d81b7a, #7c2ce0); transition: transform 0.12s ease;
+}
+.gb-ok:hover { transform: translateY(-2px); }
+.gb-ok:active { transform: scale(0.95); }
+.gb-back { border: none; border-radius: 999px; padding: 8px 18px; margin-top: 4px; cursor: pointer; font-family: inherit; font-weight: 800; font-size: 15px; background: rgba(0, 0, 0, 0.07); color: #241b3a; }
+@media (max-width: 560px) {
+  .gb-pop { padding: 18px 14px 12px; }
+  .gb-pop-list li { font-size: 14.5px; padding: 9px 12px; }
+  .gb-ok { font-size: 21px; padding: 14px 36px; }
+}
+/* 설명이 길어도 '확인' 버튼까지 한 화면에 보이게 조금 촘촘하게 */
+.gb-pop { padding: 16px 20px 12px; }
+.gb-pop-emoji { font-size: 46px; }
+.gb-pop h3 { margin: 4px 0 10px; font-size: 26px; }
+.gb-pop-list li { font-size: 15px; line-height: 1.4; padding: 9px 14px; margin-bottom: 7px; }
+.gb-pop-list .gb-li-ico { width: auto; min-width: 30px; font-size: 24px; white-space: nowrap; }
+.gb-ok { padding: 13px 40px; margin: 6px 0 2px; font-size: 22px; }
+@media (max-width: 560px) {
+  .gb-pop-list li { font-size: 13.5px; padding: 8px 11px; gap: 9px; }
+  .gb-pop-list .gb-li-ico { font-size: 20px; }
+}

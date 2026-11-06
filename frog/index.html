@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<link rel="icon" href="data:,">
 <title>단어 징검다리</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -60,7 +61,7 @@
     <h2>무엇을 해볼까요? <span class="user-badge diff-tag"></span></h2>
     <div id="mode-grid" class="level-grid"></div>
     <div class="row-buttons">
-      <button id="btn-guide" class="btn btn-ghost">📖 가이드북</button>
+      <button id="btn-guide" class="btn btn-ghost">📖 게임 방법</button>
       <button id="btn-mode-back" class="btn btn-ghost">처음으로</button>
     </div>
   </div>
@@ -124,23 +125,62 @@
 <script src="../shared/mul-link.js"></script>
 <script src="game.js"></script>
 <!-- hub-user -->
-<!-- 게임 허브에서 고른 사용자(게스트 또는 이름)로 '누구인가요?' 화면을 건너뛰어요 -->
+<!-- 게임 허브 연결: 시작하기 페이지 건너뛰기 · 고른 사용자로 바로 들어가기 · 이름표를 누르면 사용자 전환 -->
+<style>
+.hub-switch { cursor: pointer; background: #fff; color: #241b3a; border-radius: 999px; padding: 4px 12px; box-shadow: 0 3px 10px rgba(36, 27, 58, 0.12); white-space: nowrap; }
+.hub-switch:hover { transform: translateY(-1px); }
+.hub-switch::after { content: "전환"; margin-left: 6px; padding: 1px 7px; border-radius: 999px; background: #a259ff; color: #fff; font-size: 0.72em; font-weight: 800; vertical-align: middle; }
+</style>
 <script>
 (function () {
+  var C = {"start":"btn-start","guest":"btn-user-guest","input":"user-name-input","submit":"btn-user-new"};
   var hub = null;
   try {
     hub = new URLSearchParams(location.search).get("hub");
     if (hub) sessionStorage.setItem("hub_user", hub); else hub = sessionStorage.getItem("hub_user");
   } catch (e) { /* storage unavailable, ignore */ }
-  var start = document.getElementById("btn-start");
-  if (!hub || !start) return;
-  start.addEventListener("click", function () {
-    var guest = document.getElementById("btn-user-guest");
-    // 사용자 화면이 열리지 않는 경우(구구단 놀이터에서 연 놀이 등)는 그대로 둬요
-    if (!guest || !guest.getClientRects().length) return;
+  var $ = function (id) { return id ? document.getElementById(id) : null; };
+  var start = $(C.start);
+  if (!start) return;
+  var shown = function (el) { return !!el && el.getClientRects().length > 0; };
+
+  // 고른 사용자로 '누구인가요?' 화면을 건너뛰어요 (사용자 화면이 열리지 않는 경우는 그대로)
+  if (hub && C.guest) start.addEventListener("click", function () {
+    var guest = $(C.guest);
+    if (!shown(guest)) return;
     if (hub === "guest") { guest.click(); return; }
-    document.getElementById("user-name-input").value = hub.slice(2);
-    document.getElementById("btn-user-new").click();
+    $(C.input).value = hub.slice(2);
+    $(C.submit).click();
+  });
+
+  // 시작하기 페이지 건너뛰기: 처음 열면 '시작하기'를 대신 눌러요.
+  // 나중에 '처음으로'로 다시 나오면, 메뉴로 가는 링크(← 영어 놀이 등)가 있으면 그리로, 사용자 화면이 있으면 다시 시작해요
+  var scr = start.closest("section, .screen"), back = scr && scr.querySelector(".back-link, #title-back");
+  var first = true, queued = false;
+  function check() {
+    queued = false;
+    if (!shown(start) || document.querySelector(".gb-overlay.show, .modal:not(.hidden), .who-overlay.show")) return;
+    if (first) { first = false; start.click(); }
+    else if (back) back.click();
+    else if (C.guest) start.click();
+  }
+  check();
+  first = false;
+  // 허브에서 연 게임인데 돌아갈 메뉴 링크가 없으면, 시작 페이지로 가는 '처음으로' 버튼은 할 일이 없어서 숨겨요 (허브의 🏠 를 써요)
+  if (hub && !back) Array.prototype.forEach.call(document.querySelectorAll("#changeUser, #userBack, #btn-diff-back, #btn-user-back, #btn-levelselect-title, #btn-to-title, #btn-mode-title"), function (b) { b.style.display = "none"; });
+  new MutationObserver(function () { if (!queued) { queued = true; requestAnimationFrame(check); } })
+    .observe(document.body, { attributes: true, subtree: true, attributeFilter: ["class", "hidden", "style"] });
+
+  // 이름표(👤 게스트)를 누르면 게임 허브의 '사용자 전환' 팝업이 열려요 (허브 안에서 열었을 때만)
+  if (window.parent === window) return;
+  var BADGES = ".user-badge, .user-badge-copy, #user-badge, .current-user-badge, #userBadge";
+  Array.prototype.forEach.call(document.querySelectorAll(BADGES), function (el) {
+    el.classList.add("hub-switch");
+    el.title = "사용자 전환";
+    el.addEventListener("click", function (e) {
+      e.stopPropagation();
+      window.parent.postMessage({ type: "hub-switch-user" }, "*");
+    });
   });
 })();
 </script>

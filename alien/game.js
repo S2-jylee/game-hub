@@ -588,7 +588,7 @@
     });
     show("screen-result");
   }
-  $("#btn-again").addEventListener("click", startGame);
+  $("#btn-again").addEventListener("click", choose);
   $("#btn-result-back").addEventListener("click", () => { if (MATH) ML.back(); else { renderModes(); show("screen-mode"); } });
   $("#btn-quit").addEventListener("click", () => { stopGame(); if (MATH) ML.back(); else { renderModes(); show("screen-mode"); } });
 

@@ -1807,13 +1807,6 @@ el.guestStartBtn.addEventListener('click', () => startAsPlayer(''));
 el.nameInput.addEventListener('keydown', e => {
   if (e.key === 'Enter') submitPlayerName();
 });
-document.getElementById('start-btn').addEventListener('click', () => {
-  buildUserList();
-  el.nameInput.value = '';
-  showStartPage('start-user');
-  el.nameInput.focus();
-});
-document.getElementById('user-back-btn').addEventListener('click', () => showStartPage('start-title'));
 
 // ===================== 초기화 =====================
 
@@ -1821,3 +1814,15 @@ initKeyboard();
 initFingerGuide();
 setMode('position');
 showHome();
+
+// 시작하기 페이지 없이: 게임 허브에서 고른 사용자(게스트 또는 이름)면 바로 홈 화면, 아니면 '누구인가요?'부터
+(function () {
+  let hub = null;
+  try {
+    hub = new URLSearchParams(location.search).get('hub');
+    if (hub) sessionStorage.setItem('hub_user', hub); else hub = sessionStorage.getItem('hub_user');
+  } catch (e) { /* storage unavailable, ignore */ }
+  if (hub) { startAsPlayer(hub === 'guest' ? '' : hub.slice(2)); return; }
+  buildUserList();
+  showStartPage('start-user');
+})();
