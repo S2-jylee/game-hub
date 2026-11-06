@@ -81,15 +81,15 @@
     // 세로로 긴 화면(휴대폰): 밑판 그림은 왼쪽 위에 작게, 조각은 밑판 오른쪽과 아래쪽에 흩어 놓아요
     if (w < h * 1.25) {
       var M = 12, GAP = 8;
-      // 밑판 크기: 오른쪽의 👀·🔀 버튼이 밑판 왼쪽 여백(M)만큼만 남기고 화면 오른쪽에 붙을 만큼 크게 (세로는 화면의 62%까지)
-      var maxW = w - M - GAP - BTN_COL_W - M, maxH = h * 0.62;
+      // 밑판 크기: 오른쪽의 👀·🔀 버튼이 밑판 왼쪽 여백(M)만큼만 남기고 화면 오른쪽에 붙을 만큼 크게 (세로는 화면의 82%까지)
+      var maxW = w - M - GAP - BTN_COL_W - M, maxH = h * 0.82; // 세로는 화면의 82%까지 (가로가 먼저 꽉 차요)
       ART_G_SCALE = Math.max(0.05, Math.min(maxW / state.artW, maxH / state.artH));
       ART_G_TX = M;
       ART_G_TY = M;
       ART_TARGET_SIZE = state.artW * ART_G_SCALE;
       var boardH = state.artH * ART_G_SCALE;
       artSpace.setAttribute("transform", "translate(" + ART_G_TX + " " + ART_G_TY + ") scale(" + ART_G_SCALE + ")");
-      boardToolbarEl.style.left = (ART_G_TX + ART_TARGET_SIZE + GAP) + "px";
+      boardToolbarEl.style.left = (w - M - BTN_COL_W) + "px"; // 👀·🔀 버튼은 화면 오른쪽 끝(왼쪽 여백만큼 띄워서)에 붙여요
       boardToolbarEl.style.top = ART_G_TY + "px";
       var cols = state.gridN || 3, rows = state.gridRows || cols;
       var pw = ART_TARGET_SIZE / cols, ph = boardH / rows, half = Math.max(pw, ph) / 2;

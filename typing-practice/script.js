@@ -1840,12 +1840,32 @@ el.gameInput.addEventListener('keydown', handleGameKeydown);
 // 키를 하나 누를 때마다(자모/글자 단위) 바로 타이핑 소리를 낸다. 정오답 판정과는 무관한
 // "치고 있다"는 느낌만 주는 소리이고, 실제 정오답 소리는 Enter로 단어를 확정할 때
 // popWord()/오답 흔들림 쪽에서 원래대로 따로 재생된다.
+// 휴대폰 키패드(특히 한글)는 keydown 의 e.key 를 'Unidentified'/'Process' 로만 보내서
+// keydown 만으로는 소리를 낼 수 없다. 그래서 keydown 에서 소리를 못 냈으면 바로 뒤따르는
+// input 이벤트에서 대신 소리를 내고, 둘 다 울려 두 번 나지 않도록 마지막 재생 시각을 기억한다.
+let gameTypeSoundAt = -Infinity;
+let gamePrevJamoCount = 0;
+const countGameJamo = text => Array.from(text).reduce((n, ch) => n + decomposeKoreanChar(ch)
+  .reduce((m, j) => m + (HANGUL_COMPOUND_JUNG[j] || HANGUL_COMPOUND_JONG[j] || [j]).length, 0), 0);
+function playGameTypeSound(isDelete) {
+  isDelete ? soundEngine.playClick() : soundEngine.playTypeClick();
+  gameTypeSoundAt = performance.now();
+}
 el.gameInput.addEventListener('keydown', e => {
-  if (e.key === 'Backspace') { soundEngine.playClick(); return; }
+  if (e.key === 'Backspace') { playGameTypeSound(true); return; }
   if (['Enter', 'Shift', 'Control', 'Alt', 'Meta', 'Tab', 'CapsLock'].includes(e.key)) return;
   if (e.ctrlKey || e.metaKey || e.altKey) return;
-  if (e.key.length !== 1) return; // 화살표 등 특수 키 제외
-  soundEngine.playTypeClick();
+  if (e.key.length !== 1) return; // 화살표 등 특수 키, 휴대폰 키패드의 'Unidentified' 는 input 쪽에서 처리
+  playGameTypeSound(false);
+});
+// 바뀌기 직전 값은 beforeinput 에서 잰다 (코드로 value 를 비울 때는 input 이벤트가 안 나서,
+// input 에서 이전 값을 들고 있으면 어긋날 수 있다)
+el.gameInput.addEventListener('beforeinput', () => { gamePrevJamoCount = countGameJamo(el.gameInput.value); });
+el.gameInput.addEventListener('input', e => {
+  // '만' → '마' 처럼 조합 중 자모를 지운 경우도 지우기로 본다
+  const shrunk = countGameJamo(el.gameInput.value) < gamePrevJamoCount;
+  if (!e.inputType || performance.now() - gameTypeSoundAt < 80) return; // keydown 에서 이미 울림
+  playGameTypeSound(shrunk || e.inputType.startsWith('delete'));
 });
 el.levelUpContinueBtn.addEventListener('click', resumeAfterLevelUp);
 

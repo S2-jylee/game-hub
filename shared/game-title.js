@@ -86,6 +86,18 @@
   function nextBelow(t) {
     var r = t.getBoundingClientRect(), best = null;
     var scope = t.closest("section, .screen") || document.body;
+    // 스테이지 고르기처럼 타일 묶음이 있으면 첫 타일을 기준으로 (투명한 카드 테두리가 아니라 타일 자체를 맞춰요)
+    var firstTile = scope.querySelector(".level-grid > *, .grade-grid > *, .mode-grid > *, .play-grid > *, .tile-grid > *, .arcade-grid > *");
+    if (shown(firstTile) && firstTile.getBoundingClientRect().top >= r.bottom - 1) {
+      var ft = firstTile.getBoundingClientRect();
+      var other = null;
+      Array.prototype.forEach.call(scope.querySelectorAll("button, .btn, .row, .panel, .question-card"), function (e) {
+        if (t.contains(e) || !shown(e) || e.closest(".scene, .en-bg, .gt-back") || firstTile.parentElement.contains(e)) return;
+        var b = e.getBoundingClientRect();
+        if (b.height > 20 && b.top >= r.bottom - 1 && b.top < ft.top && (!other || b.top < other.top)) other = b;
+      });
+      return other || ft;
+    }
     Array.prototype.forEach.call(scope.querySelectorAll("*"), function (e) {
       if (t.contains(e) || !shown(e) || e.closest(".scene, .en-bg, .gt-back")) return;
       if (getComputedStyle(e).position === "fixed") return;

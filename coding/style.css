@@ -1111,3 +1111,6 @@ body.drag-out .program { border-color: var(--red); background: #fff1f1; }
   .board-wrap { align-items: flex-start; padding-top: 16px; }
   .play-area { margin: 0 auto; }
 }
+
+/* 정보줄 아래 스테이지 진행 막대는 숨겨요 */
+.stage-progress-bar { display: none !important; }

@@ -1427,3 +1427,20 @@ footer:empty, footer:not(:has(*:not(:empty))) { display: none; }
 
 /* 머리줄 고정(sticky)이 되도록: overflow-x: hidden 대신 clip (hidden 이면 body 가 따로 스크롤 상자가 돼서 sticky 가 안 붙어요) */
 html, body { overflow-x: clip; }
+
+/* 휴대폰: 속도가 세 자리(100타 이상)가 돼도 '새로하기'가 아래 줄로 내려가지 않게 기록줄을 한 줄로 */
+@media (max-width: 560px) {
+  #stats-bar { flex-wrap: wrap; column-gap: 8px; }
+  #stats-bar .stat, #stats-bar .stat-divider, #stats-bar #restart-btn { flex: none; white-space: nowrap; }
+  #stats-bar .stat { gap: 3px; }
+  #stats-bar .stat .value { font-variant-numeric: tabular-nums; }
+  #stats-bar #restart-btn { padding: 6px 10px; }
+  #stats-bar .stage-select, #stats-bar .category-select { flex: 1 1 100%; }
+}
+@media (max-width: 400px) {
+  #stats-bar { padding: 8px 8px; column-gap: 5px; }
+  #stats-bar .stat .label, #stats-bar .stat .unit { font-size: 0.66rem; }
+  #stats-bar .stat .value { font-size: 0.9rem; }
+  #stats-bar .stat-divider { display: none !important; }
+  #stats-bar #restart-btn { padding: 5px 8px; font-size: 0.74rem; margin-left: auto; }
+}
