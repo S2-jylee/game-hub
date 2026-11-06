@@ -586,7 +586,7 @@ body.home-active .home-view { display: block; }
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: 6px;
+  gap: var(--kg, 6px);
   width: fit-content;
   max-width: 100%;
   margin: 10px auto 20px;
@@ -598,7 +598,7 @@ body.home-active .home-view { display: block; }
    실제 키들은 안 줄어드는데) 오른쪽 끝에 절대좌표로 붙는 방향키만 왼쪽으로 딸려오는
    버그가 생긴다. 그래서 여기서는 폭 제한을 풀어 항상 실제 콘텐츠 폭을 유지하게 한다 */
 .keyboard-stage .virtual-keyboard { margin: 0; max-width: none; }
-.kb-row { display: flex; gap: 6px; }
+.kb-row { display: flex; gap: var(--kg, 6px); }
 /* 스페이스줄은 방향키 2줄이 위아래로 튀어나오지 않고 딱 맞게 들어가도록 다른 줄보다 세로로 조금 더 크게 잡는다 */
 .kb-row-space .key { height: calc(var(--key-unit) * 1.05); }
 /* 방향키: 세로는 스페이스줄 높이에 딱 맞추고, 가로는 Ctrl/Alt를 키운 뒤 남는 폭을 꽉 채운다.
@@ -606,14 +606,14 @@ body.home-active .home-view { display: block; }
    다른 줄들 폭 계산과는 무관한 별도의 3x2 격자다 */
 .arrow-cluster {
   --ak: calc(var(--key-unit) * 0.55);
-  --akh: calc((var(--key-unit) * 1.05 - 6px) / 2);
+  --akh: calc((var(--key-unit) * 1.05 - var(--kg, 6px)) / 2);
   position: absolute;
   right: 0;
-  top: calc(4 * (var(--key-unit) + 6px));
+  top: calc(4 * (var(--key-unit) + var(--kg, 6px)));
   display: grid;
   grid-template-columns: repeat(3, var(--ak));
   grid-template-rows: repeat(2, var(--akh));
-  gap: 6px;
+  gap: var(--kg, 6px);
 }
 .arrow-cluster .key {
   width: var(--ak);
@@ -1325,3 +1325,49 @@ html { background: #fff5e6; }
 .user-screen { background: linear-gradient(#ffe6f2, #fff1f7 40%, #fff5e6); }
 .user-screen::before { content: ""; position: fixed; right: -140px; bottom: -140px; width: 420px; height: 420px; border-radius: 50%; opacity: 0.55; pointer-events: none;
   background: radial-gradient(circle closest-side, transparent 0 46%, #c9b6ff 46% 52%, #9fd8ff 52% 58%, #a7efc4 58% 64%, #ffe27a 64% 70%, #ffc89a 70% 76%, #ffb3d6 76% 82%, transparent 82%); }
+
+/* ---- 제목 크기: 다른 게임 제목(shared/game-title.css)과 똑같이 ---- */
+.app-header h1 { font-size: 38px; }
+
+/* ---- 모바일: 위쪽 글씨를 작게, 자판은 화면 폭에 다 들어오게 ---- */
+@media (max-width: 560px) {
+  .app-header { gap: 8px 10px; padding: 14px 10px 6px; }
+  .app-header h1 { font-size: 24px; width: 100%; text-align: center; }
+  .lang-toggle { padding: 3px; }
+  .lang-toggle button { padding: 6px 14px; font-size: 0.85rem; }
+  .tool-btn { padding: 7px 14px; font-size: 0.85rem; }
+  .mode-tabs { gap: 6px; padding: 4px 10px 10px; }
+  .tab { padding: 7px 12px; font-size: 0.85rem; border-radius: 14px; }
+  .tab-emoji { margin-right: 3px; }
+}
+/* 자판: 키 크기를 화면 폭에 맞춰 줄여요 (자판 폭 ≈ 키 크기 × 14.5 + 간격 13개) */
+@media (max-width: 900px) {
+  .virtual-keyboard { --kg: 4px; --key-unit: min(54px, calc((100vw - 32px - 13 * var(--kg)) / 14.5)); }
+  .key { border-radius: 7px; }
+  .key.letter { font-size: clamp(0.62rem, calc(var(--key-unit) * 0.45), 1.05rem); }
+  .key.deco { font-size: clamp(0.4rem, calc(var(--key-unit) * 0.26), 0.68rem); }
+  .arrow-cluster .key { font-size: 0.45rem; border-radius: 4px; }
+}
+@media (max-width: 560px) {
+  .virtual-keyboard { --kg: 3px; --key-unit: calc((100vw - 40px - 13 * var(--kg)) / 14.5); }
+  .keyboard-stage { margin: 6px auto 10px; }
+}
+/* 모바일: 작아진 자판에 맞춰 손 그림도 줄이고, 위쪽 기록·단계 카드도 촘촘하게 */
+@media (max-width: 560px) {
+  #keyboard-stage { padding-bottom: 40px; }
+  .hand { transform: translate(-50%, -8px); }
+  .fingers { gap: 5px; }
+  .finger { width: 16px; border-width: 1.5px; border-radius: 999px 999px 6px 6px; }
+  .finger .nail { width: 8px; height: 6px; top: 3px; }
+  .finger.f-pinky { height: 24px; }
+  .finger.f-ring { height: 34px; }
+  .finger.f-middle { height: 40px; }
+  .finger.f-index { height: 35px; }
+  .finger.f-thumb { width: 14px; height: 28px; }
+  .palm { width: 72px; height: 42px; margin-top: -4px; border-radius: 14px 14px 22px 22px; }
+  #stats-bar { gap: 8px 12px; padding: 10px 12px; margin-bottom: 10px; }
+  .stat .value { font-size: 1.05rem; }
+  .stage-select button { padding: 6px 10px; font-size: 0.8rem; gap: 5px; }
+  .stage-select button::before { width: 13px; height: 13px; }
+  #restart-btn { padding: 8px 14px; font-size: 0.85rem; }
+}

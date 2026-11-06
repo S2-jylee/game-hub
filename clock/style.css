@@ -512,10 +512,10 @@ h1 { font-family: "CookieRun", "Jua", sans-serif; font-size: 2.6rem; margin: 6px
   width: 100%;
   aspect-ratio: 1;
   display: block;
-  touch-action: none;
+  touch-action: pan-y; /* 보고 고르는 문제에서는 시계 위를 밀어도 화면이 스크롤돼요 */
   filter: drop-shadow(0 8px 18px rgba(36,27,58,0.14));
 }
-.clock.settable { cursor: grab; }
+.clock.settable { cursor: grab; touch-action: none; } /* 바늘을 끄는 문제에서만 스크롤을 막아요 */
 .clock.dragging { cursor: grabbing; }
 .clock-num { font-family: "CookieRun", "Jua", sans-serif; font-size: 25px; fill: var(--text-dark); }
 .clock-min-num { font-size: 11px; font-weight: 800; fill: var(--sky-dark); }
@@ -862,4 +862,9 @@ html { background: #fff6e8; }
 /* ---- 모바일: 게임 화면 위쪽의 놀이 이름(예: '몇 시일까요? · 보고 고르기')은 자리만 차지해서 숨겨요 ---- */
 @media (max-width: 560px), (pointer: coarse) and (max-height: 500px) {
   .hud-name { display: none; }
+  /* 토끼와 '몇 시일까요? / 몇 시 몇 분일까요?' 문제 줄은 숨겨요 ('3시 30분을 만들어 봐요!' 같은 문제는 보여요) */
+  .q-buddy { display: none; }
+  .question-card.q-plain { display: none; }
+  /* 화면보다 길면 손가락으로 스크롤해요 */
+  .board-wrap { touch-action: pan-y; -webkit-overflow-scrolling: touch; overscroll-behavior: contain; }
 }

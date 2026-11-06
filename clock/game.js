@@ -626,6 +626,8 @@
     updateHud();
     setMinuteLabels(q.labels);
     qText.innerHTML = q.prompt;
+    // 시각 정보가 없는 '몇 시일까요?' 같은 문제는 모바일에서 문제 줄을 숨겨요 (style.css)
+    qText.parentNode.classList.toggle("q-plain", q.prompt === "몇 시일까요?" || q.prompt === "몇 시 몇 분일까요?");
 
     // 시계 위 오전(AM)/오후(PM) 표시. "15시 → 오후 몇 시?" 문제는 물음표로 보여줘요
     if (q.badge != null) {

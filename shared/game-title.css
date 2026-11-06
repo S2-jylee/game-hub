@@ -1,4 +1,5 @@
-/* 각 게임 첫 화면 맨 위 제목 (타자연습 제목과 같은 모양: 이모지 + 게임 이름) */
+/* 각 게임 첫 화면 맨 위 제목 (타자연습 제목과 같은 모양: 이모지 + 게임 이름)
+   게임마다 기본 글자 크기(rem)가 달라서, 모든 게임에서 같은 크기가 되도록 px로 정해요 */
 @font-face {
   font-family: "HubCookieRun";
   src: url("../CookieRun-Bold.ttf") format("truetype");
@@ -9,7 +10,7 @@
 body h1.game-title {
   font-family: "HubCookieRun", "CookieRun", "Jua", sans-serif;
   font-weight: 700;
-  font-size: 2.2rem;
+  font-size: 38px;
   line-height: 1.2;
   color: #d81b7a;
   text-align: center;
@@ -24,8 +25,33 @@ body h1.game-title {
 body .game-title .diff-tag,
 body .game-title .current-user-badge {
   font-family: "Pretendard", sans-serif;
-  font-size: 1rem;
+  font-size: 15px;
 }
-@media (max-width: 640px) {
-  body h1.game-title { font-size: 1.5rem; gap: 6px; margin-bottom: 8px; }
+
+/* ---- 모바일: 위쪽 글씨가 화면을 많이 차지하지 않게 작게 ---- */
+@media (max-width: 560px) {
+  body h1.game-title { font-size: 24px; gap: 6px; margin: 0 0 6px; }
+  body .game-title .diff-tag,
+  body .game-title .current-user-badge { font-size: 13px; }
+  /* 제목 아래 질문 (몇 학년이에요? · 어떤 미션을 할까요? · 스테이지 고르기 …) */
+  body .screen h2 { font-size: 20px; margin-bottom: 10px; }
+  body .screen h2 .diff-tag, body .screen h2 .current-user-badge, body .screen h2 .user-badge-copy { font-size: 12px; }
+  .gb-top-row { margin-bottom: 6px; }
+  .gb-top-btn { padding: 6px 14px; font-size: 13px; }
+}
+
+/* ---- 모바일: 미션·난이도·학년 고르기 카드를 2열로 작게 (외계인·버블·징검다리·스펠링·꿀벌·낚시 …) ---- */
+@media (max-width: 560px) {
+  body .level-grid:has(> .level-btn) { grid-template-columns: repeat(2, 1fr); gap: 8px; }
+  body .level-btn { padding: 12px 6px 10px; gap: 3px; border-radius: 16px; }
+  body .level-btn .lv-emoji { font-size: 2rem; }
+  body .level-btn .lv-name { font-size: 1.05rem; }
+  body .level-btn .lv-desc { font-size: 0.72rem; min-height: 0; }
+  body .level-btn .lv-best { font-size: 0.68rem; }
+  body .level-btn .lv-go { font-size: 0.78rem; padding: 3px 12px; }
+  body .grade-grid { gap: 8px; }
+  body .grade-btn { padding: 10px 6px; gap: 2px; border-radius: 16px; }
+  body .grade-btn .gr-emoji { font-size: 1.8rem; }
+  body .grade-btn .gr-name { font-size: 1.1rem; }
+  body .grade-btn .gr-desc, body .grade-btn .gr-ex { font-size: 0.7rem; }
 }
