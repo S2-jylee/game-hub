@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>외계인 단어 디펜스</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Jua&family=Gowun+Dodum&family=Nunito:wght@400;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css">
+<link rel="stylesheet" href="../spelling/style.css">
+<link rel="stylesheet" href="../spelling/guidebook.css">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="scene" aria-hidden="true">
+  <span class="sc-bit" style="--x:6%;--s:34px;--dur:21s;--d:-4s">👾</span>
+  <span class="sc-bit" style="--x:20%;--s:28px;--dur:25s;--d:-13s">⭐</span>
+  <span class="sc-bit" style="--x:34%;--s:40px;--dur:23s;--d:-8s">🛸</span>
+  <span class="sc-bit" style="--x:50%;--s:30px;--dur:27s;--d:-17s">a</span>
+  <span class="sc-bit" style="--x:64%;--s:36px;--dur:22s;--d:-2s">🪐</span>
+  <span class="sc-bit" style="--x:78%;--s:28px;--dur:26s;--d:-11s">z</span>
+  <span class="sc-bit" style="--x:90%;--s:38px;--dur:24s;--d:-20s">🚀</span>
+</div>
+
+<!-- 타이틀 화면 -->
+<section id="screen-title" class="screen active">
+  <div class="title-card">
+    <div class="title-shapes" aria-hidden="true">
+      <span class="ts ts1">👾</span>
+      <span class="ts ts2">🛸</span>
+      <span class="ts ts3">🪐</span>
+      <span class="ts ts4">🚀</span>
+    </div>
+    <h1 id="title-name">외계인 단어 디펜스</h1>
+    <p class="subtitle" id="title-sub">미션에 맞는 단어를 단 외계인만 쏴요!</p>
+    <button id="btn-start" class="btn btn-primary btn-huge">시작하기</button>
+    <div><a class="btn btn-ghost back-link" id="title-back" href="../english/index.html">← 영어 놀이</a></div>
+  </div>
+</section>
+
+<!-- 사용자 선택 화면 -->
+<section id="screen-user" class="screen">
+  <div class="card">
+    <h2>누구인가요?</h2>
+    <div id="user-list" class="user-list"></div>
+    <div class="user-new-row">
+      <input id="user-name-input" class="user-name-input" type="text" maxlength="10" placeholder="새 이름을 입력하세요">
+      <button id="btn-user-new" class="btn btn-primary btn-small">시작</button>
+    </div>
+    <button id="btn-user-guest" class="btn btn-ghost">게스트로 시작</button>
+    <button id="btn-user-back" class="btn btn-ghost">처음으로</button>
+  </div>
+</section>
+
+<!-- 미션 고르기 -->
+<section id="screen-mode" class="screen">
+  <div class="card card-wide">
+    <h2>어떤 미션을 할까요? <span class="user-badge diff-tag"></span></h2>
+    <div id="mode-grid" class="level-grid"></div>
+    <div class="row-buttons">
+      <button id="btn-guide" class="btn btn-ghost">📖 가이드북</button>
+      <button id="btn-mode-back" class="btn btn-ghost">처음으로</button>
+    </div>
+  </div>
+</section>
+
+<!-- 게임 화면 -->
+<section id="screen-game" class="screen">
+  <div class="hud">
+    <button id="btn-quit" class="btn btn-ghost btn-small">← 나가기</button>
+    <div id="hearts" class="hearts"></div>
+    <div class="hud-item"><span class="hud-label">물리침</span><span id="hud-kill" class="hud-value">0 / 15</span></div>
+    <div class="hud-item hud-score" id="hud-score-box"><span class="hud-label">점수</span><span id="hud-score" class="hud-value">0</span></div>
+  </div>
+  <div class="mission" id="mission">
+    <span id="mission-emoji" class="mission-emoji">🏃</span>
+    <span id="mission-text" class="mission-text">움직임을 나타내는 말(동사)을 쏘세요!</span>
+  </div>
+  <div id="game-msg" class="game-msg"></div>
+  <div id="field" class="field">
+    <canvas id="space-canvas"></canvas>
+    <div class="shoot-pad" id="shoot-pad">
+      <button class="sp" data-act="left" type="button" aria-label="왼쪽">◀</button>
+      <button class="sp sp-fire" data-act="fire" type="button" aria-label="쏘기">🔥<small>쏘기</small></button>
+      <button class="sp" data-act="right" type="button" aria-label="오른쪽">▶</button>
+    </div>
+  </div>
+</section>
+
+<!-- 결과 화면 -->
+<section id="screen-result" class="screen">
+  <div class="card">
+    <h2 id="result-title">참 잘했어요!</h2>
+    <div id="result-stars" class="result-stars"></div>
+    <div id="result-text" class="result-text"></div>
+    <div id="result-words" class="result-words"></div>
+    <div class="row-buttons">
+      <button id="btn-again" class="btn btn-primary">🔁 다시 하기</button>
+      <button id="btn-result-back" class="btn btn-ghost">미션 고르기</button>
+    </div>
+  </div>
+</section>
+
+<script src="alien-data.js"></script>
+<script src="../spelling/guidebook.js"></script>
+<script src="../shared/mul-link.js"></script>
+<script src="game.js"></script>
+</body>
+</html>

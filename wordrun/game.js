@@ -1,14 +1,17 @@
 // 🐧 그림 문 달리기: 위에 나온 영어 단어의 뜻에 맞는 그림 문으로 펭귄이 달려가요.
 // 구구단 놀이터의 펭귄 달리기와 같은 길·펭귄 그림을 써요. ← → (스와이프, ◀ ▶)로 칸을 옮겨요.
 // 맞히면 효과음과 함께 점점 빨라지고, 틀리면 하트가 하나 줄어요. 15문제를 지나면 이글루 도착!
+// 구구단 놀이터에서 열면(?mul=1) '구구단 문 달리기': 위에 나온 답(12)이 되는 식 문(3 × 4)으로 달려요.
 (function () {
   "use strict";
+
+  const ML = window.MulLink || { on: false }, MATH = ML.on;
 
   const $ = s => document.querySelector(s);
   const GRADES = window.SPELL_GRADES;
   const TOTAL = 15;           // 한 판 문제 수
   const LIVES = 5;
-  const PROFILES_KEY = "wordrun_profiles", GUIDE_ID = "wordrun", MUSIC_KEY = "wordrun_music";
+  const PROFILES_KEY = "wordrun_profiles", GUIDE_ID = MATH ? "wordrun_mul" : "wordrun", MUSIC_KEY = "wordrun_music";
   const Z_SPAWN = 60;         // 문이 처음 나타나는 거리
   const CAM = 18;             // 원근감 (작을수록 강함)
   const T_START = 4.6, T_MIN = 2.3; // 문이 다가오는 시간(초): 맞힐수록 짧아져요(가속)
@@ -32,6 +35,7 @@
   /* ---------- 소리 ---------- */
   let actx = null;
   function tone(freq, dur, type = "sine", when = 0, vol = 0.12) {
+    if (MATH && !ML.sound) return;
     try {
       actx = actx || new (window.AudioContext || window.webkitAudioContext)();
       const t = actx.currentTime + when;
@@ -49,11 +53,11 @@
     win() { [523, 659, 784, 1047, 784, 1047].forEach((f, i) => tone(f, 0.18, "triangle", i * 0.1, 0.12)); }
   };
   function speakEn(text) {
-    if (!("speechSynthesis" in window)) return;
+    if (!("speechSynthesis" in window) || (MATH && !ML.sound)) return;
     try {
       speechSynthesis.cancel();
       const u = new SpeechSynthesisUtterance(text);
-      u.lang = "en-US"; u.rate = 0.8; u.pitch = 1.1;
+      u.lang = MATH ? "ko-KR" : "en-US"; u.rate = MATH ? 0.95 : 0.8; u.pitch = 1.1;
       speechSynthesis.speak(u);
     } catch (e) { /* speech unavailable, ignore */ }
   }
@@ -63,7 +67,7 @@
   bgm.loop = true; bgm.volume = 0.3;
   const loopBgm = () => { if (bgm.currentTime >= BGM_END) bgm.currentTime = BGM_START; };
   bgm.addEventListener("timeupdate", loopBgm);
-  let music = store.get(MUSIC_KEY, true);
+  let music = (!MATH || ML.sound) && store.get(MUSIC_KEY, true);
   function renderMusic() { $("#btn-music").classList.toggle("off", !music); }
   $("#btn-music").addEventListener("click", () => {
     music = !music; store.set(MUSIC_KEY, music); renderMusic();
@@ -126,7 +130,9 @@
     if (!name) { $("#user-name-input").focus(); return; }
     enterAs(name);
   }
-  $("#btn-start").addEventListener("click", () => { renderUserList(); $("#user-name-input").value = ""; show("screen-user"); });
+  $("#btn-start").addEventListener("click", () => {
+    if (MATH) { choose(); return; }
+    renderUserList(); $("#user-name-input").value = ""; show("screen-user"); });
   $("#btn-user-new").addEventListener("click", submitNewUser);
   $("#user-name-input").addEventListener("keydown", e => { if (e.key === "Enter") submitNewUser(); });
   $("#btn-user-guest").addEventListener("click", () => enterAs(null));
@@ -151,6 +157,16 @@
     });
   }
   function guide(onStart) {
+    if (MATH) return {
+      id: GUIDE_ID, title: "구구단 문 달리기",
+      pages: [
+        { icon: "🐧", title: "펭귄이 달려요", text: "펭귄이 얼음길을 <b>쌩쌩</b> 달려요.<br>위에 <b>답</b>이 되는 숫자가 크게 나와요." },
+        { icon: "🚪", title: "식 문으로!", text: "앞에서 <b>구구단 식</b>이 적힌 문이 다가와요.<br>예) 위에 <b>12</b> → <b>3 × 4</b> 문으로 통과!" },
+        { icon: "⬅️➡️", title: "옮기는 방법", text: "<b>← →</b> 방향키(또는 A, D)로 움직여요.<br>태블릿은 <b>옆으로 밀거나</b> 아래 <b>◀ ▶</b> 를 눌러요." },
+        { icon: "🚀", title: "맞히면 가속!", text: "맞히면 <b>점점 빨라져요</b>. 틀리면 ❤️ 하트가 하나 줄어요.<br>문 <b>" + TOTAL + "개</b>를 지나면 이글루 도착!" }
+      ],
+      startText: "자, 달려 볼까?", startLabel: "출발! 🐧", onStart
+    };
     return {
       id: GUIDE_ID, title: "그림 문 달리기",
       pages: [
@@ -172,7 +188,21 @@
   $("#btn-guide").addEventListener("click", () => GuideBook.open(guide(null)));
 
   /* ---------- 문제 만들기: 같은 학년 단어 중 다른 그림을 섞어요 ---------- */
+  // 구구단: 답(12)을 보여주고, 그 답이 되는 식(3 × 4)과 답이 다른 식 2개를 문에 붙여요
+  function mathQuestions() {
+    return ML.questions(TOTAL).map(([a, b]) => {
+      const c = a * b, key = e => e[0] + "×" + e[1], label = e => e[0] + " × " + e[1];
+      const cand = [];
+      ML.dans.forEach(x => { for (let y = 1; y <= 9; y++) if (x * y !== c) cand.push([x, y]); });
+      [[a, b + 1], [a, b - 1], [a + 1, b], [a - 1, b]].forEach(e => { if (e[0] >= 2 && e[1] >= 1 && e[1] <= 9 && e[0] * e[1] !== c) cand.push(e, e); });
+      const others = [];
+      shuffle(cand).forEach(e => { if (others.length < 2 && !others.some(o => key(o) === key(e))) others.push(e); });
+      const opts = shuffle([[a, b]].concat(others)).map(e => [key(e), label(e)]);
+      return { en: key([a, b]), word: String(c), emoji: "", ko: label([a, b]), say: String(c), opts };
+    });
+  }
   function buildQuestions() {
+    if (MATH) return mathQuestions();
     const words = grade.words, n = grade.grade === 1 ? 2 : 3;
     return shuffle(words.slice()).slice(0, TOTAL).map(w => {
       const others = shuffle(words.filter(o => o[1] !== w[1])).slice(0, n - 1);
@@ -206,7 +236,7 @@
     const s = CAM / (CAM + z);
     return { x: g.cx + x * s * g.R, y: g.hy + (g.gy - g.hy) * s - h * s * g.R, s };
   }
-  const lanesX = () => grade.grade === 1 ? [-0.45, 0.45] : [-2 / 3, 0, 2 / 3];
+  const lanesX = () => !MATH && grade.grade === 1 ? [-0.45, 0.45] : [-2 / 3, 0, 2 / 3];
   function laneOf(xs, x) {
     let best = 0;
     xs.forEach((c, i) => { if (Math.abs(c - x) < Math.abs(xs[best] - x)) best = i; });
@@ -228,7 +258,7 @@
     show("screen-game");
     resize();
     run.banner = { text: "출발! 🐧", t: 1.6 };
-    msg("◀ ▶ 로 움직여서 뜻에 맞는 그림 문으로!");
+    msg(MATH ? "◀ ▶ 로 움직여서 답에 맞는 식 문으로!" : "◀ ▶ 로 움직여서 뜻에 맞는 그림 문으로!");
     if (music) { bgm.currentTime = BGM_START; bgm.play().catch(() => {}); }
     nextQuestion();
     run.last = performance.now();
@@ -245,11 +275,11 @@
     const q = run.qs[run.i];
     run.cur = q;
     const qw = $("#q-word");
-    qw.textContent = cap(q.en); qw.className = "q-word";
-    $("#q-sub").textContent = "뜻에 맞는 그림 문으로 달려요!";
+    qw.textContent = MATH ? q.word : cap(q.en); qw.className = "q-word";
+    $("#q-sub").textContent = MATH ? "답이 " + q.word + " 인 식 문으로 달려요!" : "뜻에 맞는 그림 문으로 달려요!";
     $("#hud-q").textContent = (run.i + 1) + " / " + TOTAL;
     animate($(".q-card"), "pop");
-    speakEn(q.en);
+    speakEn(MATH ? q.say : q.en);
     run.speed = Z_SPAWN / run.gateT;
     run.gates.push({ z: Z_SPAWN, xs: lanesX(), q, done: false, pick: -1, ok: false });
   }
@@ -282,7 +312,7 @@
       addScore(gain);
       run.learned.push(q);
       qw.className = "q-word ok";
-      $("#q-sub").textContent = q.emoji + " " + cap(q.en) + " = " + q.ko;
+      $("#q-sub").textContent = MATH ? q.ko + " = " + q.word : q.emoji + " " + cap(q.en) + " = " + q.ko;
       run.jumpT = 0.55;
       // 맞힐수록 빨라져요
       const before = run.gateT;
@@ -296,10 +326,10 @@
       run.lives--;
       renderHearts(true);
       qw.className = "q-word no";
-      $("#q-sub").textContent = "정답은 " + q.emoji + " " + q.ko + " 이에요";
+      $("#q-sub").textContent = "정답은 " + (MATH ? "" : q.emoji + " ") + q.ko + " 이에요";
       run.fallT = 0.9;
       run.gateT = Math.min(T_START, run.gateT + 0.25);
-      msg("앗! " + cap(q.en) + " 은(는) " + q.emoji + " " + q.ko + " 이야!");
+      msg(MATH ? "앗! " + q.word + " = " + q.ko + " 이야!" : "앗! " + cap(q.en) + " 은(는) " + q.emoji + " " + q.ko + " 이야!");
       delay = 1500;
     }
     const tok = run.tok;
@@ -495,7 +525,8 @@
       ctx.lineWidth = Math.max(2, (gt.done && isAns ? 16 : 9) * tl.s);
       ctx.strokeStyle = gt.done && isAns ? "#34d399" : COLORS[(i * 2 + 1) % COLORS.length];
       ctx.stroke();
-      ctx.font = Math.max(8, h * 0.72) + "px " + EMOJI_FONT;
+      ctx.font = MATH ? "800 " + Math.max(8, h * 0.42) + "px Nunito, Pretendard, sans-serif" : Math.max(8, h * 0.72) + "px " + EMOJI_FONT;
+      if (MATH) ctx.fillStyle = "#1e3a8a";
       ctx.textAlign = "center"; ctx.textBaseline = "middle";
       ctx.fillText(gt.q.opts[i][1], tl.x + w / 2, tl.y + h / 2 + h * 0.05);
       // 아래 문 (통과한 정답 문은 양쪽으로 열려요)
@@ -638,27 +669,46 @@
     const stars = n >= 14 ? 3 : n >= 10 ? 2 : n >= 6 ? 1 : 0;
     $("#result-title").textContent = !done ? "하트를 다 썼어요! 다시 도전! 💪" : stars === 3 ? "완벽해요! 🏆" : stars === 2 ? "아주 잘했어요! 🎉" : "잘했어요! 💪";
     $("#result-stars").innerHTML = [1, 2, 3].map(k => '<span class="' + (k <= stars ? "" : "dim") + '">⭐</span>').join("");
-    const data = userData(); data.best = data.best || {};
-    const key = "g" + grade.grade, best = data.best[key] || 0, isRecord = run.score > best;
-    if (isRecord) data.best[key] = run.score;
-    saveUserData(data);
-    $("#result-text").innerHTML = "🐧 " + grade.grade + "학년 · 맞힌 문 <b>" + n + "</b> / " + TOTAL + "<br>" +
+    let isRecord;
+    if (MATH) isRecord = ML.saveBest("wordrun", run.score).isRecord;
+    else {
+      const data = userData(); data.best = data.best || {};
+      const key = "g" + grade.grade, best = data.best[key] || 0;
+      isRecord = run.score > best;
+      if (isRecord) data.best[key] = run.score;
+      saveUserData(data);
+    }
+    $("#result-text").innerHTML = "🐧 " + (MATH ? esc(ML.danText()) : grade.grade + "학년") + " · 맞힌 문 <b>" + n + "</b> / " + TOTAL + "<br>" +
       "점수 <b>" + run.score + "</b>점" + (isRecord && run.score > 0 ? '<span class="record">🎊 최고 기록!</span>' : "");
     const wb = $("#result-words"); wb.innerHTML = "";
     run.learned.forEach(w => {
       const b = document.createElement("button");
       b.type = "button"; b.className = "word-chip";
-      b.innerHTML = esc(w.emoji + " " + w.en) + "<small>" + esc(w.ko) + "</small>";
-      b.title = "눌러서 듣기";
-      b.addEventListener("click", () => speakEn(w.en));
+      if (MATH) b.innerHTML = esc(w.ko + " = " + w.word);
+      else {
+        b.innerHTML = esc(w.emoji + " " + w.en) + "<small>" + esc(w.ko) + "</small>";
+        b.title = "눌러서 듣기";
+        b.addEventListener("click", () => speakEn(w.en));
+      }
       wb.appendChild(b);
     });
     show("screen-result");
   }
   $("#btn-again").addEventListener("click", startRun);
-  $("#btn-result-grade").addEventListener("click", () => { renderGrades(); show("screen-grade"); });
-  $("#btn-quit").addEventListener("click", () => { stopRun(); renderGrades(); show("screen-grade"); });
-  $("#btn-say").addEventListener("click", () => { if (run.cur) speakEn(run.cur.en); });
+  $("#btn-result-grade").addEventListener("click", () => { if (MATH) { ML.back(); return; } renderGrades(); show("screen-grade"); });
+  $("#btn-quit").addEventListener("click", () => { stopRun(); if (MATH) { ML.back(); return; } renderGrades(); show("screen-grade"); });
+  $("#btn-say").addEventListener("click", () => { if (run.cur) speakEn(MATH ? run.cur.say : run.cur.en); });
+
+  /* ---------- 구구단 놀이터에서 열었을 때 ---------- */
+  if (MATH) {
+    document.title = "구구단 문 달리기";
+    $(".title-card h1").textContent = "구구단 문 달리기";
+    $(".title-card .subtitle").textContent = "답을 보고 맞는 구구단 식 문으로 쌩쌩! (" + ML.danText() + ")";
+    const back = $(".title-card .back-link");
+    back.textContent = "← 게임 고르기";
+    back.addEventListener("click", e => { e.preventDefault(); ML.back(); });
+    $("#btn-result-grade").textContent = "게임 고르기";
+  }
 
   /* ---------- 조작 ---------- */
   // 마우스: 누른 곳으로 따라가요 / 터치: 옆으로 밀면 손가락을 따라가고, 휙 밀면 옆 칸으로

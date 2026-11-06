@@ -1,7 +1,10 @@
 // 🚂 스펠링 기차: 그림을 보고, 맵에 흩어진 알파벳을 순서대로 먹어 영어 단어를 완성해요.
 // 맞는 글자를 먹으면 기차 칸이 하나씩 늘어나고, 틀린 글자·벽·기차 칸에 부딪히면 하트가 줄어요.
+// 구구단 놀이터에서 열면(?mul=1) '구구단 기차': 7단 14 → 21 → 28 처럼 단의 답을 차례대로 먹어요.
 (function () {
   "use strict";
+
+  var ML = window.MulLink || { on: false }, MATH = ML.on;
 
   var $ = function (s) { return document.querySelector(s); };
   var GRADES = window.SPELL_GRADES, LEVELS = window.SPELL_LEVELS;
@@ -14,7 +17,8 @@
   var OPP = { up: "down", down: "up", left: "right", right: "left" };
   var ALPHABET = "abcdefghijklmnopqrstuvwxyz";
   var PROFILES_KEY = "spell_profiles", RANK_KEY = "spell_rank_";
-  var GUIDE_ID = "spelling";
+  var GUIDE_ID = MATH ? "spelling_mul" : "spelling";
+  if (MATH) PER_ROUND = 6;
 
   var store = {
     get: function (k, d) { try { var v = localStorage.getItem(k); return v == null ? d : JSON.parse(v); } catch (e) { return d; } },
@@ -40,6 +44,7 @@
   /* ---------- 소리 ---------- */
   var actx = null;
   function tone(freq, dur, type, when, vol) {
+    if (MATH && !ML.sound) return;
     try {
       actx = actx || new (window.AudioContext || window.webkitAudioContext)();
       var t = actx.currentTime + (when || 0);
@@ -58,16 +63,20 @@
     word: function () { [523, 659, 784, 1047, 784, 1047].forEach(function (f, i) { tone(f, 0.18, "triangle", i * 0.1, 0.12); }); },
     no: function () { tone(330, 0.08, "sine", 0, 0.06); }
   };
-  // 영어 단어는 영어 목소리로 읽어요
+  // 영어 단어는 영어 목소리로 읽어요 (구구단 기차는 우리말로)
   function speakEn(text) {
-    if (!("speechSynthesis" in window)) return;
+    if (!("speechSynthesis" in window) || (MATH && !ML.sound)) return;
     try {
       speechSynthesis.cancel();
-      var u = new SpeechSynthesisUtterance(text);
-      u.lang = "en-US"; u.rate = 0.8; u.pitch = 1.1;
+      var u = new SpeechSynthesisUtterance(MATH ? wordLabel(text) : text);
+      u.lang = MATH ? "ko-KR" : "en-US"; u.rate = MATH ? 0.95 : 0.8; u.pitch = 1.1;
       speechSynthesis.speak(u);
     } catch (e) { /* speech unavailable, ignore */ }
   }
+
+  // 구구단 기차의 '단어'는 숫자 배열이에요
+  function wordLabel(en) { return Array.isArray(en) ? en.join(" → ") : en; }
+  var UNIT = MATH ? "숫자" : "글자";
 
   /* ---------- 효과 ---------- */
   function floatAt(x, y, text, color) {
@@ -128,12 +137,14 @@
     if (!name) { $("#user-name-input").focus(); return; }
     enterAs(name);
   }
-  $("#btn-start").addEventListener("click", function () { renderUserList(); $("#user-name-input").value = ""; show("screen-user"); });
+  $("#btn-start").addEventListener("click", function () {
+    if (MATH) { renderLevels(); show("screen-level"); return; }
+    renderUserList(); $("#user-name-input").value = ""; show("screen-user"); });
   $("#btn-user-new").addEventListener("click", submitNewUser);
   $("#user-name-input").addEventListener("keydown", function (e) { if (e.key === "Enter") submitNewUser(); });
   $("#btn-user-guest").addEventListener("click", function () { enterAs(null); });
   $("#btn-user-back").addEventListener("click", function () { show("screen-title"); });
-  $("#btn-level-back").addEventListener("click", function () { renderGrades(); show("screen-grade"); });
+  $("#btn-level-back").addEventListener("click", function () { if (MATH) { ML.back(); return; } renderGrades(); show("screen-grade"); });
   $("#btn-grade-back").addEventListener("click", function () { show("screen-title"); });
 
   /* ---------- 학년 고르기 ---------- */
@@ -158,23 +169,35 @@
   var LV_BG = { easy: ["#ecfccb", "#65a30d"], normal: ["#e1efff", "#2e9bff"], hard: ["#ffe7f2", "#d81b7a"] };
   function renderLevels() {
     var g = $("#level-grid"); g.innerHTML = "";
-    $("#level-grade-tag").textContent = grade.emoji + " " + grade.grade + "학년";
+    $("#level-grade-tag").textContent = MATH ? "🔢 " + ML.danText() : grade.emoji + " " + grade.grade + "학년";
     var best = userData().best || {};
     LEVELS.forEach(function (lv) {
       var b = document.createElement("button");
       b.className = "level-btn"; b.type = "button";
       b.style.setProperty("--bg", LV_BG[lv.id][0]); b.style.setProperty("--c", LV_BG[lv.id][1]);
-      var top = store.get(RANK_KEY + recKey(lv), [])[0];
+      var top = MATH ? null : store.get(RANK_KEY + recKey(lv), [])[0];
       b.innerHTML = '<span class="lv-emoji">' + lv.emoji + '</span><span class="lv-name">' + lv.name + "</span>" +
-        '<span class="lv-desc">' + lv.desc + "</span>" +
-        '<span class="lv-best">' + (best[recKey(lv)] ? "⭐ 내 최고 " + best[recKey(lv)] + "점" : "아직 기록이 없어요") +
+        '<span class="lv-desc">' + (MATH ? MATH_DESC[lv.id] : lv.desc) + "</span>" +
+        '<span class="lv-best">' + (MATH ? "" : best[recKey(lv)] ? "⭐ 내 최고 " + best[recKey(lv)] + "점" : "아직 기록이 없어요") +
         (top ? " · 🥇 " + esc(top.name) + " " + top.score + "점" : "") + "</span>" +
         '<span class="lv-go">출발 ▶</span>';
       b.addEventListener("click", function () { chooseLevel(lv); });
       g.appendChild(b);
     });
   }
+  var MATH_DESC = { easy: "숫자 3개, 필요한 숫자만 나와요. 다음 숫자가 반짝!", normal: "숫자 4개, 헷갈리는 방해 숫자 3개", hard: "숫자 5개, 방해 숫자 6개! 기차도 더 빨라요" };
   function guide(onStart) {
+    if (MATH) return {
+      id: GUIDE_ID, title: "구구단 기차",
+      pages: [
+        { icon: "🔢", title: "몇 단인지 봐요", text: "위에 <b>몇 단</b>인지와 <b>몇 번째부터</b>인지가 나와요.<br>예) <b>7단 · 7 × 2 부터</b> → 14, 21, 28" },
+        { icon: "🚂", title: "기차를 움직여요", text: "<b>방향키(← ↑ → ↓)</b>를 누르면 기차가 그쪽으로 달려요.<br>태블릿은 화면을 <b>밀거나</b> 방향 버튼을 눌러요." },
+        { icon: "🔢", title: "답을 차례대로 먹어요", text: "단의 답을 <b>작은 것부터 차례대로</b> 먹어요.<br>맞는 숫자를 먹으면 <b>기차 칸</b>이 하나씩 늘어나요!" },
+        { icon: "⚠️", title: "조심해요!", text: "<b>틀린 숫자</b>를 먹거나 <b>벽</b>, 기차 칸에 부딪히면 ❤️ 하트가 하나 줄어요." },
+        { icon: "🏆", title: PER_ROUND + "번 완성!", text: "한 판에 <b>" + PER_ROUND + "번</b> 완성해요. 한 번도 안 틀리면 <b>보너스</b>!" }
+      ],
+      startText: "자, 구구단 기차 출발!", startLabel: "출발! 🚂", onStart: onStart
+    };
     return {
       id: GUIDE_ID, title: "스펠링 기차",
       pages: [
@@ -217,10 +240,11 @@
 
   function startRound(lv) {
     // 학년 단어를 짧은 순서로 세우고(같은 길이는 섞어서), 난이도에 맞는 쪽에서 골라요
+    var mathWords = MATH ? makeMathWords(lv) : null;
     var sorted = shuffle(grade.words.slice()).sort(function (a, b) { return a[0].length - b[0].length; });
     var pool = sorted.slice(Math.floor(sorted.length * lv.part[0]), Math.ceil(sorted.length * lv.part[1]));
     Object.assign(G, {
-      level: lv, words: shuffle(pool.slice()).slice(0, PER_ROUND), wi: 0,
+      level: lv, words: mathWords || shuffle(pool.slice()).slice(0, PER_ROUND), wi: 0,
       lives: LIVES, score: 0, done: [], active: true, t: 0, freezeT: 0, after: null, puffs: []
     });
     $("#hud-score").textContent = "0";
@@ -236,9 +260,19 @@
     G.raf = requestAnimationFrame(frame);
   }
 
+  // 구구단 기차 문제: 고른 단에서 연속된 답 3~5개 (예: 7단 14, 21, 28)
+  function makeMathWords(lv) {
+    var len = lv.id === "easy" ? 3 : lv.id === "normal" ? 4 : 5, out = [];
+    for (var k = 0; k < PER_ROUND; k++) {
+      var d = pick(ML.dans), st = rand(1, 10 - len), toks = [];
+      for (var i = 0; i < len; i++) toks.push(String(d * (st + i)));
+      out.push([toks, "🔢", d + "단 · " + d + " × " + st + " 부터 차례로", d, st]);
+    }
+    return out;
+  }
   function nextWord() {
     var w = G.words[G.wi];
-    G.word = { en: w[0], emoji: w[1], ko: w[2] };
+    G.word = { en: w[0], emoji: w[1], ko: w[2], dan: w[3], st: w[4] };
     G.idx = 0; G.mistakes = 0;
     var cx = Math.floor(COLS / 2), cy = Math.floor(ROWS / 2);
     G.snake = [{ x: cx, y: cy }]; G.prev = [{ x: cx, y: cy }];
@@ -249,12 +283,13 @@
     $("#hint-meaning").textContent = G.word.ko;
     $("#hud-word").textContent = (G.wi + 1) + " / " + G.words.length;
     renderBlanks();
-    msg("방향키를 눌러 출발! 🚂  첫 글자를 찾아요");
+    msg("방향키를 눌러 출발! 🚂  첫 " + UNIT + "를 찾아요");
     setTimeout(function () { if (G.active) speakEn(G.word.en); }, 400);
   }
 
   function renderBlanks() {
     var box = $("#hint-blanks"); box.innerHTML = "";
+    box.classList.toggle("num", MATH);
     for (var i = 0; i < G.word.en.length; i++) {
       var s = document.createElement("span");
       s.className = "blank" + (i < G.idx ? " filled" : i === G.idx ? " next" : "");
@@ -304,8 +339,16 @@
     var en = G.word.en;
     for (var i = 0; i < en.length; i++) addLetter(en[i], true);
     // 방해 글자: 단어에 없는 글자로만 골라요 (헷갈리지 않게)
-    var others = shuffle(ALPHABET.split("").filter(function (ch) { return en.indexOf(ch) < 0; }));
+    var others = shuffle((MATH ? mathDecoys() : ALPHABET.split("")).filter(function (ch) { return en.indexOf(ch) < 0; }));
     for (var k = 0; k < G.level.decoys; k++) addLetter(others[k], false);
+  }
+  // 헷갈리는 숫자: 앞뒤 답, 답 ±1, 다른 단의 답
+  function mathDecoys() {
+    var d = G.word.dan, st = G.word.st, n = G.word.en.length, set = {};
+    var add = function (v) { if (v > 0) set[v] = true; };
+    add(d * (st - 1)); add(d * (st + n));
+    G.word.en.forEach(function (t) { add(+t + 1); add(+t - 1); add(+t + (d > 2 ? d - 1 : d + 1)); });
+    return Object.keys(set);
   }
   function letterAt(x, y) {
     for (var i = 0; i < G.letters.length; i++) if (G.letters[i].x === x && G.letters[i].y === y) return G.letters[i];
@@ -329,7 +372,7 @@
       if (back && back.x === nx && back.y === ny) { sfx.no(); msg("기차는 뒤로 갈 수 없어요! 다른 방향을 눌러요"); return; }
       if (hitsCar(nx, ny, false)) { sfx.no(); msg("그쪽은 기차 칸이 있어요! 다른 방향을 눌러요"); return; }
       G.dir = d; G.queue = []; G.moving = true; G.acc = G.level.step; // 다음 프레임에 바로 한 칸
-      if (G.idx === 0 && G.cars.length === 0) msg("칙칙폭폭! 🚂 \"" + G.word.ko + "\" 의 첫 글자를 먹어요");
+      if (G.idx === 0 && G.cars.length === 0) msg("칙칙폭폭! 🚂 \"" + G.word.ko + "\" 의 첫 " + UNIT + "를 먹어요");
       return;
     }
     var last = G.queue.length ? G.queue[G.queue.length - 1] : G.dir;
@@ -373,7 +416,7 @@
     floatAt(p[0], p[1] - 10, lt.ch + "  +10", color);
     renderBlanks();
     if (G.idx >= G.word.en.length) { wordDone(); return; }
-    msg("딩동! '" + lt.ch + "' 칸이 붙었어요 🚃  다음 글자를 찾아요");
+    msg("딩동! '" + lt.ch + "' 칸이 붙었어요 🚃  다음 " + UNIT + "를 찾아요");
   }
 
   function loseLife() {
@@ -399,8 +442,8 @@
     if (lt.need) addLetter(lt.ch, true);
     if (loseLife()) return;
     msg(G.word.en.indexOf(lt.ch) >= 0
-      ? "앗, 순서가 달라요! 지금은 " + (G.idx + 1) + "번째 글자를 먹어야 해요"
-      : "앗, '" + lt.ch + "' 는 \"" + G.word.ko + "\" 에 없는 글자예요!");
+      ? "앗, 순서가 달라요! 지금은 " + (G.idx + 1) + "번째 " + UNIT + "를 먹어야 해요"
+      : MATH ? "앗, " + lt.ch + " 은(는) " + G.word.dan + "단 답이 아니에요!" : "앗, '" + lt.ch + "' 는 \"" + G.word.ko + "\" 에 없는 글자예요!");
   }
 
   function crash(car) {
@@ -422,7 +465,7 @@
     sfx.word();
     confetti(18);
     setTimeout(function () { speakEn(G.word.en); }, 250);
-    msg("🎉 " + G.word.en + " (" + G.word.ko + ") 완성!" + (perfect ? "  한 번도 안 틀렸어요! +20" : ""));
+    msg("🎉 " + (MATH ? G.word.dan + "단 " + wordLabel(G.word.en) : G.word.en + " (" + G.word.ko + ")") + " 완성!" + (perfect ? "  한 번도 안 틀렸어요! +20" : ""));
     G.freezeT = 2.0;
     G.after = function () {
       G.wi++;
@@ -440,24 +483,32 @@
     $("#result-title").textContent = n < G.words.length ? (n >= 5 ? titles[2] : "하트를 다 썼어요! 다시 도전! 💪") : titles[3];
     $("#result-stars").innerHTML = [1, 2, 3].map(function (k) { return '<span class="' + (k <= stars ? "" : "dim") + '">⭐</span>'; }).join("");
 
-    var lv = G.level, data = userData();
-    data.best = data.best || {};
-    var best = data.best[recKey(lv)] || 0, isRecord = G.score > best;
-    if (isRecord) data.best[recKey(lv)] = G.score;
-    saveUserData(data);
-    $("#result-text").innerHTML = grade.grade + "학년 " + lv.emoji + " " + lv.name + " · 완성한 단어 <b>" + n + "</b> / " + G.words.length + "<br>" +
+    var lv = G.level, isRecord;
+    if (MATH) isRecord = ML.saveBest("train", G.score).isRecord;
+    else {
+      var data = userData();
+      data.best = data.best || {};
+      var best = data.best[recKey(lv)] || 0;
+      isRecord = G.score > best;
+      if (isRecord) data.best[recKey(lv)] = G.score;
+      saveUserData(data);
+    }
+    $("#result-text").innerHTML = (MATH ? esc(ML.danText()) + " " : grade.grade + "학년 ") + lv.emoji + " " + lv.name + " · 완성한 " + (MATH ? "차례" : "단어") + " <b>" + n + "</b> / " + G.words.length + "<br>" +
       "점수 <b>" + G.score + "</b>점" + (isRecord && G.score > 0 ? '<span class="record">🎊 최고 기록!</span>' : "");
 
     var wb = $("#result-words"); wb.innerHTML = "";
     G.done.forEach(function (w) {
       var c = document.createElement("button");
       c.type = "button"; c.className = "word-chip";
-      c.innerHTML = w.emoji + " " + w.en + "<small>" + w.ko + "</small>";
-      c.title = "눌러서 듣기";
-      c.addEventListener("click", function () { speakEn(w.en); });
+      if (MATH) c.innerHTML = esc(w.dan + "단 " + wordLabel(w.en));
+      else {
+        c.innerHTML = w.emoji + " " + w.en + "<small>" + w.ko + "</small>";
+        c.title = "눌러서 듣기";
+        c.addEventListener("click", function () { speakEn(w.en); });
+      }
       wb.appendChild(c);
     });
-    $("#result-rank").innerHTML = rankHtml();
+    $("#result-rank").innerHTML = MATH ? "" : rankHtml();
     show("screen-result");
     if (stars >= 2) confetti(stars * 12);
   }
@@ -574,7 +625,7 @@
       ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2); ctx.fill();
       ctx.lineWidth = Math.max(2, cs * 0.06); ctx.strokeStyle = "#a78bfa"; ctx.stroke();
       ctx.fillStyle = "#3b2d5c";
-      ctx.font = "800 " + Math.round(r * 1.25) + "px Nunito, Pretendard, sans-serif";
+      ctx.font = "800 " + Math.round(r * (l.ch.length > 2 ? 0.75 : l.ch.length > 1 ? 1 : 1.25)) + "px Nunito, Pretendard, sans-serif";
       ctx.textAlign = "center"; ctx.textBaseline = "middle";
       ctx.fillText(l.ch, cx, cy + r * 0.04);
     });
@@ -624,7 +675,7 @@
     ctx.fillStyle = "#3b2d5c";
     [0.26, 0.74].forEach(function (f) { ctx.beginPath(); ctx.arc(x + s * f, y + s * 0.98, s * 0.1, 0, Math.PI * 2); ctx.fill(); });
     ctx.fillStyle = "#fff";
-    ctx.font = "800 " + Math.round(s * 0.62) + "px Nunito, Pretendard, sans-serif";
+    ctx.font = "800 " + Math.round(s * (car.ch.length > 2 ? 0.38 : car.ch.length > 1 ? 0.5 : 0.62)) + "px Nunito, Pretendard, sans-serif";
     ctx.textAlign = "center"; ctx.textBaseline = "middle";
     ctx.fillText(car.ch, x + s / 2, y + s * 0.55);
   }
@@ -664,6 +715,18 @@
     ctx.fillStyle = "rgba(255,255,255,.5)";
     ctx.beginPath(); ctx.arc(-s * 0.3, s * 0.05, s * 0.06, 0, Math.PI * 2); ctx.arc(s * 0.3, s * 0.05, s * 0.06, 0, Math.PI * 2); ctx.fill();
     ctx.restore();
+  }
+
+  /* ---------- 구구단 놀이터에서 열었을 때 ---------- */
+  if (MATH) {
+    document.title = "구구단 기차";
+    $(".title-card h1").textContent = "구구단 기차";
+    $(".title-card .subtitle").textContent = "단의 답을 차례대로 먹고 기차를 길게! (" + ML.danText() + ")";
+    var back = $(".title-card .back-link");
+    back.textContent = "← 게임 고르기";
+    back.addEventListener("click", function (e) { e.preventDefault(); ML.back(); });
+    $("#btn-level-back").textContent = "← 게임 고르기";
+    $("#hud-word").previousElementSibling.textContent = "차례";
   }
 
   /* ---------- 키보드 · 밀기 · 방향 버튼 ---------- */

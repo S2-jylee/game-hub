@@ -560,7 +560,14 @@ button{font-family:inherit;font-weight:inherit;color:inherit;cursor:pointer;bord
   // 신나는 게임 목록: 새 게임은 여기에 한 줄 더하면 고르기 화면에 나와요
   const ARCADE = [
     { mode: 'penguin', emoji: '🐧', name: '펭귄 달리기', desc: '정답 허들로 쌩쌩! 통나무는 점프!', mc: '#60a5fa', mbg: '#e1efff' },
-    { mode: 'catch', emoji: '🧺', name: '정답 바구니', desc: '떨어지는 정답 열매를 쏙! 💣 폭탄 조심', mc: '#ff9f43', mbg: '#ffecd9' }
+    { mode: 'catch', emoji: '🧺', name: '정답 바구니', desc: '떨어지는 정답 열매를 쏙! 💣 폭탄 조심', mc: '#ff9f43', mbg: '#ffecd9' },
+    // 아래 게임들은 영어 놀이와 같은 게임을 구구단 문제로 열어요 (?mul=1)
+    { mode: 'train', emoji: '🚂', name: '구구단 기차', desc: '단의 답을 차례대로 먹고 기차를 길게!', mc: '#84cc16', mbg: '#effcd9', href: '../spelling/index.html' },
+    { mode: 'frog', emoji: '🐸', name: '구구단 징검다리', desc: '정답 숫자 연잎으로 폴짝! 강 건너기', mc: '#14b8a6', mbg: '#dcf7f3', href: '../frog/index.html' },
+    { mode: 'bubble', emoji: '🎈', name: '구구단 버블 팝', desc: '3, 6, 9… 답 풍선을 순서대로 펑!', mc: '#ec4899', mbg: '#ffe4f1', href: '../bubble/index.html' },
+    { mode: 'wordrun', emoji: '🚪', name: '구구단 문 달리기', desc: '답을 보고 맞는 식 문으로 쌩쌩!', mc: '#3b82f6', mbg: '#e1efff', href: '../wordrun/index.html' },
+    { mode: 'surf', emoji: '🏄', name: '구구단 서핑', desc: '빈칸에 들어갈 숫자 물길로 쌩쌩!', mc: '#0ea5e9', mbg: '#e0f7ff', href: '../surf/index.html' },
+    { mode: 'alien', emoji: '👾', name: '구구단 디펜스', desc: '정답 숫자를 단 외계인을 쏴요!', mc: '#8b5cf6', mbg: '#efe5ff', href: '../alien/index.html' }
   ];
   const CATCH_LIVES = 5;  // 정답 바구니 하트 수
   const CHEER = ['괜찮아, 다시 골라봐!', '아깝다! 한 번 더!', '틀려도 괜찮아 😊'];
@@ -723,7 +730,10 @@ button{font-family:inherit;font-weight:inherit;color:inherit;cursor:pointer;bord
       b.style.setProperty('--mc', game.mc); b.style.setProperty('--mbg', game.mbg);
       b.innerHTML = `<span class="m-emoji">${game.emoji}</span><span class="m-name">${game.name}</span><small>${game.desc}</small>` +
         (best[game.mode] ? `<span class="best">🏆 최고 ${best[game.mode]}점</span>` : '') + '<span class="m-go">시작 ▶</span>';
-      b.onclick = () => { state.mode = game.mode; startGame(); };
+      b.onclick = () => {
+        if (game.href) { location.href = game.href + '?mul=1&u=' + encodeURIComponent(state.guest ? '' : state.user || ''); return; }
+        state.mode = game.mode; startGame();
+      };
       g.appendChild(b);
     });
     const soon = document.createElement('div');
@@ -2370,6 +2380,15 @@ button{font-family:inherit;font-weight:inherit;color:inherit;cursor:pointer;bord
   });
 
   renderDanGrid(); renderBuddyPick(); setBuddies(); renderStickers(); renderSoundBtn();
+
+  // 구구단 서핑 · 구구단 디펜스에서 돌아오면 같은 사용자로 게임 고르기 화면을 열어요
+  const back = new URLSearchParams(location.search);
+  if (back.get('back') === 'arcade') {
+    const u = back.get('u');
+    enterAs(u && loadProfiles()[u] ? u : null);
+    renderArcade(); show('#arcade');
+    history.replaceState(null, '', location.pathname);
+  }
 })();
 </script>
 </body>

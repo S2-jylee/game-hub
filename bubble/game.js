@@ -1,13 +1,16 @@
 // 🎈 알파벳 버블 팝: 위에 나온 알파벳(또는 단어)을 순서대로 풍선을 터뜨려 만들어요.
 // 60초 안에 많이! 맞으면 +점수, 단어(묶음)를 끝내면 +3초. 순서를 틀리면 풍선이 튕겨 나가고 -3점.
+// 구구단 놀이터에서 열면(?mul=1) '구구단 버블 팝': 3, 6, 9, 12 … 단의 답 풍선을 순서대로 터뜨려요.
 (function () {
   "use strict";
+
+  var ML = window.MulLink || { on: false }, MATH = ML.on;
 
   var $ = function (s) { return document.querySelector(s); };
   var GRADES = window.SPELL_GRADES;
   var TIME = 60;              // 한 판 시간(초)
   var PER_LETTER = 5, WORD_BONUS = 10, TIME_BONUS = 3, WRONG = 3;
-  var PROFILES_KEY = "bubble_profiles", GUIDE_ID = "bubble";
+  var PROFILES_KEY = "bubble_profiles", GUIDE_ID = MATH ? "bubble_mul" : "bubble";
   var COLORS = ["#ff7eb6", "#ff9f43", "#f5b400", "#34d399", "#60a5fa", "#a78bfa", "#f472b6", "#2dd4bf", "#fb7185"];
   var ABC = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
   var ABC_CHUNKS = ["ABCDE", "FGHIJ", "KLMNO", "PQRST", "UVWXYZ"];
@@ -32,6 +35,7 @@
   /* ---------- 소리 ---------- */
   var actx = null;
   function tone(freq, dur, type, when, vol) {
+    if (MATH && !ML.sound) return;
     try {
       actx = actx || new (window.AudioContext || window.webkitAudioContext)();
       var t = actx.currentTime + (when || 0);
@@ -50,11 +54,11 @@
     win: function () { [523, 659, 784, 1047, 784, 1047].forEach(function (f, i) { tone(f, 0.18, "triangle", i * 0.1, 0.12); }); }
   };
   function speakEn(text) {
-    if (!("speechSynthesis" in window)) return;
+    if (!("speechSynthesis" in window) || (MATH && !ML.sound)) return;
     try {
       speechSynthesis.cancel();
       var u = new SpeechSynthesisUtterance(text);
-      u.lang = "en-US"; u.rate = 0.8; u.pitch = 1.1;
+      u.lang = MATH ? "ko-KR" : "en-US"; u.rate = MATH ? 0.95 : 0.8; u.pitch = 1.1;
       speechSynthesis.speak(u);
     } catch (e) { /* speech unavailable, ignore */ }
   }
@@ -127,7 +131,9 @@
     if (!name) { $("#user-name-input").focus(); return; }
     enterAs(name);
   }
-  $("#btn-start").addEventListener("click", function () { renderUserList(); $("#user-name-input").value = ""; show("screen-user"); });
+  $("#btn-start").addEventListener("click", function () {
+    if (MATH) { mode = MUL_MODE; choose(); return; }
+    renderUserList(); $("#user-name-input").value = ""; show("screen-user"); });
   $("#btn-user-new").addEventListener("click", submitNewUser);
   $("#user-name-input").addEventListener("keydown", function (e) { if (e.key === "Enter") submitNewUser(); });
   $("#btn-user-guest").addEventListener("click", function () { enterAs(null); });
@@ -141,6 +147,8 @@
     { id: "abcs", name: "abc 순서", emoji: "🔡", desc: "a → b → c … 소문자를 순서대로 터뜨려요", bg: "#e1efff", c: "#1d4ed8" },
     { id: "word", name: "단어 만들기", emoji: "🐶", desc: "D → O → G 처럼 글자를 터뜨려 단어 완성 (학년별)", bg: "#ecfccb", c: "#65a30d" }
   ];
+  // 구구단 버블 팝은 ABC 순서처럼 '묶음'을 차례로 해요
+  var MUL_MODE = { id: "mul", name: "구구단 버블 팝", emoji: "🔢" };
   var mode = MODES[0], grade = null;
   function modeKey() { return mode.id === "word" ? "word_g" + grade.grade : mode.id; }
   function renderModes() {
@@ -178,6 +186,16 @@
   }
 
   function guide(onStart) {
+    if (MATH) return {
+      id: GUIDE_ID, title: "구구단 버블 팝",
+      pages: [
+        { icon: "🎈", title: "풍선이 둥둥", text: "숫자 풍선이 하늘에 <b>둥둥</b> 떠다녀요.<br>위에 나온 <b>몇 단</b>인지 잘 봐요!" },
+        { icon: "👆", title: "작은 답부터 펑!", text: "단의 답을 <b>작은 것부터 순서대로</b> 터뜨려요.<br>예) 3단 → <b>3 → 6 → 9 → 12 → 15</b>" },
+        { icon: "💫", title: "틀리면 튕겨요", text: "순서가 틀린 풍선은 <b>튕겨 나가고</b> <b>-3점</b>이에요." },
+        { icon: "⏰", title: "60초 스피드!", text: "숫자 하나 <b>+5점</b>, 묶음을 다 하면 <b>+10점</b>에 <b>+3초</b>!" }
+      ],
+      startText: "자, 풍선을 터뜨려 볼까?", startLabel: "시작! 🎈", onStart: onStart
+    };
     return {
       id: GUIDE_ID, title: "알파벳 버블 팝",
       pages: [
@@ -204,6 +222,23 @@
     target: "", idx: 0, cur: null, balloons: [], queue: [], chunk: 0, made: [], W: 0, H: 0, size: 60, cleared: false, busy: false
   };
 
+  // 글자(또는 숫자)를 배열로
+  function toks() { return Array.isArray(G.target) ? G.target.slice() : G.target.split(""); }
+  // 구구단 묶음: 단마다 1~5번째 답, 6~9번째 답 (묶음이 너무 많으면 단을 몇 개만 골라요)
+  function mulChunks() {
+    var dans = ML.dans.slice();
+    if (dans.length > 3) dans = shuffle(dans).slice(0, 3).sort(function (a, b) { return a - b; });
+    var out = [];
+    dans.forEach(function (d) {
+      [[1, 5], [6, 9]].forEach(function (r) {
+        var t = [];
+        for (var k = r[0]; k <= r[1]; k++) t.push(String(d * k));
+        out.push({ dan: d, from: r[0], toks: t });
+      });
+    });
+    return out;
+  }
+  function chunkCount() { return MATH ? G.mchunks.length : ABC_CHUNKS.length; }
   function makeQueue() {
     if (mode.id !== "word") return [];
     // 이 학년 단어를 섞어서 차례로 (다 쓰면 다시 섞어요)
@@ -216,15 +251,21 @@
       G.cur = { en: w[0], emoji: w[1], ko: w[2] };
       G.target = w[0].toUpperCase();
     } else {
-      if (G.chunk >= ABC_CHUNKS.length) { G.cleared = true; return endRound(); }
-      var t = ABC_CHUNKS[G.chunk];
-      G.target = mode.id === "abcs" ? t.toLowerCase() : t;
-      G.cur = { en: G.target, emoji: mode.id === "abcs" ? "🔡" : "🔠", ko: "알파벳 " + (G.chunk + 1) + " / " + ABC_CHUNKS.length + " 묶음" };
+      if (G.chunk >= chunkCount()) { G.cleared = true; return endRound(); }
+      if (MATH) {
+        var mc = G.mchunks[G.chunk];
+        G.target = mc.toks;
+        G.cur = { en: mc.toks.join(", "), emoji: "🔢", dan: mc.dan, ko: mc.dan + "단 " + mc.dan + " × " + mc.from + " 부터 (" + (G.chunk + 1) + " / " + chunkCount() + " 묶음)" };
+      } else {
+        var t = ABC_CHUNKS[G.chunk];
+        G.target = mode.id === "abcs" ? t.toLowerCase() : t;
+        G.cur = { en: G.target, emoji: mode.id === "abcs" ? "🔡" : "🔠", ko: "알파벳 " + (G.chunk + 1) + " / " + ABC_CHUNKS.length + " 묶음" };
+      }
     }
     G.idx = 0;
     renderSlots();
     $("#q-emoji").textContent = G.cur.emoji;
-    $("#q-sub").textContent = mode.id === "word" ? G.cur.ko + " · " + G.target.split("").join(" → ") + " 순서로 터뜨려요" : G.cur.ko + " · " + G.target.split("").join(" → ");
+    $("#q-sub").textContent = mode.id === "word" ? G.cur.ko + " · " + toks().join(" → ") + " 순서로 터뜨려요" : MATH ? G.cur.ko : G.cur.ko + " · " + toks().join(" → ");
     animate($(".q-card"), "pop");
     if (mode.id === "word") speakEn(G.cur.en);
     spawnBalloons();
@@ -232,7 +273,8 @@
   }
   function renderSlots() {
     var box = $("#q-slots"); box.innerHTML = "";
-    G.target.split("").forEach(function (ch, i) {
+    var box2 = $("#q-slots"); box2.classList.toggle("num", MATH);
+    toks().forEach(function (ch, i) {
       var s = document.createElement("div");
       s.className = "slot" + (i < G.idx ? " done" : i === G.idx ? " next" : "");
       s.textContent = ch;
@@ -249,12 +291,18 @@
   }
   window.addEventListener("resize", function () { if (G.active) measure(); });
 
+  // 헷갈리는 숫자: 답 ±1, 다른 단의 답처럼 보이는 수
+  function mulDecoys(letters) {
+    var d = G.cur.dan, set = {};
+    letters.forEach(function (t) { [+t + 1, +t - 1, +t + 2, +t + d + 1].forEach(function (v) { if (v > 0) set[v] = true; }); });
+    return Object.keys(set).filter(function (v) { return letters.indexOf(v) < 0; });
+  }
   function spawnBalloons() {
     G.balloons.forEach(function (b) { b.el.remove(); });
     G.balloons = [];
-    var letters = G.target.split("");
+    var letters = toks();
     var lower = mode.id === "abcs";
-    var pool = ABC.split("").filter(function (ch) { return G.target.toUpperCase().indexOf(ch) < 0; });
+    var pool = MATH ? mulDecoys(letters) : ABC.split("").filter(function (ch) { return G.target.toUpperCase().indexOf(ch) < 0; });
     // 풍선은 5~7개 정도 (단어가 길면 글자 수 + 2개)
     var total = Math.max(letters.length + 2, mode.id === "word" ? (grade.grade <= 2 ? 5 : 6) : 7);
     if (mode.id !== "word") total = Math.max(letters.length + 2, 7);
@@ -274,6 +322,7 @@
       el.innerHTML = "<span>" + esc(ch) + "</span>";
       el.style.setProperty("--c", COLORS[(i * 4) % COLORS.length]);
       el.style.setProperty("--w", G.size + "px");
+      if (ch.length > 1) el.style.fontSize = G.size * (ch.length > 2 ? 0.3 : 0.4) + "px";
       var cell = cells[i];
       var b = {
         ch: ch, el: el, popped: false,
@@ -349,7 +398,7 @@
       msg("딩동! " + G.cur.emoji + " " + G.target + " = " + G.cur.ko + " 🎉");
     } else {
       G.chunk++;
-      msg(G.chunk >= ABC_CHUNKS.length ? "🎉 A부터 Z까지 다 했어요!" : "🎉 잘했어요! 다음 알파벳 묶음으로!");
+      msg(G.chunk >= chunkCount() ? (MATH ? "🎉 묶음을 다 했어요!" : "🎉 A부터 Z까지 다 했어요!") : "🎉 잘했어요! 다음 " + (MATH ? "" : "알파벳 ") + "묶음으로!");
     }
     // 남은 풍선은 하늘로 날아가요
     G.balloons.forEach(function (o) { if (!o.popped) { o.fly = true; o.vy = -G.H * 1.6; } });
@@ -371,6 +420,7 @@
 
   function startRound() {
     stopRound();
+    if (MATH) G.mchunks = mulChunks();
     Object.assign(G, { active: true, time: TIME, score: 0, words: 0, wrongs: 0, chunk: 0, made: [], queue: makeQueue(), cleared: false, busy: false, wrongStreak: 0 });
     $("#hud-score").textContent = "0";
     show("screen-game");
@@ -383,7 +433,7 @@
     });
     renderTime();
     nextTarget();
-    msg(mode.id === "word" ? "단어 글자를 순서대로 터뜨려요! 🎈" : "알파벳 순서대로 터뜨려요! 🎈");
+    msg(mode.id === "word" ? "단어 글자를 순서대로 터뜨려요! 🎈" : MATH ? "작은 답부터 순서대로 터뜨려요! 🎈" : "알파벳 순서대로 터뜨려요! 🎈");
     G.last = performance.now();
     G.raf = requestAnimationFrame(frame);
   }
@@ -455,14 +505,19 @@
     var n = G.words;
     var stars = mode.id === "word" ? (n >= 10 ? 3 : n >= 6 ? 2 : n >= 3 ? 1 : 0) : (cleared ? (G.wrongs <= 2 ? 3 : 2) : (G.chunk >= 3 ? 1 : 0));
     if (cleared || stars) { sfx.win(); if (stars >= 2) confetti(26); }
-    $("#result-title").textContent = cleared ? "A부터 Z까지 완성! 🏆" : stars === 3 ? "완벽해요! 🏆" : stars === 2 ? "아주 잘했어요! 🎉" : stars === 1 ? "잘했어요! 💪" : "시간이 다 됐어요! 다시 도전! 💪";
+    $("#result-title").textContent = cleared ? (MATH ? "묶음을 다 터뜨렸어요! 🏆" : "A부터 Z까지 완성! 🏆") : stars === 3 ? "완벽해요! 🏆" : stars === 2 ? "아주 잘했어요! 🎉" : stars === 1 ? "잘했어요! 💪" : "시간이 다 됐어요! 다시 도전! 💪";
     $("#result-stars").innerHTML = [1, 2, 3].map(function (k) { return '<span class="' + (k <= stars ? "" : "dim") + '">⭐</span>'; }).join("");
-    var data = userData(); data.best = data.best || {};
-    var key = modeKey(), best = data.best[key] || 0, isRecord = G.score > best;
-    if (isRecord) data.best[key] = G.score;
-    saveUserData(data);
-    var label = mode.id === "word" ? grade.grade + "학년 " + mode.name : mode.name;
-    var line = mode.id === "word" ? "만든 단어 <b>" + n + "</b>개" : "끝낸 묶음 <b>" + G.chunk + "</b> / " + ABC_CHUNKS.length + (cleared ? " · 남은 시간 " + timeLeft + "초 × 2점 보너스" : "");
+    var isRecord;
+    if (MATH) isRecord = ML.saveBest("bubble", G.score).isRecord;
+    else {
+      var data = userData(); data.best = data.best || {};
+      var key = modeKey(), best = data.best[key] || 0;
+      isRecord = G.score > best;
+      if (isRecord) data.best[key] = G.score;
+      saveUserData(data);
+    }
+    var label = MATH ? esc(ML.danText()) : mode.id === "word" ? grade.grade + "학년 " + mode.name : mode.name;
+    var line = mode.id === "word" ? "만든 단어 <b>" + n + "</b>개" : "끝낸 묶음 <b>" + G.chunk + "</b> / " + chunkCount() + (cleared ? " · 남은 시간 " + timeLeft + "초 × 2점 보너스" : "");
     $("#result-text").innerHTML = mode.emoji + " " + label + " · " + line + "<br>" +
       "점수 <b>" + G.score + "</b>점" + (isRecord && G.score > 0 ? '<span class="record">🎊 최고 기록!</span>' : "");
     var wb = $("#result-words"); wb.innerHTML = "";
@@ -477,10 +532,21 @@
     show("screen-result");
   }
   $("#btn-again").addEventListener("click", startRound);
-  $("#btn-result-mode").addEventListener("click", function () { renderModes(); show("screen-mode"); });
-  $("#btn-quit").addEventListener("click", function () { stopRound(); renderModes(); show("screen-mode"); });
+  $("#btn-result-mode").addEventListener("click", function () { if (MATH) { ML.back(); return; } renderModes(); show("screen-mode"); });
+  $("#btn-quit").addEventListener("click", function () { stopRound(); if (MATH) { ML.back(); return; } renderModes(); show("screen-mode"); });
   $("#btn-say").addEventListener("click", function () {
     if (!G.cur) return;
-    speakEn(mode.id === "word" ? G.cur.en : G.target.split("").join(", "));
+    speakEn(mode.id === "word" ? G.cur.en : toks().join(", "));
   });
+
+  /* ---------- 구구단 놀이터에서 열었을 때 ---------- */
+  if (MATH) {
+    document.title = "구구단 버블 팝";
+    $(".title-card h1").textContent = "구구단 버블 팝";
+    $(".title-card .subtitle").textContent = "단의 답 풍선을 작은 것부터 펑펑! (" + ML.danText() + ")";
+    var back = $(".title-card .back-link");
+    back.textContent = "← 게임 고르기";
+    back.addEventListener("click", function (e) { e.preventDefault(); ML.back(); });
+    $("#btn-result-mode").textContent = "게임 고르기";
+  }
 })();

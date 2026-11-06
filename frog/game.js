@@ -1,13 +1,16 @@
 // 🐸 단어 징검다리: 위에 나온 문제에 맞는 영어 단어 연잎으로 점프해서 강을 건너요.
 // ← → 로 연잎을 고르고 스페이스(위로 밀기, 연잎 톡)로 점프. 틀린 연잎은 가라앉아 풍덩!
+// 구구단 놀이터에서 열면(?mul=1) '구구단 징검다리': 6 × 7 = ? 의 정답 숫자 연잎으로 점프해요.
 (function () {
   "use strict";
+
+  var ML = window.MulLink || { on: false }, MATH = ML.on;
 
   var $ = function (s) { return document.querySelector(s); };
   var GRADES = window.SPELL_GRADES, OPPOSITES = window.FROG_OPPOSITES, SYNONYMS = window.FROG_SYNONYMS;
   var PER_ROUND = 10;         // 한 판 문제 수 (연잎 줄 수)
   var LIVES = 5;              // 하트 수
-  var PROFILES_KEY = "frog_profiles", GUIDE_ID = "frog";
+  var PROFILES_KEY = "frog_profiles", GUIDE_ID = MATH ? "frog_mul" : "frog";
   var JUMP_T = 0.5, SINK_T = 0.9, CAM_T = 0.45;
 
   var store = {
@@ -30,6 +33,7 @@
   /* ---------- 소리 (결과를 알려주는 소리만) ---------- */
   var actx = null;
   function tone(freq, dur, type, when, vol) {
+    if (MATH && !ML.sound) return;
     try {
       actx = actx || new (window.AudioContext || window.webkitAudioContext)();
       var t = actx.currentTime + (when || 0);
@@ -47,11 +51,11 @@
     win: function () { [523, 659, 784, 1047, 784, 1047].forEach(function (f, i) { tone(f, 0.18, "triangle", i * 0.1, 0.12); }); }
   };
   function speakEn(text) {
-    if (!("speechSynthesis" in window)) return;
+    if (!("speechSynthesis" in window) || (MATH && !ML.sound)) return;
     try {
       speechSynthesis.cancel();
       var u = new SpeechSynthesisUtterance(text);
-      u.lang = "en-US"; u.rate = 0.8; u.pitch = 1.1;
+      u.lang = MATH ? "ko-KR" : "en-US"; u.rate = MATH ? 0.95 : 0.8; u.pitch = 1.1;
       speechSynthesis.speak(u);
     } catch (e) { /* speech unavailable, ignore */ }
   }
@@ -111,7 +115,9 @@
     if (!name) { $("#user-name-input").focus(); return; }
     enterAs(name);
   }
-  $("#btn-start").addEventListener("click", function () { renderUserList(); $("#user-name-input").value = ""; show("screen-user"); });
+  $("#btn-start").addEventListener("click", function () {
+    if (MATH) { choose(); return; }
+    renderUserList(); $("#user-name-input").value = ""; show("screen-user"); });
   $("#btn-user-new").addEventListener("click", submitNewUser);
   $("#user-name-input").addEventListener("keydown", function (e) { if (e.key === "Enter") submitNewUser(); });
   $("#btn-user-guest").addEventListener("click", function () { enterAs(null); });
@@ -162,6 +168,16 @@
   }
 
   function guide(onStart) {
+    if (MATH) return {
+      id: GUIDE_ID, title: "구구단 징검다리",
+      pages: [
+        { icon: "🐸", title: "강을 건너요", text: "개구리가 <b>연잎</b>을 밟고 강을 건너야 해요.<br>위에 나온 <b>구구단</b>을 잘 봐요!" },
+        { icon: "🪷", title: "정답 연잎을 골라요", text: "연잎 3개에 숫자가 하나씩 적혀 있어요.<br><b>← →</b> 방향키로 <b>정답</b> 연잎을 골라요." },
+        { icon: "⤴️", title: "폴짝 점프!", text: "<b>스페이스바</b>(또는 ↑)를 누르면 점프해요.<br>태블릿은 연잎을 <b>톡</b> 누르거나 <b>위로 밀어도</b> 돼요." },
+        { icon: "💦", title: "틀리면 풍덩!", text: "틀린 연잎은 <b>가라앉아서</b> 물에 빠져요. ❤️ 하트가 하나 줄어요.<br>연잎 <b>10줄</b>을 건너면 도착!" }
+      ],
+      startText: "자, 강을 건너 볼까?", startLabel: "출발! 🐸", onStart: onStart
+    };
     return {
       id: GUIDE_ID, title: "단어 징검다리",
       pages: [
@@ -190,7 +206,13 @@
   }
   function makeQuestions() {
     var qs = [];
-    if (mode.id === "meaning") {
+    if (MATH) {
+      ML.questions(PER_ROUND).forEach(function (ab) {
+        var a = ab[0], b = ab[1], c = a * b;
+        qs.push({ emoji: "🔢", html: '<span class="en">' + a + " × " + b + "</span> = ?", sub: "정답 숫자 연잎으로 점프!", answer: String(c),
+          options: shuffle(ML.choices(a, b, 3).map(String)), learn: { en: a + " × " + b + " = " + c, ko: "", emoji: "", say: a + " 곱하기 " + b + "는 " + c } });
+      });
+    } else if (mode.id === "meaning") {
       var words = grade.words, all = words.map(function (w) { return w[0]; });
       shuffle(words.slice()).slice(0, PER_ROUND).forEach(function (w) {
         // 길이가 비슷한 단어를 섞어서 헷갈리게
@@ -321,7 +343,7 @@
       var p = screenOf(g, pad.x, G.row + 1);
       floatAt(p[0], p[1] - g.r, "+" + gain, "#0d9488");
       G.learned.push(q.learn);
-      msg(mode.id === "meaning" ? "딩동! " + q.learn.emoji + " " + q.learn.ko + " = " + q.answer + " 🎉" : "딩동! " + q.learn.en + " (" + q.learn.ko + ") 🎉");
+      msg(MATH ? "딩동! " + q.learn.en + " 🎉" : mode.id === "meaning" ? "딩동! " + q.learn.emoji + " " + q.learn.ko + " = " + q.answer + " 🎉" : "딩동! " + q.learn.en + " (" + q.learn.ko + ") 🎉");
       row.pads.forEach(function (o) { if (o !== pad) o.fade = 0.0001; });
       G.row++; G.x = pad.x;
       G.ripples.push({ x: pad.x, row: G.row, t: 0, small: true });
@@ -552,18 +574,23 @@
     var n = G.firstTry, stars = cleared ? (n >= 9 ? 3 : n >= 6 ? 2 : 1) : (n >= 5 ? 1 : 0);
     $("#result-title").textContent = cleared ? (stars === 3 ? "완벽해요! 🏆" : stars === 2 ? "아주 잘했어요! 🎉" : "잘했어요! 💪") : "하트를 다 썼어요! 다시 도전! 💪";
     $("#result-stars").innerHTML = [1, 2, 3].map(function (k) { return '<span class="' + (k <= stars ? "" : "dim") + '">⭐</span>'; }).join("");
-    var data = userData(); data.best = data.best || {};
-    var key = modeKey(), best = data.best[key] || 0, isRecord = G.score > best;
-    if (isRecord) data.best[key] = G.score;
-    saveUserData(data);
-    var label = mode.id === "meaning" ? grade.grade + "학년 " + mode.name : mode.name;
-    $("#result-text").innerHTML = mode.emoji + " " + label + " · 한 번에 맞힌 문제 <b>" + n + "</b> / " + PER_ROUND + "<br>" +
+    var isRecord;
+    if (MATH) isRecord = ML.saveBest("frog", G.score).isRecord;
+    else {
+      var data = userData(); data.best = data.best || {};
+      var key = modeKey(), best = data.best[key] || 0;
+      isRecord = G.score > best;
+      if (isRecord) data.best[key] = G.score;
+      saveUserData(data);
+    }
+    var label = MATH ? "🔢 " + esc(ML.danText()) : mode.emoji + " " + (mode.id === "meaning" ? grade.grade + "학년 " + mode.name : mode.name);
+    $("#result-text").innerHTML = label + " · 한 번에 맞힌 문제 <b>" + n + "</b> / " + PER_ROUND + "<br>" +
       "점수 <b>" + G.score + "</b>점" + (isRecord && G.score > 0 ? '<span class="record">🎊 최고 기록!</span>' : "");
     var wb = $("#result-words"); wb.innerHTML = "";
     G.learned.forEach(function (w) {
       var b = document.createElement("button");
       b.type = "button"; b.className = "word-chip";
-      b.innerHTML = esc(w.emoji + " " + w.en) + "<small>" + esc(w.ko) + "</small>";
+      b.innerHTML = esc((w.emoji ? w.emoji + " " : "") + w.en) + (w.ko ? "<small>" + esc(w.ko) + "</small>" : "");
       b.title = "눌러서 듣기";
       b.addEventListener("click", function () { speakEn(w.say || w.en); });
       wb.appendChild(b);
@@ -571,8 +598,19 @@
     show("screen-result");
   }
   $("#btn-again").addEventListener("click", startRound);
-  $("#btn-result-mode").addEventListener("click", function () { renderModes(); show("screen-mode"); });
-  $("#btn-quit").addEventListener("click", function () { stopRound(); renderModes(); show("screen-mode"); });
+  $("#btn-result-mode").addEventListener("click", function () { if (MATH) { ML.back(); return; } renderModes(); show("screen-mode"); });
+  $("#btn-quit").addEventListener("click", function () { stopRound(); if (MATH) { ML.back(); return; } renderModes(); show("screen-mode"); });
+
+  /* ---------- 구구단 놀이터에서 열었을 때 ---------- */
+  if (MATH) {
+    document.title = "구구단 징검다리";
+    $(".title-card h1").textContent = "구구단 징검다리";
+    $(".title-card .subtitle").textContent = "정답 숫자 연잎으로 폴짝! 강을 건너요 (" + ML.danText() + ")";
+    var back = $(".title-card .back-link");
+    back.textContent = "← 게임 고르기";
+    back.addEventListener("click", function (e) { e.preventDefault(); ML.back(); });
+    $("#btn-result-mode").textContent = "게임 고르기";
+  }
 
   /* ---------- 키보드 · 터치 ---------- */
   document.addEventListener("keydown", function (e) {
