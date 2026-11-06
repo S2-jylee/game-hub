@@ -171,3 +171,21 @@ body .card.en-main { padding: 14px; border-radius: 26px; max-height: none; overf
   body .card.en-main { width: calc(100% - 16px); padding: 10px; }
   .en-main .grade-btn::after { font-size: 0.75rem; padding: 4px 12px; margin-top: 4px; }
 }
+
+/* ---- 제목 아래 부제목(오늘은 어떤 놀이를…, 난이도를 골라주세요, 스테이지 안내 등)은 모든 게임에서 빼요 ---- */
+.english-title .subtitle, .menu-sub, .home-intro, .stage-list-note { display: none !important; }
+
+/* ---- 넓은 카드 안의 소제목(스테이지 고르기 · 그림 고르기 · 난이도를 골라요 …)도 빼요 ---- */
+body .card.card-wide > h2 { display: none !important; }
+
+/* ---- 화면 맨 위 제목과 그 아래 카드·판 사이 여백 ---- */
+.screen > h1.game-title { margin-bottom: 16px; }
+@media (max-width: 560px) { .screen > h1.game-title { margin-bottom: 12px; } }
+#home > h1.game-title { margin: 8px 0 16px; }
+
+/* ---- 스테이지 고르기: 칸을 카드 안에서 잘라 스크롤하지 말고, 카드가 늘어나고 화면이 스크롤돼요 ---- */
+#screen-levelselect { justify-content: flex-start; overflow-y: auto; padding-bottom: 20px; }
+#screen-levelselect .card, #screen-levelselect .level-grid { max-height: none !important; overflow: visible !important; }
+#screen-levelselect { padding-top: 14px; }
+@media (max-width: 560px) { #screen-levelselect { padding-top: 12px; } }
+#screen-levelselect .card { padding-top: 14px; }

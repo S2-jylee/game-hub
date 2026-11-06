@@ -41,7 +41,9 @@
   .play-card.soon .pc-emoji { animation: none; filter: grayscale(0.4); }
   .english-title { text-align: center; }
   .english-title h1 { font-family: "CookieRun", "Jua", sans-serif; font-size: 2.6rem; margin: 6px 0 4px; color: var(--lime-dark); }
-  #screen-menu { justify-content: safe center; overflow-y: auto; padding: 20px 0; }
+  #screen-menu { justify-content: flex-start; overflow-y: auto; padding: 14px 0 20px; }
+  @media (max-width: 560px) { #screen-menu { padding-top: 12px; } }
+  .english-title h1.game-title { margin: 0 0 12px; }
 </style>
 <link rel="stylesheet" href="../shared/game-title.css">
 </head>
