@@ -577,3 +577,6 @@ html { background: #eefbea; }
   .diff-name { font-size: 1.1rem; }
   .diff-desc { font-size: 0.78rem; }
 }
+
+/* 다른 놀이처럼 고르기 화면 위에 큰 제목 */
+.page-title { margin: 0 0 14px; text-align: center; }

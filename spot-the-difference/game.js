@@ -639,7 +639,7 @@
   document.getElementById("btn-start").addEventListener("click", function () {
     ac();
     if (GuideBook.isRead("spot")) { newGame(); return; }
-    GuideBook.open({ id: "spot", title: "틀린그림 찾기 가이드북", pages: GUIDE_PAGES, onStart: newGame });
+    GuideBook.open({ id: "spot", title: "틀린그림 찾기", pages: GUIDE_PAGES, startLabel: "시작! 🔍", onStart: newGame });
   });
   document.getElementById("btn-quit").addEventListener("click", quitGame);
   document.getElementById("btn-retry").addEventListener("click", function () { newGame(); });

@@ -1,6 +1,7 @@
 // 📖 놀이 방법 팝업: 구구단 놀이터의 펭귄 달리기 안내처럼, 게임을 시작할 때마다 한 장짜리 팝업으로 방법을 보여주고
 // '확인'을 누르면 시작해요. 영어 놀이(스펠링 기차 · 징검다리 · 버블 팝 · 꿀벌 · 낚시 · 디펜스 · 바구니 · 펭귄)와
-// 그 구구단 버전이 같이 써요. (탱그램 · 카드 · 퍼즐 · 틀린그림은 자기 폴더의 guidebook.js 를 따로 써요)
+// 그 구구단 버전이 같이 써요. 틀린그림 찾기(spot-the-difference/)에도 같은 파일을 복사해서 써요 (따로 배포돼서).
+// (탱그램 · 카드 · 퍼즐은 자기 폴더의 예전 가이드북 책을 그대로 써요)
 (function () {
   "use strict";
 
@@ -39,6 +40,8 @@
     var items = o.pages.map(function (p) {
       return '<li><span class="gb-li-ico">' + p.icon + '</span><span><b>' + p.title + "</b><br>" + p.text + "</span></li>";
     }).join("");
+    // 설명이 많으면 넓은 화면에서는 두 줄로 나란히 (확인 버튼까지 한 화면에 보이게)
+    boxEl.classList.toggle("gb-many", o.pages.length > 5);
     boxEl.innerHTML =
       '<div class="gb-pop-emoji">' + (o.icon || first.icon) + "</div>" +
       "<h3>" + o.title + "</h3>" +

@@ -495,3 +495,6 @@ html { background: #fff1f7; }
 .level-grid-btn .lvl-num { font-size: 1.35rem; }
 .level-grid-btn .lvl-name { font-size: 0.72rem; font-weight: 700; line-height: 1.25; }
 .level-grid-btn .lvl-stars, .level-grid-btn .lvl-check { font-size: 0.72rem; }
+
+/* 다른 놀이처럼 고르기 화면 위에 큰 제목 */
+.page-title { margin: 0 0 14px; text-align: center; }

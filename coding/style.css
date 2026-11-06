@@ -1042,3 +1042,8 @@ body.drag-out .program { border-color: var(--red); background: #fff1f1; }
 .book-skip { background: #fff4cc; color: var(--peach-dark); }
 .book-skip:hover { background: #ffe9a3; }
 .code-limit.over { background: #ffe4e4; color: var(--red-dark); box-shadow: 0 0 0 2px var(--red); }
+
+/* 놀이 고르기: 영어 놀이 · 구구단 놀이터처럼 흰 상자 없이 큰 제목 */
+.menu-plain { width: 94%; max-width: 900px; max-height: 96vh; overflow-y: auto; text-align: center; padding: 10px 4px 16px; }
+.page-title { display: flex; align-items: center; justify-content: center; gap: 12px; flex-wrap: wrap; margin: 4px 0 18px; }
+.page-title .diff-tag { font-family: "Pretendard", sans-serif; font-size: 1rem; }
