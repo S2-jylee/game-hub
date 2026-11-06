@@ -463,6 +463,9 @@
     }
   }
 
+  // 모바일(좁은 화면 · 가로로 눕힌 폰): 이동 속도를 절반 아래로 줄여요
+  const MOBILE = window.matchMedia('(max-width: 560px), (pointer: coarse) and (max-height: 500px)');
+  const MOBILE_SPEED = 0.45;
   function runFrame(now) {
     if (!run.active) return;
     const dt = Math.min(0.05, (now - run.last) / 1000);
@@ -478,7 +481,7 @@
     }
     if (run.fallT > 0 || run.freezeT > 0 || (run.goal && run.goal.phase === 'wave')) dir = 0;
     run.dir = dir;
-    run.px = Math.max(-0.82, Math.min(0.82, run.px + dir * (1.9 + run.stage * 0.15) * dt));
+    run.px = Math.max(-0.82, Math.min(0.82, run.px + dir * (1.9 + run.stage * 0.15) * (MOBILE.matches ? MOBILE_SPEED : 1) * dt));
     run.lean += (dir * 0.22 - run.lean) * Math.min(1, dt * 10);
     $('#padL').classList.toggle('on', dir < -0.1);
     $('#padR').classList.toggle('on', dir > 0.1);

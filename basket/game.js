@@ -387,6 +387,9 @@
     }
   }
 
+  // 모바일(좁은 화면 · 가로로 눕힌 폰): 이동 속도를 절반 아래로 줄여요
+  const MOBILE = window.matchMedia('(max-width: 560px), (pointer: coarse) and (max-height: 500px)');
+  const MOBILE_SPEED = 0.45;
   function catchFrame(now) {
     if (!cg.active) return;
     const dt = GuideBook.isOpen() ? 0 : Math.min(0.05, (now - cg.last) / 1000);
@@ -395,7 +398,7 @@
 
     // 바구니 움직이기 (방향키는 그 방향으로, 마우스·손가락은 그 자리로 따라가요)
     // 화면 넓이와 상관없이 1초에 320px쯤 움직여요 (정답을 받을수록 조금씩 빨라져요)
-    const spd = (320 + catchLevel() * 5) / g.W;
+    const spd = (320 + catchLevel() * 5) / g.W * (MOBILE.matches ? MOBILE_SPEED : 1);
     const lo = g.bw / g.W, hi = 1 - lo;
     let dir = (cg.keys.r ? 1 : 0) - (cg.keys.l ? 1 : 0);
     if (cg.overT > 0) dir = 0;
@@ -673,6 +676,21 @@
   });
   cfield.addEventListener('pointermove', e => {
     if (e.pointerType === 'mouse' || cfield.hasPointerCapture(e.pointerId)) caim(e);
+  });
+  // ◀ ▶ 버튼 (모바일에서만 보여요): 누르고 있는 동안 그쪽으로 가요
+  [['#cpadL', 'l'], ['#cpadR', 'r']].forEach(([sel, k]) => {
+    const pad = $(sel);
+    pad.addEventListener('pointerdown', e => {
+      e.preventDefault(); e.stopPropagation();
+      if (!cg.active) return;
+      cg.keys[k] = true;
+      try { pad.setPointerCapture(e.pointerId); } catch (err) { /* 이미 끝난 터치 */ }
+      pad.classList.add('on');
+    });
+    const up = () => { cg.keys[k] = false; pad.classList.remove('on'); };
+    pad.addEventListener('pointerup', up);
+    pad.addEventListener('pointercancel', up);
+    pad.addEventListener('lostpointercapture', up);
   });
   document.addEventListener('keydown', e => {
     if (!cg.active || !RUN_KEYS[e.key]) return;

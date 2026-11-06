@@ -11,6 +11,7 @@
 <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css">
 <link rel="stylesheet" href="style.css">
 <link rel="stylesheet" href="guidebook.css">
+<link rel="stylesheet" href="../shared/game-title.css">
 </head>
 <body>
 
@@ -61,10 +62,9 @@
 
 <!-- 스테이지 선택 화면 -->
 <section id="screen-levelselect" class="screen">
-  <div class="gb-top-row"><button class="gb-top-btn" type="button">📖 게임 방법</button></div>
-  <h1 class="page-title">카드 짝맞추기</h1>
-  <div class="card card-wide">
-    <h2>스테이지 고르기 <span class="current-user-badge diff-tag"></span></h2>
+  <div class="menu-plain">
+    <h1 class="game-title">🃏 카드 짝맞추기 <span class="current-user-badge diff-tag"></span></h1>
+    <p class="menu-sub">스테이지를 골라주세요</p>
     <div id="level-grid" class="level-grid"></div>
     <div class="result-buttons">
       <button id="btn-levelselect-title" class="btn btn-ghost">처음으로</button>

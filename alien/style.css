@@ -45,3 +45,10 @@ html, body { background: linear-gradient(#e9e3ff, #fff8fb 70%); }
   .sp { width: 48px; height: 48px; }
   .sp-fire { width: 60px; }
 }
+
+/* ---- 모바일: 미션 · 설명글이 한 줄 ↔ 두 줄로 바뀌어도 게임 화면이 위아래로 들썩이지 않게 높이를 고정해요 ---- */
+@media (max-width: 560px), (pointer: coarse) and (max-height: 500px) {
+  .mission { flex: none; box-sizing: border-box; height: 72px; overflow: hidden; }
+  .mission-text { line-height: 1.3; }
+  .game-msg { flex: none; height: 2.6em; min-height: 0; line-height: 1.3; overflow: hidden; display: flex; align-items: center; justify-content: center; }
+}

@@ -328,3 +328,12 @@ button{font-family:inherit;font-weight:inherit;color:inherit;cursor:pointer;bord
 .grade-panel .arcade-grid { grid-template-columns: repeat(3, 1fr); }
 @media (max-width: 560px) { .grade-panel .arcade-grid { grid-template-columns: repeat(2, 1fr); } }
 .back-link { display: inline-block; text-decoration: none; margin-top: 4px; }
+
+/* ---- 모바일 ---- */
+.catch-pad { display: none; }
+@media (max-width: 560px), (pointer: coarse) and (max-height: 500px) {
+  /* ◀ ▶ 버튼을 화면 좌우 양끝에 */
+  #run .run-pad.left, #catch .run-pad.left { left: 8px; right: auto; }
+  #run .run-pad.right, #catch .run-pad.right { right: 8px; left: auto; }
+  .catch-pad { display: flex; }
+}

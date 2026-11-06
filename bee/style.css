@@ -89,3 +89,11 @@ html, body { background: linear-gradient(#fff3c4, #fffdf6 70%); }
 }
 .flap-hint.hide { display: none; }
 @keyframes hintBob { 50% { transform: translate(-50%, -6px); } }
+
+/* ---- 모바일: 문제 · 설명글이 한 줄 ↔ 두 줄로 바뀌어도 게임 화면이 위아래로 들썩이지 않게 높이를 고정해요 ---- */
+@media (max-width: 560px), (pointer: coarse) and (max-height: 500px) {
+  .q-card { flex: none; }
+  .q-word { min-height: 1.15em; }
+  .q-sub { height: 2.6em; line-height: 1.3; overflow: hidden; display: flex; align-items: center; justify-content: center; }
+  .game-msg { flex: none; height: 2.6em; min-height: 0; line-height: 1.3; overflow: hidden; display: flex; align-items: center; justify-content: center; }
+}

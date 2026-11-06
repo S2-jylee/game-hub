@@ -527,9 +527,6 @@
   }
 
   // ---- Wire up UI ----------------------------------------------------
-  Array.prototype.forEach.call(document.querySelectorAll(".gb-top-btn"), function (b) {
-    b.addEventListener("click", function () { GuideBook.open(guide(null)); });
-  });
   document.getElementById("btn-start").addEventListener("click", function () {
     ac();
     buildUserList();

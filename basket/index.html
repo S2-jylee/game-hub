@@ -11,6 +11,7 @@
 <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css">
 <link rel="stylesheet" href="../spelling/guidebook.css">
 <link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="../shared/game-title.css">
 </head>
 <body>
 
@@ -62,6 +63,7 @@
       <button class="btn btn-ghost btn-small" id="gradeBack">← 처음으로</button>
       <span class="user-badge" id="userBadge"></span>
     </div>
+    <h1 class="game-title">🧺 단어 바구니</h1>
     <div class="gb-top-row"><button id="guideBtn" class="gb-top-btn" type="button">📖 게임 방법</button></div>
     <div class="hero">
       <div class="buddy">🧺</div>
@@ -89,6 +91,8 @@
     <div class="run-msg" id="catchMsg"></div>
     <div class="run-field" id="catchField">
       <canvas id="catchCanvas"></canvas>
+      <div class="run-pad left catch-pad" id="cpadL">◀</div>
+      <div class="run-pad right catch-pad" id="cpadR">▶</div>
     </div>
   </section>
 

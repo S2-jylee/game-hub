@@ -306,3 +306,8 @@ header, main {
 .who-primary { background: linear-gradient(135deg, #d81b7a, #7c2ce0); color: #fff; }
 .who-ghost { width: 100%; background: #f4eefd; color: var(--text); }
 .who-ghost.on { box-shadow: 0 0 0 2px var(--yellow); background: #fff4cc; }
+
+/* ---- 모바일: '하고 싶은 게임을 골라주세요!' 문구는 숨겨요 ---- */
+@media (max-width: 560px), (pointer: coarse) and (max-height: 500px) {
+  .hub-subtitle { display: none; }
+}

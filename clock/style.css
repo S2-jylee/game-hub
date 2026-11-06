@@ -858,3 +858,8 @@ html { background: #fff6e8; }
 }
 .gb-top-btn:hover { transform: translateY(-2px); }
 .gb-top-btn:active { transform: scale(0.95); }
+
+/* ---- 모바일: 게임 화면 위쪽의 놀이 이름(예: '몇 시일까요? · 보고 고르기')은 자리만 차지해서 숨겨요 ---- */
+@media (max-width: 560px), (pointer: coarse) and (max-height: 500px) {
+  .hud-name { display: none; }
+}

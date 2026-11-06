@@ -1,0 +1,31 @@
+/* 각 게임 첫 화면 맨 위 제목 (타자연습 제목과 같은 모양: 이모지 + 게임 이름) */
+@font-face {
+  font-family: "HubCookieRun";
+  src: url("../CookieRun-Bold.ttf") format("truetype");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+body h1.game-title {
+  font-family: "HubCookieRun", "CookieRun", "Jua", sans-serif;
+  font-weight: 700;
+  font-size: 2.2rem;
+  line-height: 1.2;
+  color: #d81b7a;
+  text-align: center;
+  margin: 0 0 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  word-break: keep-all;
+}
+body .game-title .diff-tag,
+body .game-title .current-user-badge {
+  font-family: "Pretendard", sans-serif;
+  font-size: 1rem;
+}
+@media (max-width: 640px) {
+  body h1.game-title { font-size: 1.5rem; gap: 6px; margin-bottom: 8px; }
+}

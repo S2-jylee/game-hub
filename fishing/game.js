@@ -215,9 +215,47 @@
   // 물고기가 다니는 세 줄 깊이
   const rowY = k => seaY() + (G.H - seaY()) * (0.28 + k * 0.26);
 
+  // 모바일: 가끔 ❤️ 하트와 💎 보석이 헤엄쳐 와요. 낚으면 하트 +1 / +50점
+  const MOBILE = window.matchMedia('(max-width: 560px), (pointer: coarse) and (max-height: 500px)');
+  const GEM_SCORE = 50;
+  function addBonus(kind) {
+    const dir = Math.random() < 0.5 ? 1 : -1;
+    G.fish.push({ v: kind === "heart" ? "❤️" : "💎", bonus: kind, row: rand(0, 2), dir, x: dir > 0 ? -0.1 : 1.1,
+      speed: 0.07, ph: Math.random() * 6, color: "#fff", caught: false, flee: 0, leave: false, laps: 0 });
+  }
+  function bonusTick(dt) {
+    if (!MOBILE.matches || G.ending) return;
+    const has = k => G.fish.some(f => f.bonus === k && !f.leave);
+    if ((G.heartT -= dt) <= 0) {
+      if (G.lives < LIVES && !has("heart")) { addBonus("heart"); G.heartT = 14 + Math.random() * 8; } else G.heartT = 3;
+    }
+    if ((G.gemT -= dt) <= 0) {
+      if (!has("gem")) addBonus("gem");
+      G.gemT = 12 + Math.random() * 8;
+    }
+  }
+  function landedBonus(f) {
+    const r = canvas.getBoundingClientRect(), sx = r.left + G.bx * G.W, sy = r.top + seaY() - 40;
+    G.fish = G.fish.filter(o => o !== f);
+    G.splashes.push({ x: G.bx, t: 0 });
+    if (f.bonus === "heart") {
+      G.lives = Math.min(LIVES, G.lives + 1);
+      renderHearts();
+      sfx.correct();
+      floatAt(sx, sy, "❤️ +1", "#ef4444");
+      msg("💖 하트를 낚았어요! 하트가 하나 채워졌어요!");
+    } else {
+      addScore(GEM_SCORE);
+      sfx.correct();
+      floatAt(sx, sy, "💎 +" + GEM_SCORE, "#7c3aed");
+      msg("💎 보석을 낚았어요! +" + GEM_SCORE + "점!");
+    }
+  }
+
   function startGame() {
     stopGame();
     Object.assign(G, {
+      heartT: 10 + Math.random() * 6, gemT: 8 + Math.random() * 6,
       active: true, bx: 0.5, target: null, autoDrop: false, hook: null, fish: [], spawnT: 0, bubbles: [], splashes: [],
       qs: MATH ? mathQuestions() : englishQuestions(), i: 0, cur: null, lives: LIVES, score: 0, combo: 0, correct: 0, learned: [], ending: 0, busy: false, t: 0
     });
@@ -288,7 +326,7 @@
   }
   function hooked(f) {
     const q = G.cur, r = canvas.getBoundingClientRect(), sx = r.left + f.x * G.W, sy = r.top + G.hook.y - 30;
-    if (f.v === q.ans) {
+    if (f.v === q.ans || f.bonus) {
       f.caught = true;
       G.hook.fish = f; G.hook.state = "up";
       sfx.plop();
@@ -358,7 +396,7 @@
         if (h.fish) { h.fish.x = h.x; h.fish.hy = h.y; }
         if (h.y <= seaY() - 10) {
           const f = h.fish; G.hook = null;
-          if (f) landed(f);
+          if (f) { if (f.bonus) landedBonus(f); else landed(f); }
         }
       }
     }
@@ -369,11 +407,12 @@
       if (f.flee > 0) f.flee = Math.max(0, f.flee - dt);
       if (!f.leave && f.speed > 0.1 && f.flee <= 0) f.speed = 0.06;
       // 화면 끝에서 돌아와요 (떠나는 물고기는 그냥 나가요)
-      if (!f.leave && ((f.dir > 0 && f.x > 1.08) || (f.dir < 0 && f.x < -0.08))) { f.dir = -f.dir; f.row = rand(0, 2); }
+      if (!f.leave && ((f.dir > 0 && f.x > 1.08) || (f.dir < 0 && f.x < -0.08))) { f.dir = -f.dir; f.row = rand(0, 2); if (f.bonus && ++f.laps >= 2) f.leave = true; }
     });
     G.fish = G.fish.filter(f => f.caught || !f.leave || (f.x > -0.2 && f.x < 1.2));
     // 정답 물고기가 사라졌으면 다시 넣어요
     if (!G.busy && !G.ending && !G.fish.some(f => !f.leave && !f.flee && f.v === G.cur.ans) && (G.spawnT -= dt) <= 0) { addFish(G.cur.ans, 0); G.spawnT = 2; }
+    bonusTick(dt);
     if (Math.random() < dt * 2) G.bubbles.push({ x: Math.random(), y: H, s: 2 + Math.random() * 4 });
     G.bubbles.forEach(b => { b.y -= 40 * dt; b.x += Math.sin(G.t * 2 + b.s) * 0.0005; });
     G.bubbles = G.bubbles.filter(b => b.y > seaY());
@@ -433,6 +472,7 @@
     }
   }
   function drawFish(f, x, y, R, fleeing, hanging) {
+    if (f.bonus) { drawBonus(f, x, y, R); return; }
     ctx.save();
     ctx.translate(x, y);
     if (hanging) ctx.rotate(-Math.PI / 2 + Math.sin(G.t * 12) * 0.25);
@@ -460,6 +500,19 @@
     ctx.font = "800 " + R * (txt.length > 2 ? 0.48 : txt.length > 1 ? 0.6 : 0.78) + "px Nunito, Pretendard, sans-serif";
     ctx.textAlign = "center"; ctx.textBaseline = "middle";
     ctx.fillText(txt, hanging ? 0 : -f.dir * R * 0.15, R * 0.04);
+    ctx.restore();
+  }
+  // ❤️ · 💎 보너스: 반짝이는 물방울 안에 들어 있어요
+  function drawBonus(f, x, y, R) {
+    ctx.save();
+    ctx.translate(x, y);
+    const glow = 0.5 + Math.sin(G.t * 5 + f.ph) * 0.2;
+    ctx.fillStyle = f.bonus === "heart" ? "rgba(255,228,236," + glow + ")" : "rgba(237,233,254," + glow + ")";
+    ctx.beginPath(); ctx.arc(0, 0, R * 0.95, 0, Math.PI * 2); ctx.fill();
+    ctx.strokeStyle = "rgba(255,255,255,.9)"; ctx.lineWidth = 2; ctx.stroke();
+    ctx.font = R * 1.1 + 'px "Segoe UI Emoji","Apple Color Emoji","Noto Color Emoji",sans-serif';
+    ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.fillStyle = "#000";
+    ctx.fillText(f.v, 0, R * 0.05);
     ctx.restore();
   }
   function drawBoat(x, sy, t) {
