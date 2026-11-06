@@ -155,9 +155,21 @@ button{font-family:inherit;font-weight:inherit;color:inherit;cursor:pointer;bord
 .small-btn{flex:1;height:42px;border-radius:14px;font-size:17px;background:#e8f4ff}
 .small-btn:active{transform:translateY(2px)}
 
-.sticker-book{width:100%;max-width:740px;margin-top:10px;background:rgba(255,255,255,.75);border-radius:20px;padding:8px 16px;text-align:center}
-.sticker-book .list{font-size:24px;letter-spacing:4px;min-height:28px;word-break:break-all}
-.sticker-book .empty{font-size:15px;color:var(--muted)}
+/* 게임 카드 (영어 놀이와 같은 모양) */
+.app.menu{max-width:1000px}
+.home-title{font-family:"CookieRun","Jua",sans-serif;font-size:clamp(32px,7vw,44px);color:#d81b7a;margin:2px 0 8px;text-align:center}
+.top-panel{max-width:860px}
+.play-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:14px;width:100%;max-width:860px;margin:14px 0 20px}
+.play-card{display:flex;flex-direction:column;align-items:center;gap:5px;border-radius:24px;padding:18px 12px 16px;color:#fff;background:var(--bg);box-shadow:0 8px 20px rgba(36,27,58,.12);transition:transform .15s ease;line-height:1.25;word-break:keep-all}
+.play-card:hover{transform:translateY(-5px)}
+.play-card:active{transform:translateY(2px)}
+.play-card .pc-emoji{width:78px;height:78px;border-radius:50%;background:rgba(255,255,255,.92);display:flex;align-items:center;justify-content:center;font-size:42px;animation:breathe 2.4s ease-in-out infinite}
+.play-card:nth-child(3n+2) .pc-emoji{animation-delay:.5s}
+.play-card:nth-child(3n) .pc-emoji{animation-delay:1s}
+.play-card .pc-name{font-family:"CookieRun","Jua",sans-serif;font-size:23px;margin-top:4px}
+.play-card .pc-desc{font-size:14px;opacity:.95;text-align:center}
+.play-card .pc-best{font-size:13px;background:rgba(255,255,255,.25);border-radius:999px;padding:2px 10px}
+@media (max-width:560px){.play-grid{grid-template-columns:repeat(2,1fr);gap:10px}.play-card{padding:14px 8px 12px}.play-card .pc-emoji{width:62px;height:62px;font-size:34px}.play-card .pc-name{font-size:19px}.play-card .pc-desc{font-size:12px}}
 
 /* ---------- 게임 화면 ---------- */
 .hud{width:100%;display:flex;align-items:center;justify-content:space-between;gap:10px}
@@ -366,63 +378,22 @@ button{font-family:inherit;font-weight:inherit;color:inherit;cursor:pointer;bord
   </section>
 
 
-  <!-- 놀이 고르기 화면 -->
+  <!-- 놀이 고르기 화면: 영어 놀이처럼 게임 카드를 골라요 -->
   <section id="home" class="screen hidden">
     <div class="home-top">
       <button class="btn btn-ghost btn-small" id="changeUser">← 처음으로</button>
       <span class="user-badge" id="userBadge"></span>
     </div>
-    <div class="hero">
-      <div class="buddy" id="homeBuddy">🐰</div>
-      <div class="bubble">몇 단을 골라서 어떤 놀이를 할까?</div>
-    </div>
-
-    <div class="panel">
-      <div class="label">① 단 고르기 <small>(여러 개 골라도 돼요)</small></div>
+    <h1 class="home-title">구구단 놀이터</h1>
+    <div class="panel top-panel">
+      <div class="label">몇 단을 할까요? <small>(여러 개 골라도 돼요)</small></div>
       <div class="dan-grid" id="danGrid"></div>
-
-      <div class="label">② 친구 고르기</div>
-      <div class="buddy-pick" id="buddyPick"></div>
-
-      <div class="label">③ 놀이를 눌러서 시작해요!</div>
-      <div class="modes">
-        <button class="mode m-practice" data-mode="practice">
-          <span class="m-emoji">🌱</span><span class="m-name">연습 놀이</span><small>천천히, 틀려도 다시!</small><span class="m-go">시작 ▶</span>
-        </button>
-        <button class="mode m-challenge" data-mode="challenge">
-          <span class="m-emoji">⏱️</span><span class="m-name">도전 놀이</span><small>10초 안에! 하트 3개</small><span class="m-go">시작 ▶</span>
-        </button>
-        <button class="mode m-arcade" id="arcadeBtn">
-          <span class="m-emoji">🎮</span><span class="m-name">신나는 게임</span><small>구구단 게임 모음</small><span class="m-go">고르기 ▶</span>
-        </button>
-      </div>
-
       <div class="row">
         <button class="small-btn" id="tableBtn">📖 구구단 외우기</button>
         <button class="small-btn" id="soundBtn">🔊 소리 켜짐</button>
       </div>
     </div>
-
-    <div class="sticker-book">
-      <div class="label" style="margin:0 0 4px">🏅 내 스티커 모음</div>
-      <div class="list" id="stickerList"></div>
-    </div>
-  </section>
-
-  <!-- 신나는 게임 고르기 화면 -->
-  <section id="arcade" class="screen hidden">
-    <div class="home-top">
-      <button class="btn btn-ghost btn-small" id="arcadeBack">← 놀이 고르기</button>
-      <span class="user-badge" id="arcadeBadge"></span>
-    </div>
-    <div class="hero">
-      <div class="buddy">🎮</div>
-      <div class="bubble">어떤 구구단 게임을 해볼까?</div>
-    </div>
-    <div class="panel">
-      <div class="label">고른 단: <span class="arcade-dans" id="arcadeDans"></span></div>
-      <div class="arcade-grid" id="arcadeGrid"></div>
-    </div>
+    <div class="play-grid" id="playGrid"></div>
   </section>
 
   <!-- 게임 화면 -->
@@ -503,7 +474,6 @@ button{font-family:inherit;font-weight:inherit;color:inherit;cursor:pointer;bord
     <div class="stars" id="stars"></div>
     <div class="panel">
       <div class="result-card" id="resultCard"></div>
-      <div class="new-sticker" id="newSticker"></div>
       <div class="review" id="review"></div>
       <div class="row">
         <button class="small-btn" id="againBtn" style="background:#ffe7f2">🔁 다시 하기</button>
@@ -525,7 +495,7 @@ button{font-family:inherit;font-weight:inherit;color:inherit;cursor:pointer;bord
       <li><span>🪵</span><span><b>통나무</b>는 <b>스페이스바</b> 또는 <b>화면 터치</b>로 점프해서 피할 수 있어요!</span></li>
     </ul>
     <button class="btn btn-primary btn-huge" id="runIntroOk">확인</button>
-    <div><button class="btn btn-ghost btn-small" id="runIntroBack">← 게임 고르기</button></div>
+    <div><button class="btn btn-ghost btn-small" id="runIntroBack">← 놀이 고르기</button></div>
   </div>
 </div>
 
@@ -557,21 +527,21 @@ button{font-family:inherit;font-weight:inherit;color:inherit;cursor:pointer;bord
   const BUDDIES = ['🐰', '🐻', '🐥', '🐶', '🐱', '🐼'];
   const PRAISE = ['딩동댕! 🔔', '잘했어! 🎉', '최고야! 👍', '우와, 천재다! 🌟', '멋져요! 💖', '정답이야! 🍭'];
   const MODE_NAME = { practice: '연습 놀이', challenge: '도전 놀이', penguin: '펭귄 달리기', catch: '정답 바구니' };
-  // 신나는 게임 목록: 새 게임은 여기에 한 줄 더하면 고르기 화면에 나와요
+  // 게임 카드 목록: 새 게임은 여기에 한 줄 더하면 놀이 고르기 화면에 나와요 (href 가 있으면 다른 페이지에서 ?mul=1 로 열어요)
   const ARCADE = [
-    { mode: 'penguin', emoji: '🐧', name: '펭귄 달리기', desc: '정답 허들로 쌩쌩! 통나무는 점프!', mc: '#60a5fa', mbg: '#e1efff' },
-    { mode: 'catch', emoji: '🧺', name: '정답 바구니', desc: '떨어지는 정답 열매를 쏙! 💣 폭탄 조심', mc: '#ff9f43', mbg: '#ffecd9' },
-    // 아래 게임들은 영어 놀이와 같은 게임을 구구단 문제로 열어요 (?mul=1)
-    { mode: 'train', emoji: '🚂', name: '구구단 기차', desc: '단의 답을 차례대로 먹고 기차를 길게!', mc: '#84cc16', mbg: '#effcd9', href: '../spelling/index.html' },
-    { mode: 'frog', emoji: '🐸', name: '구구단 징검다리', desc: '정답 숫자 연잎으로 폴짝! 강 건너기', mc: '#14b8a6', mbg: '#dcf7f3', href: '../frog/index.html' },
-    { mode: 'bubble', emoji: '🎈', name: '구구단 버블 팝', desc: '3, 6, 9… 답 풍선을 순서대로 펑!', mc: '#ec4899', mbg: '#ffe4f1', href: '../bubble/index.html' },
-    { mode: 'wordrun', emoji: '🚪', name: '구구단 문 달리기', desc: '답을 보고 맞는 식 문으로 쌩쌩!', mc: '#3b82f6', mbg: '#e1efff', href: '../wordrun/index.html' },
-    { mode: 'surf', emoji: '🏄', name: '구구단 서핑', desc: '빈칸에 들어갈 숫자 물길로 쌩쌩!', mc: '#0ea5e9', mbg: '#e0f7ff', href: '../surf/index.html' },
-    { mode: 'alien', emoji: '👾', name: '구구단 디펜스', desc: '정답 숫자를 단 외계인을 쏴요!', mc: '#8b5cf6', mbg: '#efe5ff', href: '../alien/index.html' }
+    { mode: 'practice', emoji: '🌱', name: '연습 놀이', desc: '천천히, 틀려도 다시!', bg: '#22c55e' },
+    { mode: 'challenge', emoji: '⏱️', name: '도전 놀이', desc: '10초 안에! 하트 3개', bg: '#f97316' },
+    { mode: 'penguin', emoji: '🐧', name: '펭귄 달리기', desc: '정답 허들로 쌩쌩! 통나무는 점프!', bg: '#3b82f6' },
+    { mode: 'catch', emoji: '🧺', name: '정답 바구니', desc: '떨어지는 정답 열매를 쏙! 💣 폭탄 조심', bg: '#f59e0b' },
+    { mode: 'train', emoji: '🚂', name: '구구단 기차', desc: '단의 답을 차례대로 먹고 기차를 길게!', bg: '#84cc16', href: '../spelling/index.html' },
+    { mode: 'frog', emoji: '🐸', name: '구구단 징검다리', desc: '정답 숫자 연잎으로 폴짝! 강 건너기', bg: '#14b8a6', href: '../frog/index.html' },
+    { mode: 'bubble', emoji: '🎈', name: '구구단 버블 팝', desc: '3, 6, 9… 답 풍선을 순서대로 펑!', bg: '#ec4899', href: '../bubble/index.html' },
+    { mode: 'bee', emoji: '🐝', name: '구구단 꿀벌 비행', desc: '톡톡 날갯짓! 정답 꽃길로 쏙!', bg: '#eab308', href: '../bee/index.html' },
+    { mode: 'fishing', emoji: '🎣', name: '구구단 낚시', desc: '빈칸 숫자 물고기를 낚아요!', bg: '#0ea5e9', href: '../fishing/index.html' },
+    { mode: 'alien', emoji: '👾', name: '구구단 디펜스', desc: '정답 숫자 외계인을 쏘고 💖 하트도!', bg: '#8b5cf6', href: '../alien/index.html' }
   ];
   const CATCH_LIVES = 5;  // 정답 바구니 하트 수
   const CHEER = ['괜찮아, 다시 골라봐!', '아깝다! 한 번 더!', '틀려도 괜찮아 😊'];
-  const STICKERS = ['🐶','🐱','🐼','🦊','🐸','🐵','🐯','🦁','🐨','🐷','🐹','🐧','🦄','🐙','🦖','🐳','🦋','🐞','🐢','🦒','🦔','🐬','🦩','🐿️'];
   // 숫자 끝자리 받침 여부 (영/십,일,삼,육,칠,팔 → 받침 있음)
   const BATCHIM = { 0: true, 1: true, 2: false, 3: true, 4: false, 5: false, 6: true, 7: true, 8: true, 9: false };
   const eun = n => BATCHIM[n % 10] ? '은' : '는';
@@ -695,61 +665,26 @@ button{font-family:inherit;font-weight:inherit;color:inherit;cursor:pointer;bord
   }
   function saveDans() { store.set('ggd_dans', [...state.dans]); }
 
-  function renderBuddyPick() {
-    const w = $('#buddyPick'); w.innerHTML = '';
-    BUDDIES.forEach(bd => {
-      const b = document.createElement('button');
-      b.textContent = bd;
-      if (bd === state.buddy) b.className = 'on';
-      b.onclick = () => {
-        state.buddy = bd; store.set('ggd_buddy', bd);
-        renderBuddyPick(); setBuddies(); animate($('#homeBuddy'), 'jump');
-      };
-      w.appendChild(b);
-    });
-  }
-  function setBuddies() { ['#introBuddy', '#homeBuddy', '#gameBuddy', '#resultBuddy'].forEach(s => $(s).textContent = state.buddy); }
+  function setBuddies() { ['#introBuddy', '#gameBuddy', '#resultBuddy'].forEach(s => $(s).textContent = state.buddy); }
 
-  function renderStickers() {
-    const l = $('#stickerList');
-    l.innerHTML = state.stickers.length
-      ? state.stickers.join('')
-      : '<div class="empty">별 3개를 받으면 귀여운 동물 스티커를 모을 수 있어요!</div>';
-  }
   function renderSoundBtn() { $('#soundBtn').textContent = state.sound ? '🔊 소리 켜짐' : '🔇 소리 꺼짐'; }
 
   function renderArcade() {
-    const dans = [...state.dans].sort((a, b) => a - b);
-    $('#arcadeDans').textContent = dans.length === 11 ? '전체 (2~12단)' : dans.map(d => d + '단').join(', ');
-    $('#arcadeBadge').textContent = $('#userBadge').textContent;
     const best = userData().best || {};
-    const g = $('#arcadeGrid'); g.innerHTML = '';
+    const g = $('#playGrid'); g.innerHTML = '';
     ARCADE.forEach(game => {
       const b = document.createElement('button');
-      b.className = 'arcade-game';
-      b.style.setProperty('--mc', game.mc); b.style.setProperty('--mbg', game.mbg);
-      b.innerHTML = `<span class="m-emoji">${game.emoji}</span><span class="m-name">${game.name}</span><small>${game.desc}</small>` +
-        (best[game.mode] ? `<span class="best">🏆 최고 ${best[game.mode]}점</span>` : '') + '<span class="m-go">시작 ▶</span>';
+      b.className = 'play-card';
+      b.style.setProperty('--bg', game.bg);
+      b.innerHTML = `<span class="pc-emoji">${game.emoji}</span><span class="pc-name">${game.name}</span><span class="pc-desc">${game.desc}</span>` +
+        (best[game.mode] ? `<span class="pc-best">🏆 최고 ${best[game.mode]}점</span>` : '');
       b.onclick = () => {
         if (game.href) { location.href = game.href + '?mul=1&u=' + encodeURIComponent(state.guest ? '' : state.user || ''); return; }
         state.mode = game.mode; startGame();
       };
       g.appendChild(b);
     });
-    const soon = document.createElement('div');
-    soon.className = 'arcade-game soon';
-    soon.innerHTML = '<span class="m-emoji">🎁</span><span class="m-name">새 게임 준비 중</span><small>곧 더 많은 게임이 나와요!</small>';
-    g.appendChild(soon);
   }
-  $('#arcadeBtn').onclick = () => { renderArcade(); show('#arcade'); };
-  $('#arcadeBack').onclick = () => { show('#home'); };
-
-  document.querySelectorAll('.mode[data-mode]').forEach(btn => {
-    btn.onclick = () => {
-      state.mode = btn.dataset.mode;
-      startGame();
-    };
-  });
 
   /* ---------- 사용자 (이 기기에만 저장, 게스트는 저장 안 함) ---------- */
   const PROFILES_KEY = 'ggd_profiles';
@@ -770,9 +705,8 @@ button{font-family:inherit;font-weight:inherit;color:inherit;cursor:pointer;bord
     state.user = name;
     if (state.guest) state.guestData = emptyData();
     else if (!loadProfiles()[name]) saveUserData(emptyData());
-    state.stickers = userData().stickers;
     $('#userBadge').textContent = '👤 ' + (name || '게스트');
-    renderStickers();
+    renderArcade();
     show('#home');
   }
   function renderUserList() {
@@ -834,7 +768,8 @@ button{font-family:inherit;font-weight:inherit;color:inherit;cursor:pointer;bord
 
   /* ---------- 게임 ---------- */
   function show(id) {
-    ['#intro', '#user', '#home', '#arcade', '#game', '#run', '#catch', '#result'].forEach(s => $(s).classList.toggle('hidden', s !== id));
+    ['#intro', '#user', '#home', '#game', '#run', '#catch', '#result'].forEach(s => $(s).classList.toggle('hidden', s !== id));
+    $('.app').classList.toggle('menu', id === '#home');
     // 정답 바구니는 타자게임처럼 넓은 화면을 써요
     $('.app').classList.toggle('wide', id === '#catch');
   }
@@ -1056,16 +991,6 @@ button{font-family:inherit;font-weight:inherit;color:inherit;cursor:pointer;bord
       `<small style="color:var(--muted)">${MODE_NAME[state.mode]} 최고 점수: ${Math.max(best, state.score)}점</small>` +
       (isCatch ? catchRankHtml() : '');
 
-    // 스티커 보상
-    const ns = $('#newSticker');
-    ns.innerHTML = '';
-    if (stars === 3) {
-      const notOwned = STICKERS.filter(s => !state.stickers.includes(s));
-      const got = pick(notOwned.length ? notOwned : STICKERS);
-      if (!state.stickers.includes(got)) state.stickers.push(got);
-      ns.innerHTML = `새 스티커를 받았어요!<span class="big">${got}</span>`;
-    }
-    data.stickers = state.stickers;
     saveUserData(data);
 
     // 틀린 문제 복습
@@ -1082,7 +1007,6 @@ button{font-family:inherit;font-weight:inherit;color:inherit;cursor:pointer;bord
     sfx.win();
     speak(stars === 3 ? '완벽해요! 최고야!' : '잘했어요!');
     confetti(stars * 15);
-    renderStickers();
   }
 
   /* ---------- 펭귄 달리기 ---------- */
@@ -2349,24 +2273,21 @@ button{font-family:inherit;font-weight:inherit;color:inherit;cursor:pointer;bord
   $('#catchQuit').onclick = () => {
     stopCatch();
     if ('speechSynthesis' in window) speechSynthesis.cancel();
-    renderArcade(); show('#arcade');
+    renderArcade(); show('#home');
   };
 
   $('#runQuit').onclick = () => {
     stopRun();
     if ('speechSynthesis' in window) speechSynthesis.cancel();
-    renderArcade(); show('#arcade');
+    renderArcade(); show('#home');
   };
 
   $('#againBtn').onclick = startGame;
-  $('#homeBtn').onclick = () => {
-    renderStickers();
-    if (ARCADE.some(g => g.mode === state.mode)) { renderArcade(); show('#arcade'); } else show('#home');
-  };
+  $('#homeBtn').onclick = () => { renderArcade(); show('#home'); };
   $('#quitBtn').onclick = () => {
     stopTimer(); state.locked = true;
     if ('speechSynthesis' in window) speechSynthesis.cancel();
-    show('#home');
+    renderArcade(); show('#home');
   };
 
   // 키보드: 1~4 번 풍선 고르기
@@ -2379,16 +2300,37 @@ button{font-family:inherit;font-weight:inherit;color:inherit;cursor:pointer;bord
     }
   });
 
-  renderDanGrid(); renderBuddyPick(); setBuddies(); renderStickers(); renderSoundBtn();
+  renderDanGrid(); setBuddies(); renderSoundBtn();
 
-  // 구구단 서핑 · 구구단 디펜스에서 돌아오면 같은 사용자로 게임 고르기 화면을 열어요
+  // 다른 페이지에서 연 구구단 게임(기차 · 징검다리 · 버블 팝 · 꿀벌 · 낚시 · 디펜스)에서 돌아오면 같은 사용자로 놀이 고르기 화면을 열어요
   const back = new URLSearchParams(location.search);
   if (back.get('back') === 'arcade') {
     const u = back.get('u');
     enterAs(u && loadProfiles()[u] ? u : null);
-    renderArcade(); show('#arcade');
+    renderArcade(); show('#home');
     history.replaceState(null, '', location.pathname);
   }
+})();
+</script>
+<!-- hub-user -->
+<!-- 게임 허브에서 고른 사용자(게스트 또는 이름)로 '누구인가요?' 화면을 건너뛰어요 -->
+<script>
+(function () {
+  var hub = null;
+  try {
+    hub = new URLSearchParams(location.search).get("hub");
+    if (hub) sessionStorage.setItem("hub_user", hub); else hub = sessionStorage.getItem("hub_user");
+  } catch (e) { /* storage unavailable, ignore */ }
+  var start = document.getElementById("introStart");
+  if (!hub || !start) return;
+  start.addEventListener("click", function () {
+    var guest = document.getElementById("userGuest");
+    // 사용자 화면이 열리지 않는 경우(구구단 놀이터에서 연 놀이 등)는 그대로 둬요
+    if (!guest || !guest.getClientRects().length) return;
+    if (hub === "guest") { guest.click(); return; }
+    document.getElementById("userNameInput").value = hub.slice(2);
+    document.getElementById("userNewStart").click();
+  });
 })();
 </script>
 </body>

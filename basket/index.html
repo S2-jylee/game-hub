@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<title>단어 바구니</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Jua&family=Gowun+Dodum&family=Nunito:wght@400;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css">
+<link rel="stylesheet" href="../spelling/guidebook.css">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="scene" aria-hidden="true">
+  <div class="sun"></div>
+  <div class="cloud" style="top:12%;width:120px;animation-duration:38s;animation-delay:-5s"></div>
+  <div class="cloud" style="top:28%;width:90px;animation-duration:52s;animation-delay:-30s"></div>
+  <div class="cloud" style="top:6%;width:70px;animation-duration:44s;animation-delay:-18s"></div>
+  <svg class="hills" viewBox="0 0 1200 200" preserveAspectRatio="none">
+    <path d="M0 120 Q200 40 420 110 T820 90 T1200 100 V200 H0Z" fill="#9be36d"/>
+    <path d="M0 160 Q300 90 600 150 T1200 140 V200 H0Z" fill="#6fcf45"/>
+  </svg>
+</div>
+
+<main class="app">
+  <!-- 타이틀 화면 -->
+  <section id="intro" class="screen center">
+    <div class="title-card">
+      <div class="title-shapes" aria-hidden="true">
+        <span class="ts ts1">🧺</span>
+        <span class="ts ts2">🍎</span>
+        <span class="ts ts3">A</span>
+        <span class="ts ts4">💎</span>
+      </div>
+      <h1>단어 바구니</h1>
+      <p class="subtitle">영어 단어를 보고 맞는 그림 열매를 쏙!</p>
+      <button id="introStart" class="btn btn-primary btn-huge">시작하기</button>
+      <div><a class="btn btn-ghost back-link" href="../english/index.html">← 영어 놀이</a></div>
+    </div>
+  </section>
+
+  <!-- 사용자 선택 화면 -->
+  <section id="user" class="screen center hidden">
+    <div class="card">
+      <h2>누구인가요?</h2>
+      <div id="userList" class="user-list"></div>
+      <div class="user-new-row">
+        <input id="userNameInput" class="user-name-input" type="text" maxlength="10" placeholder="새 이름을 입력하세요">
+        <button id="userNewStart" class="btn btn-primary btn-small">시작</button>
+      </div>
+      <button id="userGuest" class="btn btn-ghost">게스트로 시작</button>
+      <button id="userBack" class="btn btn-ghost">처음으로</button>
+    </div>
+  </section>
+
+  <!-- 학년 고르기 -->
+  <section id="grade" class="screen hidden">
+    <div class="home-top">
+      <button class="btn btn-ghost btn-small" id="gradeBack">← 처음으로</button>
+      <span class="user-badge" id="userBadge"></span>
+    </div>
+    <div class="hero">
+      <div class="buddy">🧺</div>
+      <div class="bubble">몇 학년 단어로 해볼까?</div>
+    </div>
+    <div class="panel grade-panel">
+      <div class="arcade-grid" id="gradeGrid"></div>
+      <div class="row">
+        <button class="small-btn" id="guideBtn">📖 가이드북</button>
+        <button class="small-btn" id="soundBtn">🔊 소리 켜짐</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- 단어 바구니 화면 -->
+  <section id="catch" class="screen hidden">
+    <div class="hud">
+      <button class="back-btn" id="catchQuit" title="학년 고르기로 돌아가요">← 뒤로</button>
+      <div id="catchHearts"></div>
+      <div class="gem-box" id="catchGemBox" title="보석: 하나에 +50점">💎 <span id="catchGems">0</span></div>
+      <div class="score" id="catchScoreBox">⭐ <span id="catchScore">0</span></div>
+    </div>
+    <div class="question run-q">
+      <span class="n" id="cqWord">Apple</span><span class="x">=</span><span class="q-mark" id="cqans">?</span><button class="say-btn" id="cqSay" type="button" title="다시 듣기">🔊</button>
+    </div>
+    <div class="run-msg" id="catchMsg"></div>
+    <div class="run-field" id="catchField">
+      <canvas id="catchCanvas"></canvas>
+    </div>
+  </section>
+
+  <!-- 결과 화면 -->
+  <section id="result" class="screen hidden">
+    <h2 class="result-title" id="resultTitle">참 잘했어요!</h2>
+    <div class="buddy" id="resultBuddy">🧺</div>
+    <div class="stars" id="stars"></div>
+    <div class="panel">
+      <div class="result-card" id="resultCard"></div>
+      <div class="review" id="review"></div>
+      <div class="row">
+        <button class="small-btn" id="againBtn" style="background:#ffe7f2">🔁 다시 하기</button>
+        <button class="small-btn" id="homeBtn">📚 학년 고르기</button>
+      </div>
+    </div>
+  </section>
+</main>
+
+<script src="../spelling/words-data.js"></script>
+<script src="../spelling/guidebook.js"></script>
+<script src="game.js"></script>
+<!-- hub-user -->
+<!-- 게임 허브에서 고른 사용자(게스트 또는 이름)로 '누구인가요?' 화면을 건너뛰어요 -->
+<script>
+(function () {
+  var hub = null;
+  try {
+    hub = new URLSearchParams(location.search).get("hub");
+    if (hub) sessionStorage.setItem("hub_user", hub); else hub = sessionStorage.getItem("hub_user");
+  } catch (e) { /* storage unavailable, ignore */ }
+  var start = document.getElementById("introStart");
+  if (!hub || !start) return;
+  start.addEventListener("click", function () {
+    var guest = document.getElementById("userGuest");
+    // 사용자 화면이 열리지 않는 경우(구구단 놀이터에서 연 놀이 등)는 그대로 둬요
+    if (!guest || !guest.getClientRects().length) return;
+    if (hub === "guest") { guest.click(); return; }
+    document.getElementById("userNameInput").value = hub.slice(2);
+    document.getElementById("userNewStart").click();
+  });
+})();
+</script>
+</body>
+</html>

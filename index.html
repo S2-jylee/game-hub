@@ -24,7 +24,10 @@
   </div>
 
   <header class="hub-header">
-    <h1>게임 플레이 존</h1>
+    <div class="hub-title-row">
+      <h1>게임 플레이 존</h1>
+      <button id="btn-switch-user" class="switch-user" type="button" title="사용자 전환">👤 <span id="hub-user-name">사용자 선택</span> <small>전환</small></button>
+    </div>
     <p class="hub-subtitle">하고 싶은 게임을 골라주세요!</p>
   </header>
 
@@ -37,7 +40,7 @@
     <button class="tile tile-english" data-game="english" type="button">
       <div class="tile-emoji">🔤</div>
       <div class="tile-title">영어 놀이</div>
-      <div class="tile-desc">영어 단어 게임 6가지</div>
+      <div class="tile-desc">영어 단어 게임 8가지</div>
     </button>
     <button class="tile tile-multiplication" data-game="multiplication" type="button">
       <div class="tile-emoji">🔢</div>
@@ -109,6 +112,21 @@
   </nav>
   <iframe id="game-frame" class="game-frame" src="" title="게임 화면" allow="autoplay"></iframe>
 </section>
+
+<!-- 누가 놀까요? 처음 게임을 고르면(또는 사용자 전환을 누르면) 떠요 -->
+<div class="who-overlay" id="who" role="dialog" aria-modal="true" aria-labelledby="who-title">
+  <div class="who-card">
+    <button class="who-close" id="who-close" type="button" aria-label="닫기">✕</button>
+    <h2 id="who-title">누가 놀까요?</h2>
+    <p class="who-sub" id="who-sub">한 번 고르면 다른 게임도 같은 이름으로 해요</p>
+    <div class="who-list" id="who-list"></div>
+    <div class="who-new">
+      <input id="who-input" type="text" maxlength="10" placeholder="새 이름을 입력하세요" autocomplete="off">
+      <button id="who-add" class="who-btn who-primary" type="button">추가하고 시작</button>
+    </div>
+    <button id="who-guest" class="who-btn who-ghost" type="button">🙂 게스트로 하기</button>
+  </div>
+</div>
 
 <script src="script.js"></script>
 </body>

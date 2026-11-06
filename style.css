@@ -269,3 +269,38 @@ header, main {
   .nav-item .nav-label { display: none; }
   .nav-item svg.nav-ico { width: 18px; height: 18px; }
 }
+
+/* ---- 사용자 전환 버튼 · 누가 놀까요? 팝업 ---- */
+.hub-title-row { display: flex; align-items: center; justify-content: center; gap: 14px; flex-wrap: wrap; margin-bottom: 8px; }
+.hub-title-row h1 { margin: 0; }
+.switch-user {
+  border: none; border-radius: 999px; padding: 9px 16px; cursor: pointer; font-family: inherit; font-weight: 800; font-size: 0.95rem;
+  background: #fff; color: var(--text); box-shadow: 0 4px 14px rgba(36, 27, 58, 0.12); transition: transform 0.12s;
+}
+.switch-user:hover { transform: translateY(-2px); }
+.switch-user small { margin-left: 4px; padding: 2px 8px; border-radius: 999px; background: var(--lavender); color: #fff; font-size: 0.75rem; }
+.who-overlay { position: fixed; inset: 0; z-index: 100; display: none; align-items: center; justify-content: center; padding: 16px; background: rgba(36, 27, 58, 0.45); }
+.who-overlay.show { display: flex; }
+.who-card {
+  position: relative; width: min(440px, 100%); max-height: 90vh; overflow-y: auto; background: #fff; border-radius: 28px;
+  padding: 30px 26px 24px; text-align: center; box-shadow: 0 12px 40px rgba(36, 27, 58, 0.25); animation: whoIn 0.25s ease;
+}
+@keyframes whoIn { from { transform: scale(0.9); opacity: 0; } }
+.who-card h2 { font-family: "CookieRun", "Jua", sans-serif; color: var(--pink-dark); font-size: 1.9rem; margin: 0 0 4px; }
+.who-sub { color: var(--text-soft); font-size: 0.9rem; margin: 0 0 16px; }
+.who-close { position: absolute; top: 12px; right: 12px; width: 40px; height: 40px; border: none; border-radius: 50%; background: #f4eefd; font-size: 1.1rem; cursor: pointer; }
+.who-list { display: flex; flex-direction: column; gap: 8px; max-height: 230px; overflow-y: auto; margin-bottom: 14px; }
+.who-user {
+  display: flex; align-items: center; justify-content: space-between; border: none; border-radius: 16px; padding: 13px 18px;
+  background: #f7f3fe; color: var(--text); font-family: inherit; font-size: 1.05rem; font-weight: 700; cursor: pointer;
+}
+.who-user:hover { background: #efe1fd; }
+.who-user.on { background: #fff4cc; box-shadow: 0 0 0 2px var(--yellow); }
+.who-empty { color: var(--text-soft); font-size: 0.9rem; margin: 4px 0 6px; }
+.who-new { display: flex; gap: 8px; margin-bottom: 12px; }
+.who-new input { flex: 1; min-width: 0; padding: 12px 16px; border-radius: 999px; border: 2px solid #f0e9fb; font-family: inherit; font-size: 1rem; outline: none; }
+.who-new input:focus { border-color: var(--lavender-dark); }
+.who-btn { border: none; border-radius: 999px; padding: 12px 18px; font-family: inherit; font-weight: 800; font-size: 1rem; cursor: pointer; white-space: nowrap; }
+.who-primary { background: linear-gradient(135deg, #d81b7a, #7c2ce0); color: #fff; }
+.who-ghost { width: 100%; background: #f4eefd; color: var(--text); }
+.who-ghost.on { box-shadow: 0 0 0 2px var(--yellow); background: #fff4cc; }

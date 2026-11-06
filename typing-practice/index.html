@@ -239,5 +239,26 @@
 </div>
 
 <script src="script.js"></script>
+<!-- hub-user -->
+<!-- 게임 허브에서 고른 사용자(게스트 또는 이름)로 '누구인가요?' 화면을 건너뛰어요 -->
+<script>
+(function () {
+  var hub = null;
+  try {
+    hub = new URLSearchParams(location.search).get("hub");
+    if (hub) sessionStorage.setItem("hub_user", hub); else hub = sessionStorage.getItem("hub_user");
+  } catch (e) { /* storage unavailable, ignore */ }
+  var start = document.getElementById("start-btn");
+  if (!hub || !start) return;
+  start.addEventListener("click", function () {
+    var guest = document.getElementById("guest-start-btn");
+    // 사용자 화면이 열리지 않는 경우(구구단 놀이터에서 연 놀이 등)는 그대로 둬요
+    if (!guest || !guest.getClientRects().length) return;
+    if (hub === "guest") { guest.click(); return; }
+    document.getElementById("name-input").value = hub.slice(2);
+    document.getElementById("name-save-btn").click();
+  });
+})();
+</script>
 </body>
 </html>

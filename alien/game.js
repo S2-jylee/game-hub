@@ -2,6 +2,7 @@
 // 미션에 맞는 단어(예: 동사)를 단 외계인만 대포로 쏴요. 다른 외계인은 방어벽이 흡수해요.
 // ← → 로 대포를 옮기고 스페이스·엔터로 쏴요. 태블릿은 화면을 톡 누르면 그곳으로 가서 쏴요.
 // 구구단 놀이터에서 열면(?mul=1) 위에 나온 구구단의 정답 숫자를 단 외계인을 쏴요.
+// 하트가 줄어 있으면 가끔 💖 하트 풍선이 내려와요. 쏘면 하트 +1!
 (function () {
   "use strict";
 
@@ -151,6 +152,7 @@
         { icon: "🎯", title: "미션을 봐요", text: MATH ? "위에 나온 <b>구구단의 정답</b> 숫자를 단 외계인만 쏴요!<br>예) 6 × 7 → <b>42</b>" : "위에 나온 <b>미션</b>에 맞는 단어만 쏴요!<br>예) 동사 미션 → <b>run, jump</b> 는 쏘고, <b>book</b> 은 그냥 둬요." },
         { icon: "⬅️➡️", title: "대포 쏘기", text: "<b>← →</b> 로 대포를 옮기고 <b>스페이스바</b>(또는 엔터)로 쏴요.<br>태블릿은 외계인을 <b>톡</b> 누르면 그쪽으로 가서 쏴요." },
         { icon: "🛡️", title: "방어벽", text: "다른 외계인은 쏘지 말고 두면 <b>방어벽</b>이 흡수해요.<br>잘못 쏘거나, 맞는 외계인을 놓치면 ❤️ 하트가 하나 줄어요." },
+        { icon: "💖", title: "하트 풍선", text: "하트가 줄어 있으면 가끔 <b>💖 하트 풍선</b>이 내려와요.<br>쏘면 <b>❤️ 하트 +1</b>!" },
         { icon: "🏆", title: GOAL + "마리 물리치기", text: "맞는 외계인을 <b>" + GOAL + "마리</b> 물리치면 지구를 지켜요!<br>한 마리에 <b>+10점</b>, 연속이면 더!" }
       ],
       startText: "자, 지구를 지켜 볼까?",
@@ -234,7 +236,7 @@
     Object.assign(G, {
       active: true, cx: 0.5, target: null, autoFire: false, cool: 0, recoil: 0, aliens: [], bullets: [], bits: [], spawnT: 0.3,
       speed: 0.045, lives: LIVES, score: 0, combo: 0, kills: 0, wrongShots: 0, learned: [], shieldFlash: 0, shieldHurt: 0,
-      q: null, qs: MATH ? ML.questions(GOAL) : [], qi: 0, ending: 0, t: 0
+      q: null, qs: MATH ? ML.questions(GOAL) : [], qi: 0, ending: 0, t: 0, heartT: 12
     });
     G.keys.l = G.keys.r = false;
     G.tok++;
@@ -277,8 +279,23 @@
     G.bullets.push({ x: G.cx * G.W, y: cannonY() - 34 });
     sfx.shoot();
   }
+  // 하트 풍선: 하트가 줄어 있을 때만 가끔 내려와요
+  function spawnHeart() {
+    const r = alienR();
+    G.aliens.push({ heart: true, word: "+1", x: 0.12 + Math.random() * 0.76, y: -r * 2, r, ph: Math.random() * 6, color: "#f472b6", dead: false, wrong: 0, vy: G.speed * 1.1 });
+  }
   function hitAlien(a, b) {
     const [sx, sy] = screenXY(a.x * G.W, a.y);
+    if (a.heart) {
+      a.dead = true;
+      G.lives = Math.min(LIVES, G.lives + 1);
+      renderHearts();
+      [880, 1175, 1568].forEach((f, i) => tone(f, 0.14, "triangle", i * 0.07, 0.12));
+      burst(a.x * G.W, a.y, "#f9a8d4");
+      floatAt(sx, sy - a.r, "❤️ +1", "#db2777");
+      msg("💖 하트 풍선! 하트가 하나 채워졌어요!");
+      return;
+    }
     if (isTarget(a)) {
       a.dead = true;
       G.kills++; G.combo++;
@@ -336,6 +353,10 @@
     G.cool = Math.max(0, G.cool - dt);
     G.recoil = Math.max(0, G.recoil - dt);
     if (!G.ending && (G.spawnT -= dt) <= 0) spawn();
+    if (!G.ending && (G.heartT -= dt) <= 0) {
+      if (G.lives < LIVES && !G.aliens.some(a => a.heart && !a.dead)) { spawnHeart(); G.heartT = 16 + Math.random() * 8; }
+      else G.heartT = 3;
+    }
     // 총알
     G.bullets.forEach(b => { b.y -= G.H * 1.5 * dt; });
     G.bullets = G.bullets.filter(b => {
@@ -451,6 +472,7 @@
   function drawAlien(a) {
     const t = G.t, x = a.x * G.W + Math.sin(t * 1.5 + a.ph) * a.r * 0.5, y = a.y, r = a.r;
     a.drawX = x;
+    if (a.heart) { drawHeart(x, y, r, t); return; }
     ctx.save();
     if (a.wrong) ctx.globalAlpha = a.wrong;
     // 줄 + 단어 표지판
@@ -492,6 +514,28 @@
     if (a.wrong) ctx.arc(x, y + r * 0.5, r * 0.15, Math.PI * 1.15, Math.PI * 1.85);
     else ctx.arc(x, y + r * 0.3, r * 0.22, 0.15 * Math.PI, 0.85 * Math.PI);
     ctx.stroke();
+    ctx.restore();
+  }
+  // 반짝이는 하트 풍선 (줄 끝에 작은 리본)
+  function drawHeart(x, y, r, t) {
+    ctx.save();
+    const glow = ctx.createRadialGradient(x, y, r * 0.2, x, y, r * 2);
+    glow.addColorStop(0, "rgba(249,168,212,.6)"); glow.addColorStop(1, "rgba(249,168,212,0)");
+    ctx.fillStyle = glow; ctx.beginPath(); ctx.arc(x, y, r * 2, 0, Math.PI * 2); ctx.fill();
+    ctx.strokeStyle = "rgba(255,255,255,.6)"; ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.moveTo(x, y + r * 0.9); ctx.quadraticCurveTo(x + Math.sin(t * 3) * 6, y + r * 1.6, x, y + r * 2.2); ctx.stroke();
+    const s = r * (1 + Math.sin(t * 5) * 0.06);
+    ctx.fillStyle = "#f43f5e";
+    ctx.beginPath();
+    ctx.moveTo(x, y + s * 0.85);
+    ctx.bezierCurveTo(x - s * 1.4, y - s * 0.1, x - s * 0.8, y - s * 1.2, x, y - s * 0.45);
+    ctx.bezierCurveTo(x + s * 0.8, y - s * 1.2, x + s * 1.4, y - s * 0.1, x, y + s * 0.85);
+    ctx.fill();
+    ctx.fillStyle = "rgba(255,255,255,.45)";
+    ctx.beginPath(); ctx.ellipse(x - s * 0.45, y - s * 0.45, s * 0.2, s * 0.12, -0.6, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = "#fff"; ctx.font = "800 " + Math.round(r * 0.6) + "px Nunito, Pretendard, sans-serif";
+    ctx.textAlign = "center"; ctx.textBaseline = "middle";
+    ctx.fillText("+1", x, y - s * 0.05);
     ctx.restore();
   }
   function drawCannon() {
