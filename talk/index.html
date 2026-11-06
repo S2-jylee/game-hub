@@ -44,6 +44,8 @@
   #screen-menu { justify-content: flex-start; overflow-y: auto; padding: 14px 0 20px; }
   @media (max-width: 560px) { #screen-menu { padding-top: 12px; } }
   .english-title h1.game-title { margin: 0 0 12px; }
+  /* 회화 놀이는 4개라서 PC에서도 2개씩 (한 줄에 3개면 하나가 혼자 남아요) */
+  @media (min-width: 561px) { .play-grid { grid-template-columns: repeat(2, 1fr); width: min(640px, 92vw); } }
 </style>
 <link rel="stylesheet" href="../shared/game-title.css">
 <link rel="stylesheet" href="../shared/english-bg.css">

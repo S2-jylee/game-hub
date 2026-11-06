@@ -273,3 +273,6 @@ body h1.game-title.gt-stuck, .app-header.gt-stuck {
 /* 제목이 바로 들어 있는 화면은 위쪽 안쪽 여백 0: 그래야 붙은 제목이 화면 맨 위에 딱 붙어서 위로 틈이 안 생겨요 (제목 위치는 game-title.js 가 margin 으로 맞춰요) */
 .screen:has(> h1.game-title), #screen-levelselect, #screen-menu { padding-top: 0 !important; }
 body h1.game-title.gt-stuck { box-shadow: 0 -12px 0 0 rgba(255, 255, 255, 0.82), 0 0 0 8px rgba(255, 255, 255, 0.82), 0 10px 18px rgba(36, 27, 58, 0.08); }
+
+/* ---- PC: '← 나가기' 바로 옆에 하트가 붙게 (나가기 버튼의 margin-right:auto 가 남는 공간을 하트 앞에 넣어서 하트가 가운데로 가던 문제) ---- */
+body #screen-game .hud > #btn-quit:has(+ .hearts) { margin-right: 0; }

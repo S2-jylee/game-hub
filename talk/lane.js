@@ -11,7 +11,7 @@
     field.appendChild(player);
     var help = document.createElement("div");
     help.className = "lane-help";
-    help.textContent = "◀ ▶ 로 줄을 바꿔요";
+    help.textContent = window.matchMedia("(pointer: coarse)").matches ? "◀ ▶ 로 줄을 바꿔요" : "← → 방향키나 ◀ ▶ 로 줄을 바꿔요";
     field.appendChild(help);
     var padL = document.createElement("div"), padR = document.createElement("div");
     padL.className = "lane-pad left"; padL.textContent = "◀";

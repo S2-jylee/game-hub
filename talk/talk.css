@@ -79,3 +79,13 @@
   .lane-player { font-size: 2.2rem; }
   .chunk-slot { font-size: 0.8rem; min-height: 26px; padding: 3px 7px; }
 }
+
+/* ---- PC: 게임 화면이 너무 넓게 늘어나지 않게 가운데 적당한 폭으로 ---- */
+@media (min-width: 561px) {
+  #screen-game { max-width: 820px; }
+  .lane-field { max-height: 620px; }
+  .lane-board { font-size: 1.05rem; min-height: 74px; padding: 10px 10px; }
+  .lane-player { font-size: 3rem; }
+  .talk-bubble .tb-text { font-size: 1.3rem; }
+  .chunk-slot { font-size: 1rem; min-height: 34px; }
+}
