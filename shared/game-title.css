@@ -234,3 +234,18 @@ body .gb-pop-list .gb-li-ico, body .run-intro-list li span:first-child {
   flex: none; width: 26px; min-width: 26px; white-space: normal; overflow-wrap: anywhere; word-break: break-all;
   text-align: center; line-height: 1.05;
 }
+
+/* ---- 영어 게임(스펠링 기차 · 꿀벌 · 낚시 · 외계인 · 징검다리) 목숨 하트: 정보칸 높이에 맞게 크게, '← 나가기' 바로 옆에 ---- */
+body #screen-game .hud > #btn-quit + .hearts {
+  flex: 0 0 auto; display: flex; align-items: center; gap: 1px; margin: 0 auto 0 6px;
+  font-size: 1.55rem; line-height: 1; letter-spacing: 0; white-space: nowrap; overflow: visible; min-width: 0;
+}
+@media (max-width: 560px) {
+  body #screen-game .hud > #btn-quit + .hearts { font-size: 1.3rem; margin-left: 4px; }
+}
+@media (max-width: 380px) {
+  body #screen-game .hud > #btn-quit + .hearts { font-size: 1.1rem; }
+}
+/* 클리어 팝업: '다음 스테이지/다음 그림' 큰 버튼과 그 아래 버튼들 사이를 넉넉하게 */
+body .completion-buttons { row-gap: 10px; column-gap: 6px; }
+body .completion-buttons .btn-huge { margin-bottom: 2px; }

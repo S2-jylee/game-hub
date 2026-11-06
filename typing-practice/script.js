@@ -1887,7 +1887,7 @@ showHome();
   input.setAttribute('autocapitalize', 'off');
   input.setAttribute('spellcheck', 'false');
   input.setAttribute('aria-hidden', 'true');
-  input.style.cssText = 'position:fixed;left:0;bottom:0;width:1px;height:1px;opacity:0;border:0;padding:0;font-size:16px;z-index:-1;';
+  input.style.cssText = 'position:fixed;left:0;top:0;width:1px;height:1px;opacity:0;border:0;padding:0;font-size:16px;z-index:-1;';
   document.body.appendChild(input);
 
   let prev = [];

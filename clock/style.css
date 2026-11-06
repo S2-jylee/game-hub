@@ -916,3 +916,7 @@ body .play-area .q-text { flex: 1; font-size: 1.1rem; }
   body .play-area .q-buddy { font-size: 1.8rem; }
   body .play-area .q-text { font-size: 1rem; }
 }
+
+/* 토끼와 문제('몇 시일까요?')는 카드 가운데로 */
+body .play-area .question-card, body .play-area .question-card.q-plain { justify-content: center; text-align: center; }
+body .play-area .q-text { flex: 0 1 auto; }
