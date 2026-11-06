@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <link rel="icon" href="data:,">
-<title>문장 퍼즐 조립 달리기</title>
+<title>문장 퍼즐 조립</title>
 <link href="https://fonts.googleapis.com/css2?family=Jua&family=Gowun+Dodum&family=Nunito:wght@400;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css">
 <link rel="stylesheet" href="../spelling/style.css">
@@ -16,7 +16,6 @@
 <body>
 <script src="../spelling/guidebook.js"></script>
 <script src="talk-common.js"></script>
-<script src="lane.js"></script>
 <script>
 (function () {
   "use strict";
@@ -61,80 +60,134 @@
   };
 
   Talk.mount({
-    id: "talk_sentence", title: "문장 퍼즐 조립 달리기", unit: "문장", total: 8, goLabel: "출발 ▶",
+    id: "talk_sentence", title: "문장 퍼즐 조립", unit: "문장", total: 8, goLabel: "시작 ▶",
     levels: [
-      { id: "easy", name: "쉬움", emoji: "🐣", desc: "조각 2~3개 · 인사말", bg: "#ecfccb", c: "#65a30d", travel: 6.2 },
-      { id: "normal", name: "보통", emoji: "🐥", desc: "조각 3개 · 물어보기 · 부탁", bg: "#dbeafe", c: "#2563eb", travel: 5.4 },
-      { id: "hard", name: "어려움", emoji: "🦅", desc: "조각 4개 · 긴 문장", bg: "#fce7f3", c: "#db2777", travel: 4.8 }
+      { id: "easy", name: "쉬움", emoji: "🐣", desc: "조각 2~3개 · 인사말", bg: "#ecfccb", c: "#65a30d", decoys: 1 },
+      { id: "normal", name: "보통", emoji: "🐥", desc: "조각 3개 · 물어보기 · 부탁", bg: "#dbeafe", c: "#2563eb", decoys: 2 },
+      { id: "hard", name: "어려움", emoji: "🦅", desc: "조각 4개 · 긴 문장", bg: "#fce7f3", c: "#db2777", decoys: 2 }
     ],
     guide: function () {
       return [
-        { icon: "🎯", title: "상황 미션", text: "위에 <b>이렇게 말해 봐!</b> 하는 상황이 나와요. 빈칸 수만큼 문장 조각을 모아요." },
-        { icon: "🧩", title: "조각을 순서대로", text: "트랙 위로 조각 판 3개가 내려와요. <b>문장의 다음 조각</b>이 있는 줄로 가서 먹어요.<br>예) <b>Do you want to</b> → <b>hang out</b> → <b>after school?</b>" },
-        { icon: "◀", title: "줄 바꾸기", text: "<b>◀ ▶</b> · 방향키 · 옆으로 밀기 · 가고 싶은 줄을 <b>톡</b>." },
-        { icon: "🚫", title: "어색한 조각은 장애물", text: "어순이 틀리거나 어색한 표현(예: <b>Are you want</b>)을 밟으면 하트가 하나 줄어요. 문장 <b>8개</b>를 완성하면 성공!" }
+        { icon: "🎯", title: "상황 미션", text: "위에 <b>이렇게 말해 봐!</b> 하는 상황이 나와요. 🔊 를 누르면 완성 문장을 들을 수 있어요." },
+        { icon: "🧩", title: "조각을 끌어다 맞춰요", text: "아래 퍼즐 조각을 <b>손가락으로 끌어서</b> 빈칸에 놓아요. 조각을 <b>톡</b> 누르면 앞쪽 빈칸에 들어가요.<br>예) <b>Do you want to</b> → <b>hang out</b> → <b>after school?</b>" },
+        { icon: "🔀", title: "자리가 다르면 돌아와요", text: "맞는 조각이라도 <b>자리가 다르면</b> 다시 돌아와요. 순서를 잘 생각해 봐요." },
+        { icon: "🚫", title: "어색한 조각은 함정", text: "어순이 틀리거나 어색한 조각(예: <b>Are you want</b>)을 넣으면 하트가 하나 줄어요. 문장 <b>8개</b>를 완성하면 성공!" }
       ];
     },
     create: function (stage, lv) {
       var list = Talk.shuffle(DATA[lv.id].slice()).slice(0, 8);
       stage.innerHTML =
-        '<div class="talk-bubble" id="sp-bubble"><div class="tb-who">🎯</div><div class="tb-main"><div class="tb-sub" id="sp-mission" style="font-size:.95rem;font-weight:800;color:var(--text-dark)"></div><div class="chunk-row" id="sp-slots"></div></div></div>' +
+        '<div class="talk-bubble" id="sp-bubble"><div class="tb-who">🎯</div><div class="tb-main"><div class="tb-sub" id="sp-mission" style="font-size:.95rem;font-weight:800;color:var(--text-dark)"></div></div></div>' +
         '<div class="talk-msg" id="talk-msg"></div>' +
-        '<div id="sp-field"></div>';
-      var cur = null, idx = 0, missed = false;
+        '<div class="pz-board"><div class="pz-slots" id="pz-slots"></div><div class="pz-tray" id="pz-tray"></div></div>';
+      var cur = null, filled = [], missed = false, lock = false, timer = 0;
       Talk.$("#sp-bubble").appendChild(Talk.sayButton(function () { return cur ? cur[1].join(" ") : ""; }));
-      function slots() {
-        Talk.$("#sp-slots").innerHTML = cur[1].map(function (c, i) {
-          return '<span class="chunk-slot ' + (i < idx ? "done" : i === idx ? "next" : "") + '">' + Talk.esc(c) + "</span>";
-        }).join("");
-      }
-      var lane = Lane.make(Talk.$("#sp-field"), {
-        player: "🦊", travel: lv.travel,
-        onPass: function (row, at) {
-          var p = lane.playerRect();
-          if (at === row.data.correct) {
-            idx++;
-            slots();
-            if (idx >= cur[1].length) {
-              Talk.good(p.left + p.width / 2, p.top, missed ? 10 : 15);
-              Talk.msg("🎉 <b>" + Talk.esc(cur[1].join(" ")) + "</b>");
-              Talk.speak(cur[1].join(" "));
-              setTimeout(next, 1900);
-            } else {
-              Talk.sfx.coin();
-              Talk.msg("좋아요! 다음 조각은?");
-              setTimeout(spawnRow, 450);
-            }
-            return { correct: row.data.correct };
-          }
-          missed = true;
-          Talk.msg("앗! 다음 조각은 <b>" + Talk.esc(cur[1][idx]) + "</b> 예요");
-          if (Talk.bad()) setTimeout(spawnRow, 1300);
-          return { correct: row.data.correct, hit: true };
-        }
-      });
-      function spawnRow() {
-        if (Talk.G.over) return;
-        var right = cur[1][idx];
-        // 틀린 조각: 같은 자리의 어색한 표현 + (나중에 나올 조각 또는 다른 어색한 표현)
-        var pool = [];
-        cur[2].concat(cur[1].slice(idx + 1)).forEach(function (w) { if (w !== right && pool.indexOf(w) < 0) pool.push(w); });
-        var first = cur[2][idx] !== right ? cur[2][idx] : null;
-        var rest = Talk.shuffle(pool.filter(function (w) { return w !== first; }));
-        var wrong = first ? [first, rest[0]] : [rest[0], rest[1]];
-        var opts = Talk.shuffle([right, wrong[0], wrong[1]]);
-        lane.spawn(opts, { correct: opts.indexOf(right) });
-      }
+      var slotBox = Talk.$("#pz-slots"), tray = Talk.$("#pz-tray");
+
       function ask(i) {
-        cur = list[i]; idx = 0; missed = false;
+        cur = list[i]; missed = false; lock = false;
+        filled = cur[1].map(function () { return false; });
         Talk.$("#sp-mission").textContent = cur[0];
-        slots();
         var b = Talk.$("#sp-bubble"); b.classList.remove("pop"); void b.offsetWidth; b.classList.add("pop");
-        Talk.msg("첫 번째 조각을 찾아요!");
-        setTimeout(spawnRow, 600);
+        Talk.msg("조각을 끌어서 빈칸에 맞춰요!");
+        slotBox.innerHTML = "";
+        cur[1].forEach(function (c, k) {
+          var s = document.createElement("div");
+          s.className = "pz-slot";
+          s.dataset.i = k;
+          s.innerHTML = '<span class="pz-num">' + (k + 1) + "</span>";
+          slotBox.appendChild(s);
+        });
+        // 함정 조각: 같은 자리의 어색한 표현 중에서 (정답 조각과 글자가 같은 건 빼고)
+        var decoys = Talk.shuffle(cur[2].filter(function (w) { return cur[1].indexOf(w) < 0; })).slice(0, lv.decoys);
+        var pieces = Talk.shuffle(cur[1].map(function (t) { return { t: t, ok: true }; }).concat(decoys.map(function (t) { return { t: t, ok: false }; })));
+        tray.innerHTML = "";
+        pieces.forEach(function (p) { tray.appendChild(makePiece(p)); });
+      }
+
+      function makePiece(p) {
+        var el = document.createElement("div");
+        el.className = "pz-piece";
+        el.textContent = p.t;
+        var sx = 0, sy = 0, dragging = false, id = null, over = null;
+        function slotAt(x, y) {
+          var hit = document.elementsFromPoint(x, y);
+          for (var i = 0; i < hit.length; i++) if (hit[i].classList && hit[i].classList.contains("pz-slot")) return hit[i];
+          return null;
+        }
+        el.addEventListener("pointerdown", function (e) {
+          if (lock || Talk.paused() || el.classList.contains("placed")) return;
+          e.preventDefault();
+          id = e.pointerId; sx = e.clientX; sy = e.clientY; dragging = false;
+          try { el.setPointerCapture(id); } catch (err) { /* ignore */ }
+        });
+        el.addEventListener("pointermove", function (e) {
+          if (e.pointerId !== id) return;
+          var dx = e.clientX - sx, dy = e.clientY - sy;
+          if (!dragging && Math.abs(dx) + Math.abs(dy) > 6) { dragging = true; el.classList.add("dragging"); }
+          if (!dragging) return;
+          el.style.transform = "translate(" + dx + "px," + dy + "px) scale(1.06)";
+          var s = slotAt(e.clientX, e.clientY);
+          if (s !== over) { if (over) over.classList.remove("hover"); over = s; if (over && !filled[+over.dataset.i]) over.classList.add("hover"); }
+        });
+        function end(e) {
+          if (e.pointerId !== id) return;
+          id = null;
+          if (over) over.classList.remove("hover");
+          var target = null;
+          if (dragging) target = slotAt(e.clientX, e.clientY);
+          else target = slotBox.children[filled.indexOf(false)] || null; // 톡: 앞쪽 빈칸으로
+          over = null;
+          el.classList.remove("dragging");
+          el.style.transform = "";
+          if (e.type === "pointercancel" || !target || lock || Talk.paused()) return;
+          drop(p, el, +target.dataset.i);
+        }
+        el.addEventListener("pointerup", end);
+        el.addEventListener("pointercancel", end);
+        return el;
+      }
+
+      function shake(el) { el.classList.remove("shake"); void el.offsetWidth; el.classList.add("shake"); }
+      function drop(p, el, i) {
+        if (filled[i]) { Talk.msg("거기는 이미 채웠어요! 빈칸에 놓아요"); return; }
+        var slot = slotBox.children[i];
+        if (p.t === cur[1][i]) {
+          filled[i] = true;
+          el.style.transition = "none"; // 빈칸으로 옮길 때 원래 자리에서 날아오는 움직임이 생기지 않게
+          el.classList.add("placed");
+          slot.classList.add("done");
+          slot.innerHTML = "";
+          slot.appendChild(el);
+          void el.offsetWidth; el.style.transition = "";
+          Talk.sfx.coin();
+          if (filled.indexOf(false) < 0) {
+            lock = true;
+            var r = slotBox.getBoundingClientRect();
+            Talk.good(r.left + r.width / 2, r.top, missed ? 10 : 15);
+            var sentence = cur[1].join(" ");
+            Talk.msg("🎉 <b>" + Talk.esc(sentence) + "</b>");
+            slotBox.classList.add("win");
+            Talk.speak(sentence);
+            timer = setTimeout(function () { slotBox.classList.remove("win"); next(); }, 2100);
+          } else Talk.msg("좋아요! 다음 조각은?");
+          return;
+        }
+        missed = true;
+        shake(el); shake(slot);
+        if (p.ok) {
+          Talk.msg("맞는 조각이지만 <b>자리가 달라요</b>! 순서를 생각해 봐요 🔀");
+          Talk.sfx.bad();
+          Talk.G.combo = 0;
+        } else {
+          Talk.msg("앗! <b>" + Talk.esc(p.t) + "</b> 는 어색한 표현이에요 🚫");
+          el.classList.add("bad");
+          setTimeout(function () { el.remove(); }, 450);
+          if (!Talk.bad()) lock = true;
+        }
       }
       function next() { if (Talk.G.over) return; if (Talk.next()) ask(Talk.G.q); }
-      return { begin: function () { ask(0); }, stop: function () { lane.stop(); } };
+      return { begin: function () { ask(0); }, stop: function () { clearTimeout(timer); } };
     }
   });
 })();

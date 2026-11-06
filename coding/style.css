@@ -1115,3 +1115,8 @@ body.drag-out .program { border-color: var(--red); background: #fff1f1; }
 
 /* 정보줄 아래 스테이지 진행 막대는 숨겨요 */
 .stage-progress-bar { display: none !important; }
+
+/* 휴대폰: '📝 내 코드 · 블록 0개' 머리줄은 숨겨요 */
+@media (max-width: 560px), (pointer: coarse) and (max-height: 500px) {
+  .code-head { display: none; }
+}

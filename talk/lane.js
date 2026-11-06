@@ -18,7 +18,7 @@
     padR.className = "lane-pad right"; padR.textContent = "▶";
     field.appendChild(padL); field.appendChild(padR);
 
-    var lane = 1, rows = [], raf = 0, last = 0, alive = true;
+    var lane = 1, rows = [], raf = 0, last = 0, alive = true, rush = false;
     function place() { player.style.left = (lane * 33.333) + "%"; }
     function move(d) { if (Talk.paused()) return; lane = Math.max(0, Math.min(2, lane + d)); place(); help.style.display = "none"; }
     function goto(l) { if (Talk.paused()) return; lane = l; place(); help.style.display = "none"; }
@@ -63,7 +63,7 @@
       return row;
     }
     function draw(row) { row.els.forEach(function (b) { b.style.transform = "translateY(" + row.y + "px)"; }); }
-    function clear() { rows.forEach(function (r) { r.els.forEach(function (b) { b.remove(); }); }); rows = []; }
+    function clear() { rush = false; rows.forEach(function (r) { r.els.forEach(function (b) { b.remove(); }); }); rows = []; }
 
     function frame(now) {
       if (!alive) return;
@@ -71,13 +71,14 @@
       last = now;
       if (!Talk.paused()) {
         var H = field.clientHeight;
-        var speed = (H + 80) / (opt.travel || 6);
+        var speed = (H + 80) / (opt.travel || 6) * (rush ? 7 : 1);
         var py = player.offsetTop + 6;
         rows.forEach(function (row) {
           row.y += speed * dt;
           draw(row);
           if (!row.done && row.y + row.h >= py) {
             row.done = true;
+            rush = false;
             var res = opt.onPass(row, lane);
             row.els.forEach(function (b, i) {
               if (res && res.correct === i) b.classList.add("ok");
@@ -98,6 +99,8 @@
       spawn: spawn,
       clear: clear,
       lane: function () { return lane; },
+      // 🎤 로 대답을 골랐을 때: 그 줄로 옮기고, 판이 빨리 내려와 바로 지나가요
+      choose: function (l) { lane = Math.max(0, Math.min(2, l)); place(); help.style.display = "none"; rush = true; },
       playerRect: function () { return player.getBoundingClientRect(); },
       stop: function () { alive = false; cancelAnimationFrame(raf); document.removeEventListener("keydown", onKey); clear(); }
     };

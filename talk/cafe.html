@@ -24,14 +24,24 @@
   .cafe-bubble { position: relative; width: 100%; }
   .cafe-hidden-text { color: var(--text-soft) !important; font-family: "Pretendard", sans-serif !important; font-size: 0.9rem !important; }
   .cafe-sub-btn { border: none; border-radius: 999px; background: #f4eefd; padding: 5px 12px; font-weight: 800; font-size: 0.78rem; cursor: pointer; margin-top: 4px; }
-  .cafe-trays { flex: 1; min-height: 0; display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; align-content: start; }
+  .cafe-trays { flex: 1; min-height: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; align-content: start; }
   .cafe-tray {
     border: 3px solid #e7d5c3; border-radius: 22px; background: #fff; cursor: pointer; padding: 14px 6px 10px;
     display: flex; flex-direction: column; align-items: center; gap: 6px; font-family: inherit; transition: transform 0.12s;
     box-shadow: 0 6px 0 #e7d5c3; min-height: 132px; justify-content: center;
   }
   .cafe-tray:active { transform: translateY(3px); box-shadow: 0 3px 0 #e7d5c3; }
-  .cafe-tray .ct-food { font-size: 2.2rem; line-height: 1.15; letter-spacing: 2px; word-break: break-all; text-align: center; }
+  .cafe-tray .ct-food { font-size: 2.2rem; line-height: 1.15; display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 2px 8px; text-align: center; }
+  .ct-item { position: relative; display: inline-flex; flex-wrap: wrap; justify-content: center; align-items: center; max-width: 100%; }
+  .ct-item.s-small { font-size: 0.72em; }
+  .ct-item.s-large { font-size: 1.15em; }
+  .ct-size { position: absolute; left: -6px; top: -6px; z-index: 1; font: 800 11px/1 "Nunito", sans-serif; color: #fff; background: #f97316; border-radius: 999px; padding: 3px 5px; }
+  .ct-pic { position: relative; display: inline-block; }
+  .ct-pic i { position: absolute; right: -0.2em; bottom: -0.1em; font-size: 0.55em; font-style: normal; }
+  .ct-mod { font-size: 0.6em; margin-left: 2px; }
+  /* 빼 주세요: 재료 그림은 보이게 두고, 빨간 동그라미 + 빗금 */
+  .ct-mod.no { position: relative; display: inline-flex; align-items: center; justify-content: center; width: 1.45em; height: 1.45em; border: 2px solid #ef4444; border-radius: 50%; }
+  .ct-mod.no::after { content: ""; position: absolute; left: 8%; right: 8%; top: 50%; height: 2px; margin-top: -1px; background: #ef4444; transform: rotate(-45deg); }
   .cafe-tray .ct-label { font-family: "Nunito", "Pretendard", sans-serif; font-weight: 800; font-size: 0.8rem; color: #7c2d12; text-align: center; line-height: 1.25; }
   .cafe-tray.ok { border-color: #22c55e; box-shadow: 0 6px 0 #16a34a; background: #f0fdf4; }
   .cafe-tray.no { border-color: #ef4444; box-shadow: 0 6px 0 #dc2626; background: #fef2f2; animation: guestShake 0.4s ease; pointer-events: none; opacity: 0.7; }
@@ -48,7 +58,7 @@
     .cafe-guest { font-size: 3rem; }
     .cafe-trays { gap: 6px; }
     .cafe-tray { min-height: 112px; padding: 10px 4px 8px; border-radius: 18px; }
-    .cafe-tray .ct-food { font-size: 1.75rem; letter-spacing: 0; }
+    .cafe-tray .ct-food { font-size: 1.5rem; gap: 2px 4px; }
     .cafe-tray .ct-label { font-size: 0.7rem; }
   }
 </style>
@@ -59,69 +69,176 @@
 <script>
 (function () {
   "use strict";
-  var F = {
-    bagel: ["🥯", "bagel"], cheese: ["🧀", "cream cheese"], donut: ["🍩", "donut"], jam: ["🍓", "strawberry jam"],
-    iced: ["🧊☕", "iced americano"], cocoa: ["☕🍫", "hot chocolate"], oj: ["🍊🧃", "orange juice"], aj: ["🍎🧃", "apple juice"],
-    milk: ["🥛", "milk"], tea: ["🍵", "tea"], water: ["💧", "water"], ice: ["🧊", "ice"], cola: ["🥤", "cola"],
-    pizza: ["🍕", "pizza"], burger: ["🍔", "burger"], fries: ["🍟", "fries"], hotdog: ["🌭", "hot dog"], sandwich: ["🥪", "sandwich"],
-    salad: ["🥗", "salad"], soup: ["🍲", "soup"], spaghetti: ["🍝", "spaghetti"], bread: ["🍞", "bread"], rice: ["🍚", "rice"],
-    pancake: ["🥞", "pancakes"], waffle: ["🧇", "waffle"], honey: ["🍯", "honey"], cake: ["🍰", "cake"], pie: ["🥧", "pie"],
-    cookie: ["🍪", "cookie"], icecream: ["🍦", "ice cream"], mushroom: ["🍄", "mushrooms"], coffee: ["☕", "coffee"]
+  // ---- 주문을 조합으로 만들어요: 메뉴 × 개수 × 크기 × 곁들임/빼기 × 말하는 방식 → 매번 다른 주문 ----
+  // 재료(곁들이거나 빼 달라고 할 수 있는 것): [그림, 영어]
+  var T = {
+    cheese: ["🧀", "cheese"], onion: ["🧅", "onions"], pickle: ["🥒", "pickles"], tomato: ["🍅", "tomatoes"],
+    mushroom: ["🍄", "mushrooms"], olive: ["🫒", "olives"], ketchup: ["🍅", "ketchup"], ice: ["🧊", "ice"],
+    sugar: ["🍬", "sugar"], honey: ["🍯", "honey"], butter: ["🧈", "butter"], jam: ["🍓", "strawberry jam"],
+    bacon: ["🥓", "bacon"], milk: ["🥛", "milk"], choco: ["🍫", "chocolate sauce"], cream: ["🧀", "cream cheese"],
+    lemon: ["🍋", "lemon"], egg: ["🥚", "an egg"], cucumber: ["🥒", "cucumbers"], cherry: ["🍒", "a cherry on top"]
   };
-  // [손님의 주문, 정답 쟁반, 틀린 쟁반 1, 틀린 쟁반 2]
-  var DATA = {
-    easy: [
-      ["Can I have a donut, please?", ["donut"], ["bagel"], ["cookie"]],
-      ["I'd like an orange juice.", ["oj"], ["milk"], ["cola"]],
-      ["One pizza, please.", ["pizza"], ["burger"], ["sandwich"]],
-      ["Can I get a glass of milk?", ["milk"], ["tea"], ["water"]],
-      ["I want an ice cream, please.", ["icecream"], ["cake"], ["cookie"]],
-      ["A hamburger, please.", ["burger"], ["hotdog"], ["pizza"]],
-      ["Can I have some cookies?", ["cookie", "cookie"], ["donut", "donut"], ["cake"]],
-      ["I'd like a salad, please.", ["salad"], ["soup"], ["spaghetti"]],
-      ["Can I have a cup of tea?", ["tea"], ["coffee"], ["cola"]],
-      ["One hot dog, please.", ["hotdog"], ["burger"], ["sandwich"]],
-      ["I'd like some pancakes.", ["pancake"], ["waffle"], ["bread"]],
-      ["Can I get a sandwich, please?", ["sandwich"], ["pizza"], ["salad"]]
-    ],
-    normal: [
-      ["Could I get a warm bagel with some cream cheese, please?", ["bagel", "cheese"], ["donut", "jam"], ["iced"]],
-      ["Can I have a burger and fries?", ["burger", "fries"], ["burger", "cola"], ["hotdog", "fries"]],
-      ["I'd like pancakes with honey, please.", ["pancake", "honey"], ["pancake", "jam"], ["waffle", "honey"]],
-      ["Could I get spaghetti and a glass of water?", ["spaghetti", "water"], ["spaghetti", "cola"], ["pizza", "water"]],
-      ["May I have a sandwich and an apple juice?", ["sandwich", "aj"], ["sandwich", "oj"], ["salad", "aj"]],
-      ["Two cookies and a hot chocolate, please.", ["cookie", "cookie", "cocoa"], ["cookie", "milk"], ["cookie", "cookie", "iced"]],
-      ["Can I get a piece of cake and some tea?", ["cake", "tea"], ["cake", "milk"], ["pie", "tea"]],
-      ["I'd like some soup and bread, please.", ["soup", "bread"], ["soup", "rice"], ["salad", "bread"]],
-      ["Could I have a pizza and a cola?", ["pizza", "cola"], ["pizza", "water"], ["burger", "cola"]],
-      ["A waffle with strawberry jam, please.", ["waffle", "jam"], ["waffle", "honey"], ["pancake", "jam"]]
-    ],
-    hard: [
-      ["Would you mind bringing me a glass of water without ice?", ["water"], ["water", "ice"], ["cola", "ice"]],
-      ["Could I get a pizza, but no mushrooms, please?", ["pizza"], ["pizza", "mushroom"], ["spaghetti", "mushroom"]],
-      ["I'll have a hot dog and fries, and my sister wants an ice cream.", ["hotdog", "fries", "icecream"], ["hotdog", "fries"], ["hotdog", "icecream", "cola"]],
-      ["Could we have two orange juices and one milk, please?", ["oj", "oj", "milk"], ["oj", "milk", "milk"], ["oj", "oj", "cola"]],
-      ["Can I get a burger without cheese and a small cola?", ["burger", "cola"], ["burger", "cheese", "cola"], ["burger", "fries"]],
-      ["Would it be possible to get some soup and two pieces of bread?", ["soup", "bread", "bread"], ["soup", "bread"], ["salad", "bread", "bread"]],
-      ["I'd like a donut and an iced americano, please.", ["donut", "iced"], ["donut", "cocoa"], ["cookie", "iced"]],
-      ["May I have a green salad and a cup of tea, please?", ["salad", "tea"], ["salad", "coffee"], ["soup", "tea"]],
-      ["Just a bagel, please. No cream cheese, thanks.", ["bagel"], ["bagel", "cheese"], ["donut", "cheese"]],
-      ["Could I have the pancakes with honey and a glass of milk?", ["pancake", "honey", "milk"], ["pancake", "milk"], ["pancake", "honey", "oj"]]
-    ]
+  // 메뉴: [그림, 한 개, 여러 개, 종류(food/drink), 옵션]
+  //  unit: 셀 때 쓰는 말 ["glass", "glasses", "milk"] → a glass of milk / two glasses of milk
+  //  size: 작은/큰 사이즈가 있는 음료 · no: 빼 달라고 할 수 있는 재료 · add: 곁들여 달라고 할 수 있는 것
+  var M = {
+    donut: ["🍩", "donut", "donuts", "food", { add: ["choco"] }],
+    bagel: ["🥯", "bagel", "bagels", "food", { add: ["cream", "butter", "jam"] }],
+    cookie: ["🍪", "cookie", "cookies", "food", {}],
+    cupcake: ["🧁", "cupcake", "cupcakes", "food", {}],
+    croissant: ["🥐", "croissant", "croissants", "food", { add: ["butter", "jam"] }],
+    pretzel: ["🥨", "pretzel", "pretzels", "food", {}],
+    cake: ["🍰", "", "", "food", { unit: ["piece", "pieces", "cake"] }],
+    pie: ["🥧", "", "", "food", { unit: ["piece", "pieces", "apple pie"] }],
+    icecream: ["🍦", "ice cream", "ice creams", "food", { add: ["choco", "cherry"] }],
+    pizza: ["🍕", "pizza", "pizzas", "food", { no: ["mushroom", "olive", "onion"], add: ["bacon"] }],
+    burger: ["🍔", "burger", "burgers", "food", { no: ["cheese", "onion", "pickle", "tomato"], add: ["bacon", "cheese"] }],
+    hotdog: ["🌭", "hot dog", "hot dogs", "food", { no: ["ketchup", "onion"] }],
+    sandwich: ["🥪", "sandwich", "sandwiches", "food", { no: ["cheese", "tomato", "pickle"] }],
+    taco: ["🌮", "taco", "tacos", "food", { no: ["onion", "tomato", "cheese"] }],
+    burrito: ["🌯", "burrito", "burritos", "food", { no: ["onion", "cheese"] }],
+    salad: ["🥗", "salad", "salads", "food", { no: ["tomato", "onion", "cucumber"], add: ["egg"] }],
+    soup: ["🍲", "", "", "food", { unit: ["bowl", "bowls", "soup"] }],
+    rice: ["🍚", "", "", "food", { unit: ["bowl", "bowls", "rice"], add: ["egg"] }],
+    spaghetti: ["🍝", "", "", "food", { unit: ["plate", "plates", "spaghetti"], no: ["mushroom", "onion"] }],
+    dumpling: ["🥟", "", "", "food", { unit: ["plate", "plates", "dumplings"] }],
+    sushi: ["🍣", "", "", "food", { unit: ["plate", "plates", "sushi"] }],
+    pancake: ["🥞", "", "", "food", { unit: ["stack", "stacks", "pancakes"], add: ["honey", "butter", "jam"] }],
+    waffle: ["🧇", "waffle", "waffles", "food", { add: ["honey", "jam", "choco"] }],
+    fries: ["🍟", "", "", "food", { unit: ["order", "orders", "fries"], add: ["ketchup"] }],
+    apple: ["🍎", "apple", "apples", "food", {}],
+    banana: ["🍌", "banana", "bananas", "food", {}],
+    milk: ["🥛", "", "", "drink", { unit: ["glass", "glasses", "milk"] }],
+    water: ["💧", "", "", "drink", { unit: ["glass", "glasses", "water"], no: ["ice"], add: ["lemon"] }],
+    tea: ["🍵", "", "", "drink", { unit: ["cup", "cups", "tea"], no: ["sugar"], add: ["honey", "lemon", "milk"] }],
+    coffee: ["☕", "", "", "drink", { unit: ["cup", "cups", "coffee"], no: ["sugar"], add: ["milk"] }],
+    cocoa: ["🍫☕", "", "", "drink", { unit: ["cup", "cups", "hot chocolate"] }],
+    oj: ["🍊🧃", "orange juice", "orange juices", "drink", { size: 1, no: ["ice"] }],
+    aj: ["🍎🧃", "apple juice", "apple juices", "drink", { size: 1, no: ["ice"] }],
+    cola: ["🥤", "cola", "colas", "drink", { size: 1, no: ["ice"] }],
+    lemonade: ["🍋🥤", "lemonade", "lemonades", "drink", { size: 1, no: ["ice"] }],
+    bubbletea: ["🧋", "bubble tea", "bubble teas", "drink", { size: 1, no: ["ice", "sugar"] }],
+    iced: ["🧊☕", "iced americano", "iced americanos", "drink", { size: 1 }]
   };
-  var GUESTS = [["🐻", "Bear"], ["🐰", "Bunny"], ["🦊", "Fox"], ["🐼", "Panda"], ["🐨", "Koala"], ["🐯", "Tiger"], ["🐷", "Piggy"], ["🐱", "Kitty"], ["🦁", "Lion"], ["🐸", "Froggy"]];
+  var KEYS = Object.keys(M);
+  var FOODS = KEYS.filter(function (k) { return M[k][3] === "food"; });
+  var DRINKS = KEYS.filter(function (k) { return M[k][3] === "drink"; });
+  var NUM = ["", "one", "two", "three"];
+  function pick(a) { return a[Math.floor(Math.random() * a.length)]; }
+  function chance(p) { return Math.random() < p; }
+  function an(w) { return (/^[aeiou]/i.test(w) ? "an " : "a ") + w; }
+  function cap(s) { return s.charAt(0).toUpperCase() + s.slice(1); }
+  function opt(k) { return M[k][4]; }
+
+  // 주문 한 가지: { k: 메뉴, n: 개수, size: "small"|"large"|"", add: 곁들임, no: 빼기 }
+  function itemKey(it) { return [it.k, it.n, it.size, it.add, it.no].join("/"); }
+  function orderKey(o) { return o.map(itemKey).sort().join("|"); }
+  function itemPhrase(it) {
+    var m = M[it.k], o = opt(it.k), s;
+    var size = it.size ? it.size + " " : "";
+    if (o.unit) s = (it.n === 1 ? an(o.unit[0]) : NUM[it.n] + " " + o.unit[1]) + " of " + o.unit[2];
+    else s = it.n === 1 ? an(size + m[1]) : NUM[it.n] + " " + size + m[2];
+    if (it.add) s += " with " + T[it.add][1];
+    if (it.no) s += pick([" without " + T[it.no][1], " with no " + T[it.no][1]]);
+    return s;
+  }
+  function joinAnd(parts) {
+    if (parts.length === 1) return parts[0];
+    if (parts.length === 2) return parts[0] + " and " + parts[1];
+    return parts.slice(0, -1).join(", ") + ", and " + parts[parts.length - 1];
+  }
+  var SAY = {
+    easy: ["Can I have {o}, please?", "I'd like {o}.", "{O}, please.", "Can I get {o}?", "I want {o}, please.", "Hi! {O}, please."],
+    normal: ["Can I have {o}, please?", "I'd like {o}, please.", "Could I get {o}?", "May I have {o}?", "{O}, please. Thank you!", "Hello! I'll have {o}."],
+    hard: ["Would you mind bringing me {o}?", "Could we have {o}, please?", "I'll have {o}, thanks.", "Would it be possible to get {o}?", "Hi there! Could I please get {o}?"]
+  };
+  var WHO = ["sister", "brother", "mom", "dad", "friend", "grandma"];
+  function orderText(o, lvId) {
+    // 어려움: 가끔 "나는 ~, 우리 언니는 ~" 처럼 두 사람 몫으로 나눠서 말해요
+    if (lvId === "hard" && o.length >= 2 && chance(0.4)) {
+      var mine = o.slice(0, o.length - 1).map(itemPhrase), theirs = itemPhrase(o[o.length - 1]);
+      return "I'll have " + joinAnd(mine) + ", and my " + pick(WHO) + " wants " + theirs + ".";
+    }
+    var body = joinAnd(o.map(itemPhrase));
+    return pick(SAY[lvId]).replace("{o}", body).replace("{O}", cap(body));
+  }
+
+  function makeItem(k, lvId) {
+    var o = opt(k), it = { k: k, n: 1, size: "", add: "", no: "" };
+    it.n = 1 + Math.floor(Math.random() * (lvId === "easy" ? 3 : 2));
+    if (lvId !== "easy" && o.size && chance(0.6)) it.size = pick(["small", "large"]);
+    if (lvId === "normal" && o.add && chance(0.35)) it.add = pick(o.add);
+    if (lvId === "hard") {
+      if (o.no && chance(0.55)) it.no = pick(o.no);
+      else if (o.add && chance(0.4)) it.add = pick(o.add);
+    }
+    return it;
+  }
+  function makeOrder(lvId) {
+    var ks;
+    if (lvId === "easy") ks = [pick(KEYS)];
+    else if (lvId === "normal") ks = chance(0.75) ? [pick(FOODS), pick(DRINKS)] : Talk.shuffle(FOODS.slice()).slice(0, 2);
+    else ks = chance(0.5) ? Talk.shuffle(FOODS.slice()).slice(0, 2).concat([pick(DRINKS)]) : [pick(FOODS), pick(DRINKS)];
+    var order = ks.map(function (k) { return makeItem(k, lvId); });
+    // 어려움인데 빼기·크기처럼 '잘 들어야 하는 말'이 하나도 없으면 하나 넣어요
+    if (lvId === "hard" && !order.some(function (it) { return it.no || it.size; })) {
+      var c = order.filter(function (it) { return opt(it.k).no; })[0];
+      if (c) { c.no = pick(opt(c.k).no); c.add = ""; }
+    }
+    return order;
+  }
+  function clone(o) { return o.map(function (it) { return Object.assign({}, it); }); }
+  // 틀린 쟁반: 정답 주문에서 딱 한 군데만 바꿔요 (메뉴 · 개수 · 크기 · 빼기 · 곁들임 · 한 가지 빠짐)
+  function mutate(order, lvId) {
+    var o = clone(order), i = Math.floor(Math.random() * o.length), it = o[i], op = opt(it.k);
+    var ways = ["food", "count"];
+    if (it.size) ways.push("size", "size");
+    if (it.no) ways.push("no", "no", "no");
+    if (it.add) ways.push("add", "add");
+    if (o.length > 1) ways.push("drop");
+    var w = pick(ways);
+    if (w === "food") {
+      var same = KEYS.filter(function (k) { return M[k][3] === M[it.k][3] && !o.some(function (x) { return x.k === k; }); });
+      var nk = pick(same), no = opt(nk);
+      it.k = nk;
+      if (!no.size) it.size = "";
+      if (!(no.no && no.no.indexOf(it.no) >= 0)) it.no = "";
+      if (!(no.add && no.add.indexOf(it.add) >= 0)) it.add = "";
+    } else if (w === "count") it.n = pick([1, 2, 3].filter(function (n) { return n !== it.n; }));
+    else if (w === "size") it.size = it.size === "small" ? "large" : "small";
+    else if (w === "no") it.no = "";
+    else if (w === "add") {
+      var others = (op.add || []).filter(function (a) { return a !== it.add; });
+      it.add = others.length && chance(0.5) ? pick(others) : "";
+    } else o.splice(i, 1);
+    return o;
+  }
+  function makeQuestion(lvId) {
+    var order = makeOrder(lvId), keys = [orderKey(order)], wrong = [];
+    for (var tries = 0; wrong.length < 2 && tries < 60; tries++) {
+      var m = mutate(order, lvId), k = orderKey(m);
+      if (keys.indexOf(k) < 0) { keys.push(k); wrong.push(m); }
+    }
+    while (wrong.length < 2) { // 혹시 모자라면 아예 다른 주문
+      var r = makeOrder(lvId), rk = orderKey(r);
+      if (keys.indexOf(rk) < 0) { keys.push(rk); wrong.push(r); }
+    }
+    return { text: orderText(order, lvId), right: order, wrong: wrong };
+  }
+  var GUESTS = [["🐻", "Bear"], ["🐰", "Bunny"], ["🦊", "Fox"], ["🐼", "Panda"], ["🐨", "Koala"], ["🐯", "Tiger"], ["🐷", "Piggy"], ["🐱", "Kitty"], ["🦁", "Lion"], ["🐸", "Froggy"],
+    ["🐵", "Monkey"], ["🐧", "Penguin"], ["🐮", "Cow"], ["🐹", "Hammy"], ["🦉", "Owl"], ["🐙", "Octopus"], ["🦄", "Unicorn"], ["🐲", "Dragon"], ["🦒", "Giraffe"], ["🐘", "Ellie"]];
 
   Talk.mount({
     id: "talk_cafe", title: "주문받아 서빙하기", unit: "손님", total: 10, goLabel: "오픈 ▶", startLabel: "가게 오픈! ☕",
     levels: [
-      { id: "easy", name: "쉬움", emoji: "🐣", desc: "한 가지 주문 · 자막 있음", bg: "#ecfccb", c: "#65a30d" },
-      { id: "normal", name: "보통", emoji: "🐥", desc: "두세 가지 주문 · 자막 있음", bg: "#dbeafe", c: "#2563eb" },
+      { id: "easy", name: "쉬움", emoji: "🐣", desc: "한 가지 · 개수 · 자막 있음", bg: "#ecfccb", c: "#65a30d" },
+      { id: "normal", name: "보통", emoji: "🐥", desc: "두 가지 · 크기 · 곁들임 · 자막 있음", bg: "#dbeafe", c: "#2563eb" },
       { id: "hard", name: "어려움", emoji: "🦅", desc: "정중한 부탁 · 빼 주세요 · 소리만 듣기", bg: "#fce7f3", c: "#db2777" }
     ],
     guide: function (lv) {
       return [
         { icon: "🐻", title: "손님이 주문해요", text: "동물 손님이 영어로 주문하고 <b>소리</b>로도 들려줘요. 🔊 를 누르면 다시 들어요." },
-        { icon: "🍽️", title: "맞는 쟁반을 톡!", text: "아래 <b>쟁반 3개</b> 중에서 주문과 <b>똑같은</b> 쟁반을 눌러요. 개수와 <b>without / no</b>(빼 주세요)도 잘 들어요." },
+        { icon: "🍽️", title: "맞는 쟁반을 톡!", text: "아래 <b>쟁반 3개</b> 중에서 주문과 <b>똑같은</b> 쟁반을 눌러요. <b>개수</b>, <b>small / large</b>(크기), <b>with</b>(곁들임), <b>without / no</b>(빼 주세요 🚫)를 잘 들어요." },
         { icon: "🪙", title: "코인 받기", text: "맞으면 손님이 기뻐하며 <b>코인</b>을 줘요. 틀리면 하트가 하나 줄어요." },
         lv.id === "hard"
           ? { icon: "👂", title: "소리만 듣기", text: "어려움은 주문 글자가 숨어 있어요. 잘 들어 보고, 어려우면 <b>자막 보기</b>를 눌러요." }
@@ -129,7 +246,13 @@
       ];
     },
     create: function (stage, lv) {
-      var list = Talk.shuffle(DATA[lv.id].slice()).slice(0, 10);
+      // 매번 새로 조합한 주문 10개 (같은 주문이 겹치지 않게)
+      var list = [], seen = {};
+      for (var q = 0; list.length < 10 && q < 200; q++) {
+        var nq = makeQuestion(lv.id);
+        if (seen[nq.text]) continue;
+        seen[nq.text] = 1; list.push(nq);
+      }
       var guests = Talk.shuffle(GUESTS.slice());
       stage.innerHTML =
         '<div class="cafe-counter"><div class="cafe-guest" id="cf-guest">🐻</div><div class="cafe-name" id="cf-name"></div>' +
@@ -137,12 +260,29 @@
         '<div class="talk-msg" id="talk-msg"></div>' +
         '<div class="cafe-trays" id="cf-trays"></div>';
       var cur = null, lock = false, timer = 0;
-      Talk.$("#cf-bubble").appendChild(Talk.sayButton(function () { return cur ? cur[0] : ""; }));
-      function trayHtml(items) {
-        var food = items.map(function (k) { return F[k][0]; }).join(" ");
-        var counts = {};
-        items.forEach(function (k) { counts[k] = (counts[k] || 0) + 1; });
-        var label = Object.keys(counts).map(function (k) { return (counts[k] > 1 ? counts[k] + " " : "") + F[k][1]; }).join(" + ");
+      Talk.$("#cf-bubble").appendChild(Talk.sayButton(function () { return cur ? cur.text : ""; }));
+      // 쟁반 그림: 개수만큼 그림을 놓고(그림이 두 글자면 ×개수), 크기는 S/L, 곁들임은 +그림, 빼기는 🚫 를 겹쳐요
+      function itemHtml(it) {
+        var m = M[it.k], o = opt(it.k);
+        // 그림이 두 개(🍎🧃 사과 주스)면 하나로 보이게: 큰 그림(🧃) 귀퉁이에 맛 그림(🍎)을 작게
+        var g = Array.from(m[0]);
+        var one = g.length > 1 ? '<span class="ct-pic">' + g[1] + "<i>" + g[0] + "</i></span>" : m[0];
+        var pic = "";
+        for (var i = 0; i < it.n; i++) pic += one;
+        var h = '<span class="ct-item' + (it.size ? " s-" + it.size : "") + '">' + (it.size ? '<b class="ct-size">' + (it.size === "small" ? "S" : "L") + "</b>" : "") + pic;
+        if (it.add) h += '<span class="ct-mod">+' + T[it.add][0] + "</span>";
+        if (it.no) h += '<span class="ct-mod no">' + T[it.no][0] + "</span>";
+        return h + "</span>";
+      }
+      function itemLabel(it) {
+        var m = M[it.k], o = opt(it.k);
+        var noun = o.unit ? (it.n === 1 ? o.unit[2] : it.n + " " + o.unit[1] + " of " + o.unit[2]) : (it.n > 1 ? it.n + " " : "") + (it.size ? it.size + " " : "") + (it.n > 1 ? m[2] : m[1]);
+        if (o.unit && it.size) noun = it.size + " " + noun;
+        return noun + (it.add ? " + " + T[it.add][1] : "") + (it.no ? " (no " + T[it.no][1] + ")" : "");
+      }
+      function trayHtml(order) {
+        var food = order.map(itemHtml).join("");
+        var label = order.map(itemLabel).join(" + ");
         return '<span class="ct-food">' + food + '</span>' + (lv.id === "hard" ? "" : '<span class="ct-label">' + Talk.esc(label) + "</span>");
       }
       function coin(from) {
@@ -172,16 +312,16 @@
           text.classList.add("cafe-hidden-text");
           var sb = document.createElement("button");
           sb.type = "button"; sb.className = "cafe-sub-btn"; sb.textContent = "자막 보기";
-          sb.addEventListener("click", function () { text.textContent = cur[0]; text.classList.remove("cafe-hidden-text"); sb.remove(); });
+          sb.addEventListener("click", function () { text.textContent = cur.text; text.classList.remove("cafe-hidden-text"); sb.remove(); });
           sub.appendChild(sb);
         } else {
-          text.textContent = cur[0];
+          text.textContent = cur.text;
           text.classList.remove("cafe-hidden-text");
         }
         var b = Talk.$("#cf-bubble"); b.classList.remove("pop"); void b.offsetWidth; b.classList.add("pop");
         Talk.msg("주문에 맞는 쟁반을 눌러요!");
-        Talk.speak(cur[0]);
-        var trays = Talk.shuffle([{ items: cur[1], ok: true }, { items: cur[2] }, { items: cur[3] }]);
+        Talk.speak(cur.text);
+        var trays = Talk.shuffle([{ items: cur.right, ok: true }, { items: cur.wrong[0] }, { items: cur.wrong[1] }]);
         var box = Talk.$("#cf-trays");
         box.innerHTML = "";
         trays.forEach(function (t) {
@@ -205,7 +345,7 @@
               ge.classList.remove("sad"); void ge.offsetWidth; ge.classList.add("sad");
               Talk.msg("앗, 주문과 달라요! 다시 잘 들어 봐요 🔊");
               if (!Talk.bad()) lock = true;
-              else setTimeout(function () { Talk.speak(cur[0]); }, 500);
+              else setTimeout(function () { Talk.speak(cur.text); }, 500);
             }
           });
           box.appendChild(el);
