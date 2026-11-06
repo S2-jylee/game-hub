@@ -321,3 +321,12 @@ header, main {
   html, body { height: 100dvh; }
   #game-screen.active { height: 100dvh; }
 }
+
+/* ---- 휴대폰: 메인 게임 타일도 가로 2개씩 ---- */
+@media (max-width: 480px) {
+  .tile-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; padding: 0 12px 30px; }
+  .tile { padding: 16px 8px; gap: 6px; border-radius: 20px; }
+  .tile-emoji { width: 56px; height: 56px; font-size: 1.8rem; }
+  .tile-title { font-size: 1rem; }
+  .tile-desc { font-size: 0.72rem; }
+}
