@@ -564,3 +564,14 @@ html { background: #c6eefa; }
 .sc-ground span { display: inline-block; transform-origin: bottom center; animation: sc-wave 3.5s ease-in-out infinite; }
 .sc-ground span:nth-child(even) { animation-delay: -1.7s; }
 @keyframes sc-wave { 50% { transform: rotate(-6deg); } }
+
+/* 좁은 화면에서도 두 그림을 좌우로 나란히 */
+@media (max-width: 620px) {
+  .diff-board { flex-direction: row; align-items: center; justify-content: center; padding: 4px 6px 8px; gap: 6px; }
+  .diff-panel { flex: 0 0 auto; width: calc(50% - 3px); max-width: none; height: auto; aspect-ratio: 1; margin: 0; border-width: 2px; }
+}
+@supports (width: 1cqw) {
+  @media (max-width: 620px) {
+    .diff-panel { width: min(calc((100cqw - 18px) / 2), calc(100cqh - 16px)); }
+  }
+}

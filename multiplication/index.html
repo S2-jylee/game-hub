@@ -328,6 +328,18 @@ button{font-family:inherit;font-weight:inherit;color:inherit;cursor:pointer;bord
 @media (prefers-reduced-motion:reduce){
   *{animation-duration:.01ms!important;animation-iteration-count:1!important}
 }
+/* ◀ ▶ 버튼은 게임판 아래 좌우 끝에 (펭귄 달리기 · 정답 바구니) */
+#run .run-pad.left,#catch .run-pad.left{left:8px;right:auto}
+#run .run-pad.right,#catch .run-pad.right{right:8px;left:auto}
+/* 물고기 게이지: 비어 있어도 칸이 잘 보이게 */
+.energy-bar{height:12px;background:#d6e8fd;border:2px solid #93c5fd;box-sizing:content-box}
+#energyFill{background:linear-gradient(90deg,#2563eb,#3b82f6,#60a5fa)}
+/* 별 점수: 별과 글씨를 작게 */
+@media (max-width:560px),(pointer:coarse) and (max-height:500px){
+  #run .score,#catch .score{font-size:17px;padding:4px 10px;min-width:0;border-radius:14px}
+  #run .energy{padding:5px 10px}
+  #run .energy-ico{font-size:17px}
+}
 </style>
 <link rel="stylesheet" href="../shared/game-title.css">
 </head>
@@ -386,7 +398,7 @@ button{font-family:inherit;font-weight:inherit;color:inherit;cursor:pointer;bord
       <button class="btn btn-ghost btn-small" id="changeUser">← 처음으로</button>
       <span class="user-badge" id="userBadge"></span>
     </div>
-    <h1 class="game-title">✖️ 구구단 놀이터</h1>
+    <h1 class="game-title">구구단 놀이터</h1>
     <div class="panel top-panel">
       <div class="label">몇 단을 할까요? <small>(여러 개 골라도 돼요)</small></div>
       <div class="dan-grid" id="danGrid"></div>
@@ -1327,6 +1339,9 @@ button{font-family:inherit;font-weight:inherit;color:inherit;cursor:pointer;bord
     }
   }
 
+  // 모바일(좁은 화면 · 가로로 눕힌 폰): 좌우 이동 속도를 절반 아래로 줄여요
+  const MOBILE = window.matchMedia('(max-width: 560px), (pointer: coarse) and (max-height: 500px)');
+  const MOBILE_SPEED = 0.45;
   function runFrame(now) {
     if (!run.active) return;
     const dt = Math.min(0.05, (now - run.last) / 1000);
@@ -1342,7 +1357,7 @@ button{font-family:inherit;font-weight:inherit;color:inherit;cursor:pointer;bord
     }
     if (run.fallT > 0 || run.freezeT > 0 || (run.goal && run.goal.phase === 'wave')) dir = 0;
     run.dir = dir;
-    run.px = Math.max(-0.82, Math.min(0.82, run.px + dir * (1.9 + run.stage * 0.15) * dt));
+    run.px = Math.max(-0.82, Math.min(0.82, run.px + dir * (1.9 + run.stage * 0.15) * (MOBILE.matches ? MOBILE_SPEED : 1) * dt));
     run.lean += (dir * 0.22 - run.lean) * Math.min(1, dt * 10);
     $('#padL').classList.toggle('on', dir < -0.1);
     $('#padR').classList.toggle('on', dir > 0.1);
@@ -2030,7 +2045,7 @@ button{font-family:inherit;font-weight:inherit;color:inherit;cursor:pointer;bord
 
     // 바구니 움직이기 (방향키는 그 방향으로, 마우스·손가락은 그 자리로 따라가요)
     // 화면 넓이와 상관없이 1초에 320px쯤 움직여요 (정답을 받을수록 조금씩 빨라져요)
-    const spd = (320 + catchLevel() * 5) / g.W;
+    const spd = (320 + catchLevel() * 5) / g.W * (MOBILE.matches ? MOBILE_SPEED : 1);
     const lo = g.bw / g.W, hi = 1 - lo;
     let dir = (cg.keys.r ? 1 : 0) - (cg.keys.l ? 1 : 0);
     if (cg.overT > 0) dir = 0;
@@ -2419,5 +2434,6 @@ button{font-family:inherit;font-weight:inherit;color:inherit;cursor:pointer;bord
   });
 })();
 </script>
+<script src="../shared/game-title.js"></script>
 </body>
 </html>

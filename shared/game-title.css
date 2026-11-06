@@ -55,3 +55,77 @@ body .game-title .current-user-badge {
   body .grade-btn .gr-name { font-size: 1.1rem; }
   body .grade-btn .gr-desc, body .grade-btn .gr-ex { font-size: 0.7rem; }
 }
+
+/* ---- 제목 왼쪽 '←' 뒤로 버튼 (shared/game-title.js) ---- */
+body h1.game-title, body h1.game-title-typing { position: relative; padding: 0 48px; }
+.gt-back {
+  position: absolute; left: 0; top: 50%; transform: translateY(-50%);
+  width: 40px; height: 40px; border: none; border-radius: 50%;
+  background: #f4eefd; color: #4b3a75; font: 800 20px/1 "Pretendard", sans-serif;
+  cursor: pointer; display: flex; align-items: center; justify-content: center;
+}
+.gt-back:hover { background: #e9defb; }
+.gt-back:active { transform: translateY(-50%) scale(0.92); }
+@media (max-width: 560px) {
+  body h1.game-title, body h1.game-title-typing { padding: 0 40px; }
+  .gt-back { width: 32px; height: 32px; font-size: 16px; }
+}
+
+/* ---- 첫 화면: 게스트 이름표(사용자 전환)와 위쪽 '게임 방법' 버튼은 빼요 ---- */
+.user-badge, .user-badge-copy, #user-badge, .current-user-badge, #userBadge { display: none !important; }
+.gb-top-row { display: none !important; }
+
+/* ---- 움직이는 배경 장식(떠다니는 글자·구름·반짝이·도형·물고기·벌 …)은 빼요. 바닥·해·무지개 같은 고정 배경은 그대로 ---- */
+.scene .sc-bit, .scene .sc-twinkle, .scene .sc-cloud, .scene .sc-rise, .scene .sc-fly, .scene .sc-fish,
+.scene .sc-shape, .scene .sc-candy, .scene .cloud, .bg-decor { display: none !important; }
+
+/* ---- 게임 화면 위쪽 문제 영역: 왼쪽 그림·도우미 아이콘과 🔊 듣기 버튼은 빼요 ---- */
+.q-card .q-emoji, .hint-card .hint-emoji, .mission-emoji, #rqEmoji, .q-buddy,
+#btn-say, #btn-speak, .say-btn, .q-card .btn-round, .hint-card .btn-round, .question-card .btn-round { display: none !important; }
+
+/* ---- 문제 아래 설명글: 맞혔을 때(한 줄)와 틀렸을 때(두 줄) 높이가 달라 게임판이 들썩이지 않게 두 줄 높이로 고정 ---- */
+body .game-msg, body .run-msg {
+  flex: none; height: 2.7em; min-height: 0; margin-top: 0; margin-bottom: 0; line-height: 1.35; overflow: hidden;
+  display: flex; align-items: center; justify-content: center; text-align: center;
+}
+body .q-card .q-sub { height: 2.7em; min-height: 0; line-height: 1.35; overflow: hidden; display: flex; align-items: center; justify-content: center; }
+@media (max-width: 560px) {
+  body .game-msg, body .run-msg { font-size: 0.82rem; }
+}
+
+/* ---- 게임 시작 때 뜨는 방법 팝업: 맨 위 큰 아이콘은 빼고 제목만, 글씨는 작게 (세로 길이 줄이기) ---- */
+.gb-pop .gb-pop-emoji, .gb-icon { display: none !important; }
+body .gb-pop { padding: 14px 16px 10px; }
+body .gb-pop h3 { margin: 0 0 8px; font-size: 22px; }
+body .gb-pop-list li { font-size: 14px; line-height: 1.38; padding: 7px 11px; margin-bottom: 6px; gap: 9px; }
+body .gb-pop-list .gb-li-ico { font-size: 20px; min-width: 24px; }
+body .gb-ok { font-size: 19px; padding: 11px 34px; margin: 4px 0 2px; }
+@media (max-width: 560px) {
+  body .gb-pop h3 { font-size: 19px; }
+  body .gb-pop-list li { font-size: 13px; padding: 6px 9px; margin-bottom: 5px; }
+  body .gb-pop-list .gb-li-ico { font-size: 17px; min-width: 20px; }
+  body .gb-ok { font-size: 17px; padding: 10px 30px; }
+}
+
+/* ---- 책 모양 안내(시계·코딩 가이드북, 넘기는 가이드북): 머리줄은 빼고, 본문을 책 폭에 꽉 차게,
+        ◀ ▶ 버튼은 반투명하게 본문 위에 띄워요 ---- */
+.book-head, .gb-book .gb-head { display: none !important; }
+body .book, body .gb-book { padding: 12px 10px 10px; gap: 8px; }
+body .book-body, body .gb-body { position: relative; gap: 0; }
+body .book-page, body .gb-page { min-height: 0; padding: 12px 10px; gap: 10px; }
+body .book-arrow, body .gb-arrow {
+  position: absolute; top: 50%; z-index: 2; width: 40px; height: 40px; margin-top: -20px; font-size: 1rem;
+  background: rgba(124, 44, 224, 0.28); color: #fff; box-shadow: none; backdrop-filter: blur(2px); -webkit-backdrop-filter: blur(2px);
+}
+body #book-prev, body .gb-body > .gb-arrow:first-child { left: 2px; }
+body #book-next, body .gb-body > .gb-arrow:last-child { right: 2px; }
+body .book-arrow:disabled, body .gb-arrow:disabled { opacity: 0; }
+body .bp-title, body .gb-page-title { font-size: 1.2rem; }
+body .bp-text, body .gb-text { font-size: 0.95rem; line-height: 1.55; min-width: 0; }
+body .bp-visual { width: min(220px, 60vw); }
+body .bp-start-text, body .gb-start-text { font-size: 1.4rem; }
+@media (max-width: 560px) {
+  body .bp-row { flex-direction: column; gap: 8px; }
+  body .bp-text { max-width: none; width: 100%; text-align: center; }
+  body .bp-visual { width: min(200px, 55vw); }
+}

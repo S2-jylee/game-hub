@@ -296,6 +296,8 @@
       var s = document.createElement("span");
       s.className = "blank" + (i < G.idx ? " filled" : i === G.idx ? " next" : "");
       if (i < G.idx) { s.textContent = G.word.en[i]; s.style.setProperty("--c", G.cars[i].color); }
+      // 구구단: 아직 못 먹은 칸에는 문제(2×7)를 보여줘요. 먹으면 정답 숫자로 바뀌어요
+      else if (MATH) { s.textContent = G.word.dan + "×" + (G.word.st + i); s.classList.add("q"); }
       box.appendChild(s);
     }
   }

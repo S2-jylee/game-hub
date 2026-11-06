@@ -84,3 +84,8 @@ html, body { background: linear-gradient(#bfe6ff, #fff7fb 75%); }
 
 /* 구구단 버블 팝: 두세 자리 숫자 칸 */
 .q-slots.num .slot { width: auto; min-width: 48px; padding: 0 6px; font-size: 1.5rem; }
+
+/* 구구단: 못 맞힌 칸에는 흐린 정답 대신 문제(2×7)를 또렷하게 */
+.q-slots.num .slot:not(.done) { color: #4b3a75; font-size: 1.05rem; font-family: "Pretendard", sans-serif; font-weight: 800; }
+.q-slots.num .slot.next:not(.done) { color: #db2777; }
+@media (max-width: 560px) { .q-slots.num .slot { min-width: 40px; padding: 0 4px; } .q-slots.num .slot:not(.done) { font-size: 0.85rem; } }

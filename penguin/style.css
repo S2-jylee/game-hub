@@ -337,3 +337,18 @@ button{font-family:inherit;font-weight:inherit;color:inherit;cursor:pointer;bord
   #run .run-pad.right, #catch .run-pad.right { right: 8px; left: auto; }
   .catch-pad { display: flex; }
 }
+
+/* ◀ ▶ 버튼은 어느 화면에서나 게임판 아래 좌우 끝에 */
+#run .run-pad.left, #catch .run-pad.left { left: 8px; right: auto; }
+#run .run-pad.right, #catch .run-pad.right { right: 8px; left: auto; }
+
+/* 물고기 게이지: 비어 있어도 칸이 잘 보이게 테두리·진한 바탕 */
+.energy-bar { height: 12px; background: #d6e8fd; border: 2px solid #93c5fd; box-sizing: content-box; }
+#energyFill { background: linear-gradient(90deg, #2563eb, #3b82f6, #60a5fa); }
+
+/* 별 점수: 별과 글씨를 작게 */
+@media (max-width: 560px), (pointer: coarse) and (max-height: 500px) {
+  #run .score { font-size: 17px; padding: 4px 10px; min-width: 0; border-radius: 14px; }
+  #run .energy { padding: 5px 10px; }
+  #run .energy-ico { font-size: 17px; }
+}

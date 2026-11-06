@@ -1069,3 +1069,27 @@ body.drag-out .program { border-color: var(--red); background: #fff1f1; }
 @media (max-width: 560px), (pointer: coarse) and (max-height: 500px) {
   .hud-name { display: none; }
 }
+
+/* ---- 문제 카드(question-card) 없애기: 토끼·듣기 버튼·카드 모양은 빼고, 꼭 필요한 문제 글만 한 줄로 ---- */
+.play-area .question-card {
+  background: none; border: none; box-shadow: none; padding: 0; min-height: 0; justify-content: center; text-align: center;
+}
+.play-area .question-card.q-plain { display: none; }
+.play-area .q-text { flex: none; font-size: 1rem; line-height: 1.35; }
+.play-area .q-text .q-time { font-size: 1.15rem; }
+
+/* ---- 위쪽 정보줄(스테이지·문제·시간·점수): 간격을 줄이고 글씨를 작게 해서 한 줄로 ---- */
+@media (max-width: 560px), (pointer: coarse) and (max-height: 500px) {
+  .hud { flex-wrap: nowrap; gap: 4px; padding: 6px 8px; }
+  .hud-item { min-width: 0; padding: 2px 6px; flex: 1 1 0; }
+  .hud-label { font-size: 0.6rem; }
+  .hud-value { font-size: 0.9rem; white-space: nowrap; }
+  .hud #btn-quit { flex: none; padding: 6px 10px; font-size: 0.75rem; }
+  .board-wrap { padding: 8px 10px; }
+  .play-area { gap: 8px; }
+  .play-row { gap: 10px; }
+}
+
+/* 그림이 든 칸(당근·돌·나무 …)이 다른 칸보다 커지지 않게 */
+.cell { min-width: 0; min-height: 0; overflow: hidden; }
+.cell > span, .cell { font-size: min(var(--cell-font, 1.6rem), 7vw); }

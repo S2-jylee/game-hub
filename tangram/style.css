@@ -537,3 +537,7 @@ html { background: #fff1f7; }
   .diff-name { font-size: 1.1rem; white-space: nowrap; }
   .diff-desc { font-size: 0.8rem; }
 }
+
+/* 첫 화면(난이도·스테이지 고르기): 제목과 타일을 가운데가 아니라 위쪽에 붙여요 (다른 게임과 같게) */
+#screen-difficulty, #screen-levelselect { justify-content: flex-start; padding-top: 28px; overflow-y: auto; }
+@media (max-width: 560px) { #screen-difficulty, #screen-levelselect { padding-top: 14px; } }

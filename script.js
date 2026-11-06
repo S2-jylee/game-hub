@@ -95,6 +95,8 @@
   // 게임 안의 이름표(👤 게스트 [전환])를 누르면 게임이 알려줘요 → 같은 사용자 전환 팝업
   window.addEventListener("message", function (e) {
     if (e.source === gameFrame.contentWindow && e.data && e.data.type === "hub-switch-user") openWho(null);
+    // 게임 제목 왼쪽 ← 버튼: 더 돌아갈 화면이 없으면 허브 홈으로
+    if (e.source === gameFrame.contentWindow && e.data && e.data.type === "hub-home") document.getElementById("btn-home").click();
   });
   renderUserBtn();
 

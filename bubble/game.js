@@ -257,7 +257,7 @@
       if (MATH) {
         var mc = G.mchunks[G.chunk];
         G.target = mc.toks;
-        G.cur = { en: mc.toks.join(", "), emoji: "🔢", dan: mc.dan, ko: mc.dan + "단 " + mc.dan + " × " + mc.from + " 부터 (" + (G.chunk + 1) + " / " + chunkCount() + " 묶음)" };
+        G.cur = { en: mc.toks.join(", "), emoji: "🔢", dan: mc.dan, from: mc.from, ko: mc.dan + "단 " + mc.dan + " × " + mc.from + " 부터 (" + (G.chunk + 1) + " / " + chunkCount() + " 묶음)" };
       } else {
         var t = ABC_CHUNKS[G.chunk];
         G.target = mode.id === "abcs" ? t.toLowerCase() : t;
@@ -279,7 +279,8 @@
     toks().forEach(function (ch, i) {
       var s = document.createElement("div");
       s.className = "slot" + (i < G.idx ? " done" : i === G.idx ? " next" : "");
-      s.textContent = ch;
+      // 구구단: 아직 못 맞힌 칸에는 정답 대신 문제(2×7)를 보여주고, 맞히면 정답 숫자로 바뀌어요
+      s.textContent = MATH && i >= G.idx ? G.cur.dan + "×" + (G.cur.from + i) : ch;
       s.style.setProperty("--c", COLORS[i % COLORS.length]);
       box.appendChild(s);
     });

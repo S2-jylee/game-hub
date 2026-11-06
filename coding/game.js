@@ -279,7 +279,9 @@
     boardEl.innerHTML = "";
     cellEls = {};
     var n = level.size;
-    boardEl.style.gridTemplateColumns = "repeat(" + n + ", 1fr)";
+    // 칸 크기를 모두 같게: 그림(🥕 · 돌 · 나무)이 있는 칸도 다른 칸과 같은 크기로
+    boardEl.style.gridTemplateColumns = "repeat(" + n + ", minmax(0, 1fr))";
+    boardEl.style.gridTemplateRows = "repeat(" + n + ", minmax(0, 1fr))";
     boardEl.style.setProperty("--cell-font", { 4: "2.4rem", 5: "2rem", 6: "1.7rem", 7: "1.45rem", 8: "1.25rem" }[n] || "1.6rem");
     var starAt = {};
     level.stars.forEach(function (s, i) { starAt[key(s.x, s.y)] = i; });

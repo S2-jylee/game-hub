@@ -78,6 +78,26 @@
     var h = Math.max(1, Math.round(boardWrapEl.clientHeight));
     boardSvg.setAttribute("viewBox", "0 0 " + w + " " + h);
 
+    // 세로로 긴 화면(휴대폰): 밑판 그림은 왼쪽 위에 작게, 조각은 밑판 오른쪽과 아래쪽에 흩어 놓아요
+    if (w < h * 1.25) {
+      var M = 12;
+      var S = Math.max(60, Math.min((w - M * 2) * 0.66, h * 0.48));
+      ART_G_TX = M;
+      ART_G_TY = M;
+      ART_G_SCALE = S / Math.max(state.artW, state.artH);
+      ART_TARGET_SIZE = state.artW * ART_G_SCALE;
+      var boardH = state.artH * ART_G_SCALE;
+      artSpace.setAttribute("transform", "translate(" + ART_G_TX + " " + ART_G_TY + ") scale(" + ART_G_SCALE + ")");
+      boardToolbarEl.style.left = (ART_G_TX + ART_TARGET_SIZE + 8) + "px";
+      boardToolbarEl.style.top = ART_G_TY + "px";
+      var half = ART_TARGET_SIZE / (state.gridN || 3) / 2;
+      TRAY.rects = [
+        { x0: M + ART_TARGET_SIZE + half + 6, x1: w - M - half * 0.6, y0: M + half, y1: M + boardH },
+        { x0: M + half, x1: w - M - half, y0: M + boardH + half + 8, y1: h - M - half }
+      ].filter(function (r) { return r.x1 - r.x0 > 4 && r.y1 - r.y0 > 4; });
+      return;
+    }
+
     ART_G_TY = EDGE_MARGIN;
     ART_G_TX = EDGE_MARGIN;
     ART_G_SCALE = Math.max(60, h - EDGE_MARGIN * 2) / state.artH;
@@ -91,6 +111,7 @@
     TRAY.x1 = Math.max(TRAY.x0 + 40, w - TRAY_MARGIN);
     TRAY.y0 = TRAY_MARGIN;
     TRAY.y1 = Math.max(TRAY.y0 + 40, h - TRAY_MARGIN);
+    TRAY.rects = [{ x0: TRAY.x0, x1: TRAY.x1, y0: TRAY.y0, y1: TRAY.y1 }];
   }
 
   function showScreen(name) {
@@ -375,8 +396,16 @@
   function randomTrayLocalPoint() {
     var avoid = toolbarLocalRect();
     for (var tries = 0; tries < 20; tries++) {
-      var bx = TRAY.x0 + Math.random() * (TRAY.x1 - TRAY.x0);
-      var by = TRAY.y0 + Math.random() * (TRAY.y1 - TRAY.y0);
+      // 조각을 놓을 칸(들) 중에서 넓이에 비례해 하나를 골라요 (휴대폰: 밑판 오른쪽 · 아래쪽)
+      var rects = TRAY.rects && TRAY.rects.length ? TRAY.rects : [TRAY];
+      var total = rects.reduce(function (a, r) { return a + (r.x1 - r.x0) * (r.y1 - r.y0); }, 0), pick = Math.random() * total, R = rects[0];
+      for (var ri = 0; ri < rects.length; ri++) {
+        var ar = (rects[ri].x1 - rects[ri].x0) * (rects[ri].y1 - rects[ri].y0);
+        if (pick < ar) { R = rects[ri]; break; }
+        pick -= ar;
+      }
+      var bx = R.x0 + Math.random() * (R.x1 - R.x0);
+      var by = R.y0 + Math.random() * (R.y1 - R.y0);
       var p = boardToLocal(bx, by);
       if (!avoid || p.x < avoid.x0 || p.x > avoid.x1 || p.y < avoid.y0 || p.y > avoid.y1) return p;
     }

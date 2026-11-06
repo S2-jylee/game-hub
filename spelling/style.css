@@ -305,3 +305,33 @@ html, body {
 
 /* 구구단 기차: 빈칸에 두세 자리 숫자 */
 .hint-blanks.num .blank { width: auto; min-width: 46px; padding: 0 6px; font-size: 1.35rem; }
+
+/* ---- 게임판이 어떤 화면에서도 0으로 줄어들지 않게 ---- */
+.board-wrap { min-height: 240px; }
+
+/* ---- 방향키: 더 투명하게 (밑에 깔린 글자·숫자가 비쳐 보이게) ---- */
+.dpad::before { background: rgba(255, 255, 255, 0.12); border-color: rgba(255, 255, 255, 0.35); }
+.dp { background: rgba(255, 255, 255, 0.16); border-color: rgba(255, 255, 255, 0.45); box-shadow: none; color: rgba(36, 27, 58, 0.45); backdrop-filter: none; -webkit-backdrop-filter: none; }
+.dp:active, .dp.on { background: rgba(236, 252, 203, 0.5); }
+
+/* ---- 모바일: 하트는 두 줄로, 점수칸은 작게, 문제는 한 줄로 ---- */
+@media (max-width: 560px) {
+  .hud { gap: 6px; }
+  .hearts { flex: 0 1 auto; display: grid; grid-template-columns: repeat(3, auto); justify-content: start; gap: 0 2px; font-size: 0.85rem; line-height: 1.15; letter-spacing: 0; overflow: visible; }
+  .hud-item { min-width: 0; padding: 2px 8px; border-radius: 12px; }
+  .hud-label { font-size: 0.55rem; }
+  .hud-value { font-size: 0.85rem; }
+  #hud-hearts + .hud-item { margin-left: auto; }
+  #btn-quit { padding: 6px 10px; font-size: 0.75rem; }
+  .hint-card { padding: 5px 10px; gap: 8px; border-radius: 14px; }
+  .hint-main { display: flex; align-items: center; gap: 8px; min-width: 0; }
+  .hint-blanks { flex-wrap: nowrap; gap: 3px; flex: none; }
+  .blank { width: 24px; height: 28px; font-size: 0.95rem; border-radius: 7px; border-bottom-width: 3px; }
+  .hint-blanks.num .blank { min-width: 30px; font-size: 0.9rem; padding: 0 3px; }
+  .hint-meaning { margin: 0; font-size: 0.75rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+}
+
+/* 구구단 기차: 아직 못 먹은 칸에 보이는 문제(2×7) */
+.hint-blanks.num .blank.q { color: #4b3a75; font-family: "Pretendard", sans-serif; font-size: 0.95rem; font-weight: 800; }
+.hint-blanks.num .blank.q.next { color: #4d7c0f; }
+@media (max-width: 560px) { .hint-blanks.num .blank.q { font-size: 0.72rem; min-width: 34px; } }

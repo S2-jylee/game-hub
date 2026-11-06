@@ -307,7 +307,17 @@ header, main {
 .who-ghost { width: 100%; background: #f4eefd; color: var(--text); }
 .who-ghost.on { box-shadow: 0 0 0 2px var(--yellow); background: #fff4cc; }
 
-/* ---- 모바일: '하고 싶은 게임을 골라주세요!' 문구는 숨겨요 ---- */
-@media (max-width: 560px), (pointer: coarse) and (max-height: 500px) {
-  .hub-subtitle { display: none; }
+
+/* ---- 메인: 사용자 전환 버튼과 첫 줄 게임 타일 사이 여백을 줄여요 ---- */
+.hub-title-row { margin-bottom: 0; }
+.tile-grid { margin-top: 18px; }
+@media (max-width: 560px) {
+  .hub-header { padding-top: 28px; padding-bottom: 4px; }
+  .tile-grid { margin-top: 10px; }
+}
+
+/* ---- 휴대폰: 게임 화면 높이를 실제로 보이는 높이(주소창 제외)에 맞춰요. 100%/100vh는 주소창 아래까지 잡혀 게임판이 화면 밖으로 밀려요 ---- */
+@supports (height: 100dvh) {
+  html, body { height: 100dvh; }
+  #game-screen.active { height: 100dvh; }
 }
