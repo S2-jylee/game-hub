@@ -45,7 +45,20 @@
     h1.insertBefore(btn, h1.firstChild);
   }
 
+  // 구구단 놀이터에서 연 게임(?mul=1)은 제목도 구구단 이름으로 (스펠링 기차 → 구구단 기차 …)
+  var MUL_NAMES = { "스펠링 기차": "구구단 기차", "단어 징검다리": "구구단 징검다리", "알파벳 버블 팝": "구구단 버블 팝",
+    "꿀벌 비행": "구구단 꿀벌 비행", "알파벳 낚시": "구구단 낚시", "외계인 단어 디펜스": "구구단 디펜스" };
+  function mulTitles() {
+    if (!/[?&]mul=1/.test(location.search)) return;
+    Array.prototype.forEach.call(document.querySelectorAll("h1.game-title"), function (h1) {
+      Array.prototype.forEach.call(h1.childNodes, function (n) {
+        if (n.nodeType === 3 && MUL_NAMES[n.nodeValue.trim()]) n.nodeValue = n.nodeValue.replace(n.nodeValue.trim(), MUL_NAMES[n.nodeValue.trim()]);
+      });
+    });
+  }
+
   function init() {
+    mulTitles();
     Array.prototype.forEach.call(document.querySelectorAll("h1.game-title"), function (h1) {
       addBack(h1, function () {
         var back = findBack(h1.closest("section, .screen"));
@@ -63,4 +76,72 @@
     }
   }
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init); else init();
+})();
+
+/* ---- 제목과 그 다음 버튼·타일의 세로 위치를 말랑말랑 타자연습과 같게 맞춰요 ----
+   타자연습 기준(직접 잰 값): 휴대폰(폭 560 이하) 제목 위 14px · 다음 줄 55px / 그보다 넓으면 37px · 105px */
+(function () {
+  function target() { return window.innerWidth <= 560 ? { top: 14, next: 55 } : { top: 37, next: 105 }; }
+  function shown(el) { return !!el && el.getClientRects().length > 0; }
+  function nextBelow(t) {
+    var r = t.getBoundingClientRect(), best = null;
+    var scope = t.closest("section, .screen") || document.body;
+    Array.prototype.forEach.call(scope.querySelectorAll("*"), function (e) {
+      if (t.contains(e) || !shown(e) || e.closest(".scene, .en-bg, .gt-back")) return;
+      if (getComputedStyle(e).position === "fixed") return;
+      var b = e.getBoundingClientRect();
+      if (b.height > 20 && b.top >= r.bottom - 1 && (!best || b.top < best.top)) best = b;
+    });
+    return best;
+  }
+  var busy = false;
+  function align() {
+    if (busy) return; busy = true;
+    var T = target();
+    Array.prototype.forEach.call(document.querySelectorAll("h1.game-title"), function (t) {
+      if (!shown(t)) return;
+      // 스크롤된 상태에서는 제목이 위에 붙어(sticky) 있어서 위치를 잴 수 없어요. 맨 위일 때만 맞춰요
+      for (var p = t.parentElement; p && p !== document.body; p = p.parentElement) { if (p.scrollTop > 0) return; }
+      if ((document.scrollingElement || document.documentElement).scrollTop > 0) return;
+      var cs = getComputedStyle(t);
+      var top = t.getBoundingClientRect().top;
+      t.style.marginTop = Math.round(parseFloat(cs.marginTop) + (T.top - top)) + "px";
+      var n = nextBelow(t);
+      if (n) t.style.marginBottom = Math.round(parseFloat(getComputedStyle(t).marginBottom) + (T.next - n.top)) + "px";
+    });
+    busy = false;
+  }
+  var queued = false;
+  function queue() { if (!queued) { queued = true; requestAnimationFrame(function () { queued = false; align(); }); } }
+  function init() {
+    if (!document.querySelector("h1.game-title")) return;
+    align();
+    window.addEventListener("resize", queue);
+    // 화면이 바뀌면(학년 → 난이도 등) 다시 맞춰요
+    new MutationObserver(queue).observe(document.body, { attributes: true, subtree: true, attributeFilter: ["class", "hidden"] });
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(queue);
+  }
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init); else init();
+})();
+
+/* ---- 스크롤해서 제목 밑으로 내용이 지나가면 제목(타자연습은 머리줄)에 gt-stuck 을 붙여 반투명 띠를 깔아요 ---- */
+(function () {
+  function scroller(el) {
+    for (var p = el.parentElement; p && p !== document.body; p = p.parentElement) {
+      var oy = getComputedStyle(p).overflowY;
+      if ((oy === "auto" || oy === "scroll") && p.scrollHeight > p.clientHeight + 1) return p;
+    }
+    return document.scrollingElement || document.documentElement;
+  }
+  var queued = false;
+  function update() {
+    queued = false;
+    Array.prototype.forEach.call(document.querySelectorAll("h1.game-title, .app-header"), function (el) {
+      if (!el.getClientRects().length) return;
+      el.classList.toggle("gt-stuck", scroller(el).scrollTop > 4);
+    });
+  }
+  function queue() { if (!queued) { queued = true; requestAnimationFrame(update); } }
+  document.addEventListener("scroll", queue, true);
+  window.addEventListener("resize", queue);
 })();

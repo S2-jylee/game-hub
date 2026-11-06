@@ -80,19 +80,28 @@
 
     // 세로로 긴 화면(휴대폰): 밑판 그림은 왼쪽 위에 작게, 조각은 밑판 오른쪽과 아래쪽에 흩어 놓아요
     if (w < h * 1.25) {
-      var M = 12;
-      var S = Math.max(60, Math.min((w - M * 2) * 0.8, h * 0.56)); // 밑판을 조금 더 크게
+      var M = 12, GAP = 8;
+      // 밑판 크기: 오른쪽의 👀·🔀 버튼이 밑판 왼쪽 여백(M)만큼만 남기고 화면 오른쪽에 붙을 만큼 크게 (세로는 화면의 62%까지)
+      var maxW = w - M - GAP - BTN_COL_W - M, maxH = h * 0.62;
+      ART_G_SCALE = Math.max(0.05, Math.min(maxW / state.artW, maxH / state.artH));
       ART_G_TX = M;
       ART_G_TY = M;
-      ART_G_SCALE = S / Math.max(state.artW, state.artH);
       ART_TARGET_SIZE = state.artW * ART_G_SCALE;
       var boardH = state.artH * ART_G_SCALE;
       artSpace.setAttribute("transform", "translate(" + ART_G_TX + " " + ART_G_TY + ") scale(" + ART_G_SCALE + ")");
-      boardToolbarEl.style.left = (ART_G_TX + ART_TARGET_SIZE + 8) + "px";
+      boardToolbarEl.style.left = (ART_G_TX + ART_TARGET_SIZE + GAP) + "px";
       boardToolbarEl.style.top = ART_G_TY + "px";
-      var half = ART_TARGET_SIZE / (state.gridN || 3) / 2;
+      var cols = state.gridN || 3, rows = state.gridRows || cols;
+      var pw = ART_TARGET_SIZE / cols, ph = boardH / rows, half = Math.max(pw, ph) / 2;
+      // 밑판 아래 빈 곳에 조각이 다 들어가면 밑판을 가리지 않게 아래쪽에만 놓아요
+      var below = { x0: M + half, x1: w - M - half, y0: M + boardH + GAP + half, y1: h - M - half };
+      // 조각이 16개 이하(쉬움·보통)이고 밑판 아래에 조각 하나 높이만큼 자리가 있으면 아래쪽에만
+      if (cols * rows <= 16 && below.x1 - below.x0 > 4 && below.y1 - below.y0 > ph * 0.6) {
+        TRAY.rects = [below];
+        return;
+      }
+      // 조각이 많아서 아래쪽이 모자라면, 밑판 오른쪽 아래를 살짝 가리면서 오른쪽 줄 + 아래쪽에 놓아요
       TRAY.rects = [
-        // 조각은 밑판 오른쪽 아래를 살짝 가려도 괜찮아요: 오른쪽 세로 줄 + 아래쪽 (밑판 아래 1/4부터)
         { x0: M + ART_TARGET_SIZE * 0.72, x1: w - M - half * 0.6, y0: M + boardH * 0.38, y1: M + boardH },
         { x0: M + half, x1: w - M - half, y0: M + boardH * 0.75, y1: h - M - half }
       ].filter(function (r) { return r.x1 - r.x0 > 4 && r.y1 - r.y0 > 4; });

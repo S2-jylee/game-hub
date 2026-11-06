@@ -1795,6 +1795,8 @@ el.restartBtn.addEventListener('click', () => {
 // 화면 어디를 클릭하든 입력 미리보기 칸에 포커스가 돌아오게 해서, 마우스로 굳이
 // 그 칸을 다시 클릭하지 않아도 바로 이어서 타이핑할 수 있게 한다.
 el.modeTyping.addEventListener('click', () => {
+  // 휴대폰에서는 '여기를 터치하세요' 칸으로 숨은 입력칸에 키패드를 띄우니까, 미리보기 칸으로 포커스를 뺏지 않아요
+  if (window.matchMedia('(pointer: coarse)').matches) return;
   el.typingPreview.focus();
 });
 
@@ -1879,8 +1881,12 @@ showHome();
 (function mobileKeypadBridge() {
   const coarse = window.matchMedia('(pointer: coarse)');
   const SENT = '​'; // 지우기(⌫)를 알아채려고 입력칸 맨 앞에 두는 보이지 않는 글자
-  const input = document.createElement('input');
-  input.type = 'text';
+  // input 대신 textarea: 한 줄짜리 input 에는 아이폰 키패드 위에 비밀번호(🔒)·주소(📍) 자동완성 줄이 떠요
+  const input = document.createElement('textarea');
+  input.rows = 1;
+  input.setAttribute('name', 'typing-keypad');
+  input.setAttribute('data-form-type', 'other');
+  input.setAttribute('enterkeyhint', 'enter');
   input.id = 'mobile-keypad-input';
   input.setAttribute('autocomplete', 'off');
   input.setAttribute('autocorrect', 'off');
@@ -1901,12 +1907,13 @@ showHome();
     return coarse.matches && state.view === 'practice' && (state.mode === 'position' || TYPING_MODES.includes(state.mode));
   }
   function send(key, code) {
-    const fake = { key, code, ctrlKey: false, metaKey: false, altKey: false, shiftKey: false, preventDefault() {}, stopPropagation() {} };
+    const fake = { key, code, ctrlKey: false, metaKey: false, altKey: false, shiftKey: false, preventDefault() {}, stopPropagation() {}, stopImmediatePropagation() {} };
     handlePositionKeydown(fake);
     handleTypingModeKeydown(fake);
   }
   function sendJamo(j) {
     if (j === ' ') return send(' ', 'Space');
+    if (j === '\n') return send('Enter', 'Enter'); // 키패드가 Enter 키 이벤트 없이 줄바꿈만 넣는 경우
     const c = j.charCodeAt(0);
     if (c >= 0x3131 && c <= 0x3163) return send(j, jamoToKeyCode(j) || '');
     const k = KEYMAP.find(m => m.en === j.toLowerCase());
@@ -1932,15 +1939,33 @@ showHome();
   // 글자 조합이 끝나 입력칸이 길어지면 비워요 (조합 중에는 건드리지 않아요)
   input.addEventListener('compositionend', () => { if (prev.length > 40) setTimeout(reset, 0); });
   // 휴대폰 키패드가 보내는 키 이벤트는 Enter만 원래 처리로 넘기고, 나머지는 위 input 처리만 써요 (두 번 치지 않게)
-  input.addEventListener('keydown', e => { if (e.key !== 'Enter') e.stopPropagation(); });
-
-  document.addEventListener('click', e => {
-    if (!active()) return;
-    if (e.target.closest('button, a, input, textarea, select, .tab, .tile')) {
-      // 연습 카드·탭을 눌러 연습 화면이 막 열렸을 때도 키패드를 띄워요
-      if (!e.target.closest('.tile, .tab')) return;
-    }
-    if (document.activeElement !== input) { reset(); input.focus({ preventScroll: true }); }
+  input.addEventListener('keydown', e => {
+    if (e.key === 'Enter') { e.preventDefault(); return; } // 줄바꿈은 넣지 않고, Enter 는 원래 처리로 넘겨요
+    e.stopPropagation();
   });
+
+  // 키패드는 자동으로 띄우지 않고, '여기를 터치하세요' 칸(분홍 테두리)을 누를 때만 떠요
+  function openKeypad(e) {
+    if (!coarse.matches) return;
+    if (e) e.preventDefault();
+    reset();
+    input.focus({ preventScroll: true });
+  }
+  if (coarse.matches) {
+    el.typingPreview.placeholder = '여기를 터치하세요 ✋';
+    el.typingPreview.addEventListener('click', openKeypad);
+    // 자리연습에는 그런 칸이 없어서 글자 카드 아래에 같은 모양의 칸을 하나 둬요
+    const touch = document.createElement('div');
+    touch.className = 'keypad-touch';
+    touch.textContent = '여기를 터치하세요 ✋';
+    touch.addEventListener('click', openKeypad);
+    const prompt = document.querySelector('#mode-position .key-prompt');
+    if (prompt) prompt.insertAdjacentElement('afterend', touch);
+  }
+  // 결과 팝업이 뜨거나 홈으로 나가면 키패드를 내려요 (키패드가 떠 있으면 '한번 더'를 처음 누를 때 키패드만 닫히고 버튼이 안 눌려요)
+  const closeKeypad = () => { if (document.activeElement === input) input.blur(); reset(); };
+  new MutationObserver(() => { if (el.resultModal.classList.contains('show') || !active()) closeKeypad(); })
+    .observe(el.resultModal, { attributes: true, attributeFilter: ['class'] });
+  document.addEventListener('click', e => { if (e.target.closest('.tab, #home-link, .gt-back, .tile')) setTimeout(() => { if (!active()) closeKeypad(); }, 0); });
   reset();
 })();

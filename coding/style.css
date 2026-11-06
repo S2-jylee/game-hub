@@ -1105,3 +1105,9 @@ body.drag-out .program { border-color: var(--red); background: #fff1f1; }
 .book-foot { flex-wrap: nowrap; gap: 8px; width: 100%; }
 .book-foot .btn { flex: 1 1 0; min-width: 0; white-space: nowrap; padding: 9px 8px; font-size: 0.85rem; }
 @media (max-width: 380px) { .book-foot .btn { font-size: 0.76rem; padding: 8px 4px; } }
+
+/* 휴대폰: 게임판을 세로 가운데가 아니라 위쪽에 붙여서, 위 여백을 좌우 여백(약 16px)과 같게 */
+@media (max-width: 560px), (pointer: coarse) and (max-height: 500px) {
+  .board-wrap { align-items: flex-start; padding-top: 16px; }
+  .play-area { margin: 0 auto; }
+}
