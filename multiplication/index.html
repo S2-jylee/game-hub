@@ -1398,7 +1398,6 @@ button{font-family:inherit;font-weight:inherit;color:inherit;cursor:pointer;bord
         lg.done = true;
         const onLog = Math.abs(run.px - lg.x) < (lg.half || 0.27) + 0.03;
         if (onLog && run.jumpT <= 0 && run.hopT <= 0) hitLog();
-        else if (run.hopT > 0 && onLog) floatAt(canvas.getBoundingClientRect().left + proj(geo(), run.px, 0).x, canvas.getBoundingClientRect().top + proj(geo(), run.px, 0).y - geo().R * 0.6, '점프! 👍');
       }
     });
     run.logs = run.logs.filter(lg => lg.z > -CAM * 0.6);

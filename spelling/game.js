@@ -186,12 +186,12 @@
       g.appendChild(b);
     });
   }
-  var MATH_DESC = { easy: "숫자 3개, 필요한 숫자만 나와요. 다음 숫자가 반짝!", normal: "숫자 4개, 헷갈리는 방해 숫자 3개", hard: "숫자 5개, 방해 숫자 6개! 기차도 더 빨라요" };
+  var MATH_DESC = { easy: "필요한 숫자만 나와요. 다음 숫자가 반짝!", normal: "헷갈리는 방해 숫자 3개", hard: "방해 숫자 6개! 기차도 더 빨라요" };
   function guide(onStart) {
     if (MATH) return {
       id: GUIDE_ID, title: "구구단 기차",
       pages: [
-        { icon: "🔢", title: "몇 단인지 봐요", text: "위에 <b>몇 단</b>인지와 <b>몇 번째부터</b>인지가 나와요.<br>예) <b>7단 · 7 × 2 부터</b> → 14, 21, 28" },
+        { icon: "🔢", title: "몇 단인지 봐요", text: "위 칸에 <b>7×1, 7×2 …</b> 처럼 외울 단이 나와요.<br>예) <b>7단</b> → 7, 14, 21, 28 … 63" },
         { icon: "🚂", title: "기차를 움직여요", text: "<b>방향키(← ↑ → ↓)</b>를 누르면 기차가 그쪽으로 달려요.<br>태블릿은 화면을 <b>밀거나</b> 방향 버튼을 눌러요." },
         { icon: "🔢", title: "답을 차례대로 먹어요", text: "단의 답을 <b>작은 것부터 차례대로</b> 먹어요.<br>맞는 숫자를 먹으면 <b>기차 칸</b>이 하나씩 늘어나요!" },
         { icon: "⚠️", title: "조심해요!", text: "<b>틀린 숫자</b>를 먹거나 <b>벽</b>, 기차 칸에 부딪히면 ❤️ 하트가 하나 줄어요." },
@@ -264,9 +264,10 @@
 
   // 구구단 기차 문제: 고른 단에서 연속된 답 3~5개 (예: 7단 14, 21, 28)
   function makeMathWords(lv) {
-    var len = lv.id === "easy" ? 3 : lv.id === "normal" ? 4 : 5, out = [];
+    // 한 판에 한 단을 통째로: ×1부터 ×9까지 9개를 한 번에 이어가요 (3개씩 끊지 않아요)
+    var len = 9, out = [];
     for (var k = 0; k < PER_ROUND; k++) {
-      var d = pick(ML.dans), st = rand(1, 10 - len), toks = [];
+      var d = pick(ML.dans), st = 1, toks = [];
       for (var i = 0; i < len; i++) toks.push(String(d * (st + i)));
       out.push([toks, "🔢", d + "단 · " + d + " × " + st + " 부터 차례로", d, st]);
     }
@@ -282,10 +283,10 @@
     placeLetters();
     $("#hint-emoji").textContent = G.word.emoji;
     animate($("#hint-emoji"), "pop");
-    $("#hint-meaning").textContent = G.word.ko;
+    $("#hint-meaning").textContent = MATH ? "" : G.word.ko;
     $("#hud-word").textContent = (G.wi + 1) + " / " + G.words.length;
     renderBlanks();
-    msg("방향키를 눌러 출발! 🚂  첫 " + UNIT + "를 찾아요");
+    msg(MATH ? "방향키를 눌러 출발! 🚂  " + G.word.dan + "단을 외워봐요" : "방향키를 눌러 출발! 🚂  첫 " + UNIT + "를 찾아요");
     setTimeout(function () { if (G.active) speakEn(G.word.en); }, 400);
   }
 

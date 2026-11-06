@@ -544,3 +544,12 @@ html { background: #fff1f7; }
 
 /* 원래 시작 화면에 있던 배경(떠다니는 칠교 조각·반짝이)은 그대로 보여요 */
 body .scene .sc-shape, body .scene .sc-twinkle { display: block !important; }
+
+/* ---- 위쪽 정보줄: 간격을 줄이고 글씨를 작게 해서 한 줄로 (← 나가기는 맨 왼쪽) ---- */
+@media (max-width: 560px), (pointer: coarse) and (max-height: 500px) {
+  .hud { flex-wrap: nowrap; gap: 4px; padding: 6px 8px; }
+  .hud-item { min-width: 0; padding: 2px 6px; flex: 1 1 0; }
+  .hud-label { font-size: 0.6rem; }
+  .hud-value { font-size: 0.9rem; white-space: nowrap; }
+  .hud #btn-quit { flex: none; padding: 6px 10px; font-size: 0.75rem; margin-right: 0; }
+}

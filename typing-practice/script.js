@@ -1871,3 +1871,76 @@ showHome();
   buildUserList();
   showStartPage('start-user');
 })();
+
+// ---- 휴대폰: 화면을 톡 누르면 휴대폰 키패드가 떠요 ----------------------------------
+// 자리연습·단어/문장/글연습은 원래 물리 키보드(e.code)를 직접 읽어요. 휴대폰 키패드(특히 한글)는
+// 그런 키 이벤트 대신 '마 → 만'처럼 조합된 글자를 입력칸에 넣어 주기 때문에, 숨긴 입력칸으로 받은
+// 글자를 다시 자모(키 입력 단위)로 풀어서 원래 키 처리 함수에 한 타씩 넘겨줘요.
+(function mobileKeypadBridge() {
+  const coarse = window.matchMedia('(pointer: coarse)');
+  const SENT = '​'; // 지우기(⌫)를 알아채려고 입력칸 맨 앞에 두는 보이지 않는 글자
+  const input = document.createElement('input');
+  input.type = 'text';
+  input.id = 'mobile-keypad-input';
+  input.setAttribute('autocomplete', 'off');
+  input.setAttribute('autocorrect', 'off');
+  input.setAttribute('autocapitalize', 'off');
+  input.setAttribute('spellcheck', 'false');
+  input.setAttribute('aria-hidden', 'true');
+  input.style.cssText = 'position:fixed;left:0;bottom:0;width:1px;height:1px;opacity:0;border:0;padding:0;font-size:16px;z-index:-1;';
+  document.body.appendChild(input);
+
+  let prev = [];
+  let okFlags = []; // prev 자모 하나하나가 게임에 받아들여졌는지 (틀린 글자를 지울 때 맞은 글자까지 지우지 않게)
+  const splitJamo = j => HANGUL_COMPOUND_JUNG[j] || HANGUL_COMPOUND_JONG[j] || [j];
+  const toJamo = text => Array.from(text).flatMap(ch => decomposeKoreanChar(ch).flatMap(splitJamo));
+  const reset = () => { input.value = SENT; prev = []; okFlags = []; };
+  const progress = () => (state.mode === 'position' ? state.posIndex : state.typedIndex);
+
+  function active() {
+    return coarse.matches && state.view === 'practice' && (state.mode === 'position' || TYPING_MODES.includes(state.mode));
+  }
+  function send(key, code) {
+    const fake = { key, code, ctrlKey: false, metaKey: false, altKey: false, shiftKey: false, preventDefault() {}, stopPropagation() {} };
+    handlePositionKeydown(fake);
+    handleTypingModeKeydown(fake);
+  }
+  function sendJamo(j) {
+    if (j === ' ') return send(' ', 'Space');
+    const c = j.charCodeAt(0);
+    if (c >= 0x3131 && c <= 0x3163) return send(j, jamoToKeyCode(j) || '');
+    const k = KEYMAP.find(m => m.en === j.toLowerCase());
+    send(j, k ? k.code : '');
+  }
+
+  input.addEventListener('input', () => {
+    if (!active()) { reset(); return; }
+    let v = input.value;
+    let lostSentinel = false;
+    if (v.startsWith(SENT)) v = v.slice(SENT.length); else lostSentinel = true;
+    const now = toJamo(v);
+    let same = 0;
+    while (same < prev.length && same < now.length && prev[same] === now[same]) same++;
+    // 지운 자모: 게임이 받아들였던 것만 ⌫ 로 넘겨요
+    for (let i = prev.length - 1; i >= same; i--) { if (okFlags[i]) send('Backspace', 'Backspace'); }
+    okFlags.length = same;
+    if (lostSentinel && prev.length === 0) send('Backspace', 'Backspace');
+    now.slice(same).forEach(j => { const before = progress(); sendJamo(j); okFlags.push(progress() > before); });
+    prev = now;
+    if (lostSentinel) { input.value = SENT + v; }
+  });
+  // 글자 조합이 끝나 입력칸이 길어지면 비워요 (조합 중에는 건드리지 않아요)
+  input.addEventListener('compositionend', () => { if (prev.length > 40) setTimeout(reset, 0); });
+  // 휴대폰 키패드가 보내는 키 이벤트는 Enter만 원래 처리로 넘기고, 나머지는 위 input 처리만 써요 (두 번 치지 않게)
+  input.addEventListener('keydown', e => { if (e.key !== 'Enter') e.stopPropagation(); });
+
+  document.addEventListener('click', e => {
+    if (!active()) return;
+    if (e.target.closest('button, a, input, textarea, select, .tab, .tile')) {
+      // 연습 카드·탭을 눌러 연습 화면이 막 열렸을 때도 키패드를 띄워요
+      if (!e.target.closest('.tile, .tab')) return;
+    }
+    if (document.activeElement !== input) { reset(); input.focus({ preventScroll: true }); }
+  });
+  reset();
+})();

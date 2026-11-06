@@ -81,7 +81,7 @@
     // 세로로 긴 화면(휴대폰): 밑판 그림은 왼쪽 위에 작게, 조각은 밑판 오른쪽과 아래쪽에 흩어 놓아요
     if (w < h * 1.25) {
       var M = 12;
-      var S = Math.max(60, Math.min((w - M * 2) * 0.66, h * 0.48));
+      var S = Math.max(60, Math.min((w - M * 2) * 0.8, h * 0.56)); // 밑판을 조금 더 크게
       ART_G_TX = M;
       ART_G_TY = M;
       ART_G_SCALE = S / Math.max(state.artW, state.artH);
@@ -92,8 +92,9 @@
       boardToolbarEl.style.top = ART_G_TY + "px";
       var half = ART_TARGET_SIZE / (state.gridN || 3) / 2;
       TRAY.rects = [
-        { x0: M + ART_TARGET_SIZE + half + 6, x1: w - M - half * 0.6, y0: M + half, y1: M + boardH },
-        { x0: M + half, x1: w - M - half, y0: M + boardH + half + 8, y1: h - M - half }
+        // 조각은 밑판 오른쪽 아래를 살짝 가려도 괜찮아요: 오른쪽 세로 줄 + 아래쪽 (밑판 아래 1/4부터)
+        { x0: M + ART_TARGET_SIZE * 0.72, x1: w - M - half * 0.6, y0: M + boardH * 0.38, y1: M + boardH },
+        { x0: M + half, x1: w - M - half, y0: M + boardH * 0.75, y1: h - M - half }
       ].filter(function (r) { return r.x1 - r.x0 > 4 && r.y1 - r.y0 > 4; });
       return;
     }

@@ -1402,3 +1402,15 @@ html { background: #fff5e6; }
   .tile-title { font-size: 1rem; }
   .tile-desc { font-size: 0.75rem; }
 }
+
+/* ---- 휴대폰: 자리연습의 손가락 안내(왼손 약지 …)는 숨기고, 위 기록줄은 '속도 · 정확도 · 시간 | 새로하기' 순서로 ---- */
+@media (max-width: 560px), (pointer: coarse) {
+  .finger-label { display: none !important; }
+}
+@media (max-width: 560px) {
+  #stats-bar { align-items: center; }
+  #stats-bar .stat { order: 1; }
+  #stats-bar .stat-divider { order: 2; display: inline !important; color: #d9cff0; }
+  #stats-bar #restart-btn { order: 3; margin-left: 0; }
+  #stats-bar .stage-select, #stats-bar .category-select { order: 4; flex-basis: 100%; }
+}

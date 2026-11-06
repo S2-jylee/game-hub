@@ -621,3 +621,15 @@ html { background: #eefbea; }
 /* 첫 화면(난이도·스테이지 고르기): 제목과 타일을 가운데가 아니라 위쪽에 붙여요 (다른 게임과 같게) */
 #screen-difficulty, #screen-levelselect { justify-content: flex-start; padding-top: 28px; overflow-y: auto; }
 @media (max-width: 560px) { #screen-difficulty, #screen-levelselect { padding-top: 14px; } }
+
+/* 퍼즐 완성 팝업이 미리보기·섞기 버튼보다 위에 뜨게 */
+.completion-modal { z-index: 200; }
+
+/* ---- 위쪽 정보줄: 간격을 줄이고 글씨를 작게 해서 한 줄로 (← 나가기는 맨 왼쪽) ---- */
+@media (max-width: 560px), (pointer: coarse) and (max-height: 500px) {
+  .hud { flex-wrap: nowrap; gap: 4px; padding: 6px 8px; }
+  .hud-item { min-width: 0; padding: 2px 6px; flex: 1 1 0; }
+  .hud-label { font-size: 0.6rem; }
+  .hud-value { font-size: 0.9rem; white-space: nowrap; }
+  .hud #btn-quit { flex: none; padding: 6px 10px; font-size: 0.75rem; margin-right: 0; }
+}

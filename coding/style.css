@@ -1100,3 +1100,8 @@ body.drag-out .program { border-color: var(--red); background: #fff1f1; }
 .code-tools { align-items: stretch; }
 .code-tools .btn-tool { flex: 1 1 0; white-space: nowrap; font-size: 0.85rem; padding: 10px 4px; }
 .code-tools .btn-run { flex: 1.3 1 0; width: auto; font-size: 1.1rem; padding: 10px 6px; border-radius: 14px; }
+
+/* 가이드북 아래 버튼('← 스테이지 고르기' · '건너뛰고 바로 시작')은 좁은 화면에서도 한 줄로 */
+.book-foot { flex-wrap: nowrap; gap: 8px; width: 100%; }
+.book-foot .btn { flex: 1 1 0; min-width: 0; white-space: nowrap; padding: 9px 8px; font-size: 0.85rem; }
+@media (max-width: 380px) { .book-foot .btn { font-size: 0.76rem; padding: 8px 4px; } }

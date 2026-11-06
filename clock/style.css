@@ -899,3 +899,20 @@ html { background: #fff6e8; }
   .clock-legend { font-size: 0.72rem; gap: 10px; }
   .feedback { min-height: 0; height: 2.6em; font-size: 0.85rem; display: flex; align-items: center; justify-content: center; }
 }
+
+/* 가이드북 아래 버튼('← 스테이지 고르기' · '건너뛰고 바로 시작')은 좁은 화면에서도 한 줄로 */
+.book-foot { flex-wrap: nowrap; gap: 8px; width: 100%; }
+.book-foot .btn { flex: 1 1 0; min-width: 0; white-space: nowrap; padding: 9px 8px; font-size: 0.85rem; }
+@media (max-width: 380px) { .book-foot .btn { font-size: 0.76rem; padding: 8px 4px; } }
+
+/* ---- 원래대로: 시계 놀이는 위에 토끼와 문제('몇 시일까요?') 카드를 다시 보여줘요 (듣기 버튼만 빼고) ---- */
+body .play-area .q-buddy { display: block !important; }
+body .play-area .question-card, body .play-area .question-card.q-plain {
+  display: flex !important; background: #fff; border: 2px solid #f3eefa; box-shadow: var(--shadow);
+  padding: 8px 14px; border-radius: 20px; justify-content: flex-start; text-align: left; gap: 12px;
+}
+body .play-area .q-text { flex: 1; font-size: 1.1rem; }
+@media (max-width: 560px), (pointer: coarse) and (max-height: 500px) {
+  body .play-area .q-buddy { font-size: 1.8rem; }
+  body .play-area .q-text { font-size: 1rem; }
+}
