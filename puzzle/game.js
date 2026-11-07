@@ -35,7 +35,6 @@
   var screens = {
     title: document.getElementById("screen-title"),
     user: document.getElementById("screen-user"),
-    difficulty: document.getElementById("screen-difficulty"),
     levelselect: document.getElementById("screen-levelselect"),
     game: document.getElementById("screen-game"),
     result: document.getElementById("screen-result")
@@ -57,7 +56,8 @@
   var hudScoreVal = document.getElementById("hud-score-val");
   var progressFill = document.getElementById("stage-progress-fill");
   var levelGrid = document.getElementById("level-grid");
-  var levelSelectDiffLabel = document.getElementById("levelselect-diff-label");
+  var diffModal = document.getElementById("diff-modal");
+  var pendingLevel = 0;
   var btnPreview = document.getElementById("btn-preview");
 
   var completionModal = document.getElementById("completion-modal");
@@ -131,7 +131,7 @@
   }
 
   function goToLevelSelect() {
-    levelSelectDiffLabel.textContent = DIFFS[state.difficulty].label;
+    closeDiff();
     buildLevelGrid();
     showScreen("levelselect");
   }
@@ -189,7 +189,7 @@
         currentUser = name;
         guestMode = false;
         updateUserBadge();
-        showScreen("difficulty");
+        goToLevelSelect();
       });
       userListEl.appendChild(btn);
     });
@@ -745,8 +745,9 @@
       name.textContent = lvl.name;
       var starsEl = document.createElement("div");
       starsEl.className = "lvl-stars";
-      var key = lvl.id + "_" + state.difficulty;
-      var st = starsMap[key] || 0;
+      // 그림마다 가장 잘한 난이도의 별을 보여 줘요
+      var st = 0;
+      Object.keys(DIFFS).forEach(function (d) { st = Math.max(st, starsMap[lvl.id + "_" + d] || 0); });
       if (st > 0) {
         starsEl.textContent = starsGlyph(st, 5);
         btn.classList.add("has-stars");
@@ -764,7 +765,7 @@
       btn.appendChild(starsEl);
       btn.appendChild(trophy);
       btn.addEventListener("click", function () {
-        startLevel(i);
+        openDiff(i);
       });
       levelGrid.appendChild(btn);
     });
@@ -777,14 +778,22 @@
     userNameInput.value = "";
     showScreen("user");
   });
-  document.getElementById("btn-diff-back").addEventListener("click", function () { showScreen("title"); });
+  // ---- 난이도 팝업: 그림을 고르면 떠요 ----
+  function openDiff(i) {
+    pendingLevel = i;
+    document.getElementById("diff-pick-name").textContent = PD.LEVELS[i].name;
+    diffModal.classList.add("show");
+  }
+  function closeDiff() { diffModal.classList.remove("show"); }
+  document.getElementById("btn-diff-back").addEventListener("click", closeDiff);
+  diffModal.addEventListener("click", function (e) { if (e.target === diffModal) closeDiff(); });
 
   document.getElementById("btn-user-guest").addEventListener("click", function () {
     currentUser = null;
     guestMode = true;
     guestStars = {};
     updateUserBadge();
-    showScreen("difficulty");
+    goToLevelSelect();
   });
   function submitNewUser() {
     var name = userNameInput.value.trim();
@@ -793,7 +802,7 @@
     currentUser = name;
     guestMode = false;
     updateUserBadge();
-    showScreen("difficulty");
+    goToLevelSelect();
   }
   document.getElementById("btn-user-new-start").addEventListener("click", submitNewUser);
   userNameInput.addEventListener("keydown", function (evt) {
@@ -804,11 +813,11 @@
   Array.prototype.forEach.call(document.querySelectorAll(".diff-btn"), function (btn) {
     btn.addEventListener("click", function () {
       state.difficulty = btn.dataset.diff;
-      goToLevelSelect();
+      closeDiff();
+      startLevel(pendingLevel);
     });
   });
 
-  document.getElementById("btn-levelselect-diff").addEventListener("click", function () { showScreen("difficulty"); });
   document.getElementById("btn-levelselect-title").addEventListener("click", function () { showScreen("title"); });
 
   document.getElementById("btn-quit").addEventListener("click", function () {

@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<link rel="icon" href="data:,">
+<title>두더지 잡기</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Jua&family=Gowun+Dodum&family=Nunito:wght@400;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css">
+<link rel="stylesheet" href="../spelling/guidebook.css">
+<link rel="stylesheet" href="../basket/style.css">
+<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="../shared/game-title.css">
+</head>
+<body>
+
+<div class="scene" aria-hidden="true">
+  <div class="sun"></div>
+  <div class="cloud" style="top:12%;width:120px;animation-duration:38s;animation-delay:-5s"></div>
+  <div class="cloud" style="top:28%;width:90px;animation-duration:52s;animation-delay:-30s"></div>
+  <svg class="hills" viewBox="0 0 1200 200" preserveAspectRatio="none">
+    <path d="M0 120 Q200 40 420 110 T820 90 T1200 100 V200 H0Z" fill="#9be36d"/>
+    <path d="M0 160 Q300 90 600 150 T1200 140 V200 H0Z" fill="#6fcf45"/>
+  </svg>
+</div>
+
+<main class="app">
+  <!-- 영어 놀이 메뉴의 설정 팝업을 거치지 않고 열었을 때 -->
+  <section id="intro" class="screen center hidden">
+    <div class="card">
+      <h2>두더지 잡기</h2>
+      <p>영어 놀이 메뉴에서 이름 · 학년 · 난이도를 고르고 시작해요.</p>
+      <a class="btn btn-primary btn-huge" href="../english/index.html" style="text-decoration:none;display:inline-block">영어 놀이로 가기</a>
+    </div>
+  </section>
+
+  <!-- 두더지 잡기 화면 -->
+  <section id="mole" class="screen hidden">
+    <div class="hud">
+      <button class="back-btn" id="moleQuit" title="게임 선택으로 돌아가요">← 뒤로</button>
+      <div id="moleHearts" class="hearts"></div>
+      <div class="score" id="moleScoreBox">⭐ <span id="moleScore">0</span></div>
+    </div>
+    <div class="bars">
+      <div class="bar"><div id="moleProgress" style="width:0"></div></div>
+      <div class="bar-label" id="moleProgressText">1 / 15</div>
+    </div>
+    <div class="question run-q">
+      <span class="n" id="mqWord">Apple</span><span class="x">=</span><span class="q-mark" id="mqans">?</span><button class="say-btn" id="mqSay" type="button" title="다시 듣기">🔊</button>
+    </div>
+    <div class="run-msg" id="moleMsg"></div>
+    <div class="mole-field" id="moleField"></div>
+  </section>
+
+  <!-- 결과: 다른 놀이와 같은 가운데 흰 카드 -->
+  <section id="result" class="screen center hidden">
+    <div class="card result-pop">
+      <h2 id="resultTitle">참 잘했어요!</h2>
+      <div class="stars" id="stars"></div>
+      <div class="result-card" id="resultCard"></div>
+      <div class="review" id="review"></div>
+      <div class="row-buttons">
+        <button class="btn btn-primary" id="againBtn">🔁 한 번 더 하기</button>
+        <button class="btn btn-ghost" id="homeBtn">게임 선택</button>
+      </div>
+    </div>
+  </section>
+</main>
+
+<script src="../spelling/words-data.js"></script>
+<script src="../spelling/guidebook.js"></script>
+<script src="../shared/eng-link.js"></script>
+<script src="game.js"></script>
+<script src="../shared/game-title.js"></script>
+</body>
+</html>

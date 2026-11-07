@@ -4,7 +4,7 @@
 (function () {
   "use strict";
   var q = new URLSearchParams(location.search);
-  var DIFF_NAME = { easy: "쉬움", normal: "보통", hard: "어려움" };
+  var DIFF_NAME = { easy: "느긋하게", normal: "알맞게", hard: "빠르게" };   // 구구단 놀이터와 같은 이름
   var diff = q.get("d");
   if (!DIFF_NAME[diff]) diff = "normal";
   var g = parseInt(q.get("g"), 10);
