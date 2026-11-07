@@ -44,8 +44,30 @@
   #screen-menu { justify-content: flex-start; overflow-y: auto; padding: 14px 0 20px; }
   @media (max-width: 560px) { #screen-menu { padding-top: 12px; } }
   .english-title h1.game-title { margin: 0 0 12px; }
-  /* 회화 놀이는 4개라서 PC에서도 2개씩 (한 줄에 3개면 하나가 혼자 남아요) */
-  @media (min-width: 561px) { .play-grid { grid-template-columns: repeat(2, 1fr); width: min(640px, 92vw); } }
+  /* 회화 놀이는 PC에서 한 줄에 3개씩 */
+  @media (min-width: 561px) { .play-grid { grid-template-columns: repeat(3, 1fr); width: min(860px, 92vw); } }
+  /* 🔑 숨은 놀이 열기 */
+  .key-btn { position: fixed; top: 12px; right: 12px; z-index: 30; width: 46px; height: 46px; border-radius: 50%; border: none; cursor: pointer;
+    background: rgba(255, 255, 255, 0.85); box-shadow: 0 3px 10px rgba(36, 27, 58, 0.15); font-size: 1.35rem; }
+  .key-btn:active { transform: scale(0.92); }
+  .key-btn.open { background: #fde68a; }
+  .play-card.ai-card { grid-column: 1 / -1; background: linear-gradient(135deg, #8b5cf6, #ec4899); display: none; }
+  .play-card.ai-card.show { display: flex; animation: aiPop 0.5s cubic-bezier(.2, 1.4, .4, 1); }
+  @keyframes aiPop { from { transform: scale(0.7); opacity: 0; } }
+  .key-modal { position: fixed; inset: 0; z-index: 60; display: none; align-items: center; justify-content: center; background: rgba(36, 27, 58, 0.45); padding: 16px; }
+  .key-modal.show { display: flex; }
+  .key-card { width: min(340px, 100%); background: #fff; border-radius: 24px; padding: 22px 18px 16px; text-align: center; box-shadow: 0 16px 40px rgba(36, 27, 58, 0.25); }
+  .key-card h2 { margin: 0 0 4px; font-family: "CookieRun", "Jua", sans-serif; color: #7c3aed; }
+  .key-card p { margin: 0 0 12px; font-size: 0.85rem; color: var(--text-soft); }
+  .key-card input { width: 100%; box-sizing: border-box; font-size: 1.3rem; text-align: center; letter-spacing: 4px; padding: 12px; border-radius: 14px; border: 2px solid #ddd6fe; outline: none; font-family: inherit; }
+  .key-card input:focus { border-color: #8b5cf6; }
+  .key-card .key-err { min-height: 1.3em; margin: 8px 0 4px; font-size: 0.85rem; font-weight: 700; color: #dc2626; }
+  .key-card .key-row { display: flex; gap: 8px; justify-content: center; }
+  .key-card button { border: none; border-radius: 14px; padding: 11px 18px; font-weight: 800; font-size: 1rem; cursor: pointer; font-family: inherit; }
+  .key-card .key-ok { background: linear-gradient(135deg, #8b5cf6, #ec4899); color: #fff; }
+  .key-card .key-cancel { background: #f3f0fa; color: #6b5b95; }
+  .key-card .key-shake { animation: keyShake 0.35s ease; }
+  @keyframes keyShake { 25%, 75% { transform: translateX(-6px); } 50% { transform: translateX(6px); } }
 </style>
 <link rel="stylesheet" href="../shared/game-title.css">
 <link rel="stylesheet" href="../shared/english-bg.css">
@@ -79,8 +101,71 @@
       <span class="pc-name">어떻게 말할까?</span>
       <span class="pc-desc">교실 · 놀이터 · 마트 · 공항에서 대화로 도와줘요</span>
     </a>
+    <a class="play-card ai-card" id="ai-card" href="ai.html">
+      <span class="pc-emoji">🤖</span>
+      <span class="pc-name">AI 스피킹하기</span>
+      <span class="pc-desc">AI 친구가 내 주는 오늘의 상황극! 🎤 로 직접 말해요</span>
+    </a>
   </div>
 </section>
+
+<button class="key-btn" id="key-btn" type="button" title="숨은 놀이 열기">🔑</button>
+<div class="key-modal" id="key-modal">
+  <div class="key-card" id="key-card">
+    <h2>🔑 비밀번호</h2>
+    <p id="key-desc">비밀번호를 넣으면 숨은 놀이가 나와요</p>
+    <input id="key-input" type="password" autocomplete="off" inputmode="text">
+    <div class="key-err" id="key-err"></div>
+    <div class="key-row">
+      <button class="key-cancel" id="key-cancel" type="button">닫기</button>
+      <button class="key-ok" id="key-ok" type="button">열기</button>
+    </div>
+  </div>
+</div>
+
+<script src="ai-config.js"></script>
+<script>
+(function () {
+  "use strict";
+  var card = document.getElementById("ai-card"), btn = document.getElementById("key-btn");
+  var modal = document.getElementById("key-modal"), input = document.getElementById("key-input");
+  var err = document.getElementById("key-err"), ok = document.getElementById("key-ok"), box = document.getElementById("key-card");
+  function saved() { try { return localStorage.getItem(TalkAI.PW_KEY) || ""; } catch (e) { return ""; } }
+  function render() { var on = !!saved(); card.classList.toggle("show", on); btn.classList.toggle("open", on); }
+  render();
+  function close() { modal.classList.remove("show"); input.value = ""; err.textContent = ""; }
+  btn.addEventListener("click", function () {
+    if (saved()) {
+      // 이미 열려 있으면: 다시 숨길지 물어봐요
+      if (confirm("AI 스피킹하기를 다시 숨길까요?")) { try { localStorage.removeItem(TalkAI.PW_KEY); } catch (e) { /* ignore */ } render(); }
+      return;
+    }
+    modal.classList.add("show");
+    setTimeout(function () { input.focus(); }, 50);
+  });
+  document.getElementById("key-cancel").addEventListener("click", close);
+  modal.addEventListener("click", function (e) { if (e.target === modal) close(); });
+  function submit() {
+    var pw = input.value.trim();
+    if (!pw) return;
+    ok.disabled = true; err.textContent = "확인하는 중…";
+    TalkAI.call({ action: "verify", password: pw }).then(function (r) {
+      ok.disabled = false;
+      if (r.ok) {
+        try { localStorage.setItem(TalkAI.PW_KEY, pw); } catch (e) { /* ignore */ }
+        close(); render();
+        card.scrollIntoView({ behavior: "smooth", block: "center" });
+      } else {
+        err.textContent = r.error === "wrong_password" ? "비밀번호가 달라요" : "연결이 안 돼요. 잠시 뒤에 다시 해 주세요";
+        box.classList.remove("key-shake"); void box.offsetWidth; box.classList.add("key-shake");
+        input.select();
+      }
+    });
+  }
+  ok.addEventListener("click", submit);
+  input.addEventListener("keydown", function (e) { if (e.key === "Enter") submit(); });
+})();
+</script>
 
 <script src="../shared/game-title.js"></script>
 <script src="../shared/english-bg.js"></script>
