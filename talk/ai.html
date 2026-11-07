@@ -36,6 +36,8 @@
   .msg .who { font-size: .72rem; font-weight: 800; color: #7c3aed; margin-bottom: 2px; }
   .fix { align-self: flex-end; max-width: 86%; background: #fff7ed; border: 2px dashed #fdba74; border-radius: 16px; padding: 7px 11px; font-size: .82rem; color: #9a3412; }
   .fix b { font-family: "Nunito", "Pretendard", sans-serif; font-size: .95rem; }
+  .fix .fix-ko { margin: 4px 0 6px; font-size: .85rem; color: #7c2d12; line-height: 1.4; }
+  .lv { font-size: .72rem; font-weight: 800; color: #7c3aed; background: #f1e9ff; border-radius: 999px; padding: 2px 8px; margin-left: 4px; vertical-align: middle; }
   .praise { align-self: flex-end; font-size: .8rem; font-weight: 800; color: #db2777; padding: 0 6px; }
   .typing { align-self: flex-start; background: #fff; border-radius: 18px; padding: 10px 14px; font-size: 1.2rem; letter-spacing: 3px; color: #a78bfa; }
   .typing span { animation: dot 1s infinite; }
@@ -92,7 +94,7 @@
     <div class="center-card" id="intro">
       <div class="big">🎭</div>
       <h2>오늘의 상황극</h2>
-      <p>AI 친구가 오늘의 상황을 정해 줘요.<br>🎤 를 누르고 <b>영어로 직접 말해요!</b></p>
+      <p>AI 선생님이 매일 새로운 상황극을 내 줘요.<br>🎤 를 누르고 <b>영어로 직접 말해요!</b><br><small>틀리면 바른 영어와 한국어로 다시 알려 줘요</small></p>
       <button class="go-btn" id="btn-start" type="button">시작하기 ▶</button>
     </div>
 
@@ -148,23 +150,32 @@
   if (!pw()) { location.replace("index.html"); return; }
 
   // ---- 영어 읽어주기 ----
-  var voice = null;
+  var voice = null, koVoice = null;
   function pickVoice() {
     if (!window.speechSynthesis) return;
     var vs = speechSynthesis.getVoices();
     voice = vs.filter(function (v) { return /^en[-_]US/i.test(v.lang); })[0] || vs.filter(function (v) { return /^en/i.test(v.lang); })[0] || null;
+    koVoice = vs.filter(function (v) { return /^ko/i.test(v.lang); })[0] || null;
   }
   if (window.speechSynthesis) { pickVoice(); speechSynthesis.onvoiceschanged = pickVoice; }
-  function speak(t) {
+  function utter(t, ko) {
+    var u = new SpeechSynthesisUtterance(t);
+    u.lang = ko ? "ko-KR" : "en-US"; u.rate = ko ? 1 : 0.9; u.pitch = 1.05;
+    if (ko ? koVoice : voice) u.voice = ko ? koVoice : voice;
+    return u;
+  }
+  function speak(t) { speakSeq([[t, false]]); }
+  // 차례로 읽어 줘요: [[글, 한국어인지], ...]  (틀렸을 때: 바른 영어 → 한국어 설명 → 선생님의 다음 말)
+  function speakSeq(items) {
     try {
-      if (!window.speechSynthesis || !t) return;
+      if (!window.speechSynthesis) return;
       speechSynthesis.cancel();
-      var u = new SpeechSynthesisUtterance(t);
-      u.lang = "en-US"; u.rate = 0.9; u.pitch = 1.05;
-      if (voice) u.voice = voice;
-      speechSynthesis.speak(u);
+      items.forEach(function (it) { if (it[0]) speechSynthesis.speak(utter(it[0], it[1])); });
     } catch (e) { /* ignore */ }
   }
+  // 난이도: 끝까지 마친 상황극 3개마다 한 단계씩 (1 ~ 5)
+  var DONE = "talk-ai-done";
+  function level() { return Math.min(5, 1 + Math.floor(load(DONE, 0) / 3)); }
 
   // 대화 상태: 오늘 날짜의 상황극 하나 (새로고침해도 이어져요)
   // S = { date, kickoff, history: [{role, content}], turns: [화면에 그릴 것들], scene: {...}, ended, wrap }
@@ -205,8 +216,11 @@
     if (turn.fix) {
       var f = document.createElement("div");
       f.className = "fix";
-      f.innerHTML = "💡 이렇게 말하면 더 자연스러워요<br><b>" + esc(turn.fix) + "</b> ";
-      f.appendChild(sayBtn(turn.fix));
+      f.innerHTML = "👩‍🏫 이렇게 말해요<br><b>" + esc(turn.fix) + "</b> " + (turn.fix_ko ? '<div class="fix-ko">' + esc(turn.fix_ko) + "</div>" : "");
+      var fb = document.createElement("button");
+      fb.type = "button"; fb.className = "mini"; fb.textContent = "🔊 듣기";
+      fb.addEventListener("click", function () { speakSeq([[turn.fix, false], [turn.fix_ko, true]]); });
+      f.appendChild(fb);
       chat.appendChild(f);
     }
   }
@@ -230,7 +244,7 @@
   function renderAll() {
     chat.innerHTML = "";
     $("sc-emoji").textContent = S.scene.emoji || "🎭";
-    $("sc-title").textContent = S.scene.title || "오늘의 상황극";
+    $("sc-title").innerHTML = esc(S.scene.title || "오늘의 상황극") + ' <span class="lv">Lv.' + (S.level || level()) + "</span>";
     $("sc-text").textContent = S.scene.scene || "";
     S.turns.forEach(function (t) { if (t.me) addMe(t.me); else { if (t.fixFor) addFix(t.ai); addAi(t.ai); } });
     var lastAi = null;
@@ -264,12 +278,12 @@
     chat.innerHTML = "";
     $("sc-title").textContent = "AI 가 오늘의 상황을 고르는 중…"; $("sc-text").textContent = ""; $("sc-emoji").textContent = "🎲";
     setBusy(true);
-    TalkAI.call({ action: "start", password: pw(), date: today(), recent: load(RECENT, []) }).then(function (r) {
+    TalkAI.call({ action: "start", password: pw(), date: today(), recent: load(RECENT, []), level: level() }).then(function (r) {
       if (!r.turn) return fail(r);
       setBusy(false);
       var t = r.turn;
       S = { date: today(), history: [{ role: "user", content: r.kickoff }, { role: "assistant", content: JSON.stringify(t) }],
-        turns: [{ ai: t }], scene: { title: t.title, scene: t.scene, emoji: t.emoji, role: t.role }, ended: false, wrap: null };
+        turns: [{ ai: t }], scene: { title: t.title, scene: t.scene, emoji: t.emoji, role: t.role }, level: level(), ended: false, wrap: null };
       var rec = load(RECENT, []); rec.push(t.title); save(RECENT, rec.slice(-20));
       save(STORE, S);
       enterChat();
@@ -287,7 +301,7 @@
     save(STORE, S);
     $("live").textContent = ""; $("hint").innerHTML = "";
     setBusy(true);
-    TalkAI.call({ action: "reply", password: pw(), history: S.history }).then(function (r) {
+    TalkAI.call({ action: "reply", password: pw(), history: S.history, level: S.level || level() }).then(function (r) {
       if (!r.turn) {
         // 실패하면 방금 말한 것은 기록에서 빼서 다시 말할 수 있게
         S.history.pop(); S.turns.pop(); save(STORE, S);
@@ -300,7 +314,8 @@
       S.turns.push({ ai: t, fixFor: true });
       save(STORE, S);
       addFix(t); addAi(t); setHint(t); scrollDown();
-      speak(t.say);
+      // 알맞은 대답이면 영어로만 이어가고, 틀렸으면 바른 영어 → 한국어로 다시 → 다음 말
+      speakSeq(t.fix ? [[t.fix, false], [t.fix_ko, true], [t.say, false]] : [[t.say, false]]);
       $("mic-label").textContent = "🎤 를 누르고 영어로 말해요";
       if (t.end) setTimeout(finish, 2200);
     });
@@ -308,10 +323,11 @@
 
   function finish() {
     if (!S || busy) return;
+    if (!S.ended) save(DONE, load(DONE, 0) + 1);
     S.ended = true; save(STORE, S);
     show("dock", false);
     setBusy(true);
-    TalkAI.call({ action: "wrapup", password: pw(), history: S.history }).then(function (r) {
+    TalkAI.call({ action: "wrapup", password: pw(), history: S.history, level: S.level || level() }).then(function (r) {
       setBusy(false);
       S.wrap = r.wrap || { summary: "오늘도 영어로 이야기 나눠서 정말 멋졌어요! 👏", phrases: [] };
       save(STORE, S);

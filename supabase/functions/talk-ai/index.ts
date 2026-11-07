@@ -35,24 +35,35 @@ function sameText(a: string, b: string) {
   return diff === 0;
 }
 
-const SYSTEM = `You are a warm, playful English speaking partner for a Korean child in the 2nd grade of elementary school (about 8 years old). The child is a BEGINNER at English and is practicing SPEAKING through role-play. The child speaks into a microphone; speech recognition turns it into text, so expect missing punctuation, odd capitalization and small recognition mistakes — guess the intended meaning generously and never comment on spelling or punctuation.
+// 난이도: 상황극을 할수록 1 → 5 로 조금씩 올라가요 (화면에서 끝낸 상황극 수로 정해서 보내요)
+const LEVELS: Record<number, string> = {
+  1: "Level 1 (very first steps): only the easiest words (colors, numbers 1-10, animals, fruits, toys, family, feelings). Lines of at most about 6 words. Mostly yes/no and choice questions (\"Red or blue?\"). Example answers of 1-4 words.",
+  2: "Level 2: easy everyday words. Lines of at most about 8 words. Simple patterns: I like ~, I want ~, I have ~, Can I ~?. Example answers of 2-5 words.",
+  3: "Level 3: everyday words plus a few new ones (explain new words in Korean in \"hint\"). Lines of 1-2 short sentences. Ask simple what/where/how many questions. Example answers of 3-7 words.",
+  4: "Level 4: 1-2 sentences, present and simple past (I went, I ate). Ask why/how questions now and then. Example answers of 4-9 words.",
+  5: "Level 5: natural but still child-friendly English, 1-2 sentences, present/past/future (I will ~). Encourage longer answers with because. Example answers of 5-12 words.",
+};
 
-Level (very important — the child is only 8 and a beginner):
-- Use ONLY very easy words a Korean 2nd grader learns first: colors, numbers 1-10, animals, fruits and snacks, toys, family, body, weather, feelings (happy, sad, hungry, tired), simple actions (like, want, have, go, play, eat, see).
-- Each line: 1 short sentence, at most about 8 words, plus at most one short question. Present tense only. No idioms, no long or tricky words.
-- Ask questions the child can answer with one word or a very short pattern: yes/no ("Do you like apples?"), choices ("Red or blue?"), or "What is it?" / "How many?". Often offer the choices inside the question.
-- The "example" answer must be very short and easy (2-5 words), e.g. "I like red.", "Yes, I do.", "Two apples, please."
-- Accept one-word answers happily as correct. Only use "fix" to show the short natural sentence when it helps (e.g. child says "apple" → fix "I want an apple."), never for small slips.
+function systemFor(level: number) {
+  return `You are a kind English TEACHER for a Korean elementary-school child (2nd grade, about 8 years old). Every day you run a NEW short role-play situation, and the child talks to you through a microphone. You teach by mixing Korean and English: the role-play itself is in English, and your explanations and help are in Korean. Speech recognition turns the child's voice into text, so expect missing punctuation and small recognition mistakes — guess the intended meaning generously and never comment on spelling or punctuation.
 
-How to play:
-- You play a friendly character in a simple, familiar, cheerful scene a young child knows: ice cream shop, fruit market, pet shop, toy store, playground, birthday party, zoo, bakery, picnic, rainy day at home, school classroom, etc. The child plays the other role.
-- Stay in character and keep it light and fun with tiny surprises. Aim for a short scene of about 6-8 exchanges, then say a kind goodbye (set "end" to true on that line).
-- If the child answers in Korean or is stuck, help them: give the English way to say it in "example" and keep the scene going.
-- If the child's sentence has a grammar or word-choice mistake, still respond naturally in character, and put ONE natural corrected version of their sentence in "fix" (keep the child's meaning). If it was fine, leave "fix" empty. Do not correct tiny things that are natural in speech.
-- "praise" is a short, specific encouragement in Korean (e.g. "질문을 자연스럽게 했어요! 👍"), only when deserved; otherwise empty.
+Today's difficulty — follow it closely:
+${LEVELS[level] ?? LEVELS[1]}
+Within one scene you may get a tiny bit harder toward the end if the child is doing well, but never jump far above today's level.
+
+How to answer each time the child speaks (most important):
+- If the child's answer is suitable (it fits the scene and is understandable English — short or one-word answers are fine at low levels): leave "fix" and "fix_ko" empty and simply continue the role-play in English in "say".
+- If the child's answer is wrong, unsuitable for the situation, unclear, or in Korean: put the correct English sentence the child should have said in "fix", and in "fix_ko" say that same sentence again in Korean (a short, friendly Korean explanation, e.g. "'I want an apple.' 는 '사과 주세요.' 라는 뜻이에요. 따라 말해 볼까요?"). Then continue the role-play in English in "say" (it is fine to gently ask again).
+- "praise" is a short, specific encouragement in Korean when the child did well; otherwise empty.
+
+Role-play rules:
+- You play a friendly character in a simple, familiar, cheerful scene a young child knows (ice cream shop, fruit market, pet shop, toy store, playground, birthday party, zoo, bakery, picnic, rainy day at home, classroom, doctor, bus, beach, etc.). The child plays the other role.
+- Keep "say" short for today's level and end most lines with an easy question so the child knows what to say next.
+- Aim for about 6-8 exchanges, then say a kind goodbye (set "end" to true on that line).
 - "ko" is a natural Korean translation of your "say" line.
-- "hint" is a short, easy Korean tip about what the child could say next (e.g. "좋아하는 색을 말해 봐요"); "example" is one simple English sentence the child could say next (empty when "end" is true).
+- "hint" is a short, easy Korean tip about what the child could say next; "example" is one English sentence the child could say next, matching today's level (empty when "end" is true).
 - Content must always be safe and kind for young children. If the child says something unkind, unsafe or off-topic, gently steer back to the scene.`;
+}
 
 const TURN_SCHEMA = {
   type: "object",
@@ -65,11 +76,12 @@ const TURN_SCHEMA = {
     ko: { type: "string" },
     hint: { type: "string" },
     example: { type: "string" },
-    fix: { type: "string" },
+    fix: { type: "string", description: "correct English sentence when the child's answer was wrong/unsuitable, else empty" },
+    fix_ko: { type: "string", description: "the same correct sentence said again in Korean (friendly explanation), else empty" },
     praise: { type: "string" },
     end: { type: "boolean" },
   },
-  required: ["title", "scene", "emoji", "role", "say", "ko", "hint", "example", "fix", "praise", "end"],
+  required: ["title", "scene", "emoji", "role", "say", "ko", "hint", "example", "fix", "fix_ko", "praise", "end"],
   additionalProperties: false,
 };
 
@@ -96,10 +108,10 @@ type Msg = { role: "user" | "assistant"; content: string };
 
 // 답은 꼭 JSON 하나로: 스키마를 지시문에도 적어 두고, 지원되는 설정(JSON 스키마 · 생각 줄이기)도 같이 보내요.
 // 혹시 설정 이름이 바뀌어 400 이 나면, 그 설정을 빼고 다시 시도해요.
-async function ask(messages: Msg[], schema: unknown) {
+async function ask(messages: Msg[], schema: unknown, level: number) {
   const key = Deno.env.get("GEMINI_API_KEY") ?? "";
   const contents = messages.map((m) => ({ role: m.role === "assistant" ? "model" : "user", parts: [{ text: m.content }] }));
-  const sys = SYSTEM + "\n\nAlways reply with ONE JSON object only (no markdown), matching this JSON schema:\n" + JSON.stringify(schema);
+  const sys = systemFor(level) + "\n\nAlways reply with ONE JSON object only (no markdown), matching this JSON schema:\n" + JSON.stringify(schema);
   const variants = [
     { responseMimeType: "application/json", responseJsonSchema: schema, thinkingConfig: { thinkingLevel: "LOW" } },
     { responseMimeType: "application/json", responseJsonSchema: schema },
@@ -129,7 +141,7 @@ async function ask(messages: Msg[], schema: unknown) {
 function fillTurn(t: any) {
   // 빠진 칸이 있어도 화면이 깨지지 않게 기본값을 채워요
   const o: any = {};
-  for (const k of ["title", "scene", "emoji", "role", "say", "ko", "hint", "example", "fix", "praise"]) o[k] = typeof t?.[k] === "string" ? t[k] : "";
+  for (const k of ["title", "scene", "emoji", "role", "say", "ko", "hint", "example", "fix", "fix_ko", "praise"]) o[k] = typeof t?.[k] === "string" ? t[k] : "";
   o.end = t?.end === true;
   return o;
 }
@@ -158,21 +170,22 @@ Deno.serve(async (req) => {
   if (clean.length > MAX_TURNS * 2) return json({ error: "too_long" }, 400, origin);
 
   const today = typeof body.date === "string" ? body.date.slice(0, 20) : "";
+  const level = Math.max(1, Math.min(5, Math.round(Number(body.level) || 1)));
   const recent: string[] = Array.isArray(body.recent) ? body.recent.filter((t: unknown) => typeof t === "string").slice(-20) : [];
 
   try {
     if (body.action === "start") {
       const kickoff =
-        `Today is ${today}. Choose today's role-play scene yourself — simple, familiar and fun for a beginner 2nd grader.` +
+        `Today is ${today}. Choose today's role-play scene yourself — simple, familiar and fun, at today's level.` +
         (recent.length ? ` Do NOT repeat these recent scenes: ${recent.map((t) => t.slice(0, 60)).join(" / ")}.` : "") +
         ` Fill title, scene, emoji and role, then say your first line in character.`;
-      const out = await ask([{ role: "user", content: kickoff }], TURN_SCHEMA);
+      const out = await ask([{ role: "user", content: kickoff }], TURN_SCHEMA, level);
       if (!out) return json({ error: "refused" }, 200, origin);
       return json({ turn: fillTurn(out), kickoff }, 200, origin);
     }
     if (body.action === "reply") {
       if (!clean.length || clean[clean.length - 1].role !== "user") return json({ error: "bad_history" }, 400, origin);
-      const out = await ask(clean, TURN_SCHEMA);
+      const out = await ask(clean, TURN_SCHEMA, level);
       if (!out) return json({ error: "refused" }, 200, origin);
       return json({ turn: fillTurn(out) }, 200, origin);
     }
@@ -181,7 +194,7 @@ Deno.serve(async (req) => {
       const note = "(The role-play is over. Now step out of character and review today's conversation for the child and their parent.)";
       if (msgs.length && msgs[msgs.length - 1].role === "user") msgs[msgs.length - 1] = { role: "user", content: msgs[msgs.length - 1].content + "\n\n" + note };
       else msgs.push({ role: "user", content: note });
-      const out = await ask(msgs, WRAP_SCHEMA);
+      const out = await ask(msgs, WRAP_SCHEMA, level);
       if (!out) return json({ error: "refused" }, 200, origin);
       return json({ wrap: out }, 200, origin);
     }
