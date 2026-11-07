@@ -318,7 +318,7 @@
       renderHearts(true);
       qm.className = 'q-mark reveal';
       run.fallT = 0.9;
-      $('#runMsg').textContent = `앗! ${w[1]} ${w[2]} 은(는) ${ans} 이야!`;
+      $('#runMsg').textContent = `앗! ${w[1] ? w[1] + ' ' : ''}${w[2]} 은(는) ${ans} 이야!`;
       delay = 1700;
     }
     const goalNext = (state.i + 1) % PER_STAGE === 0 || state.i + 1 >= state.total;
@@ -977,7 +977,7 @@
 
   /* ---------- 영어 문제 ---------- */
   function setRunQ(w) {
-    $('#rqEmoji').textContent = w ? w[1] : '🐧';
+    $('#rqEmoji').textContent = w ? wordPic(w) : '🐧';
     $('#rqKo').textContent = w ? w[2] : '';
     const qm = $('#rqans'); qm.textContent = '?'; qm.className = 'q-mark';
   }
@@ -1030,7 +1030,7 @@
     if (state.wrong.length) {
       rv.innerHTML = '<div class="label" style="text-align:center">📝 다시 보면 좋은 단어 (누르면 읽어줘요)</div><div class="chips"></div>';
       state.wrong.forEach(w => {
-        const c = document.createElement('button'); c.className = 'chip'; c.textContent = w[1] + ' ' + w[0] + ' ' + w[2];
+        const c = document.createElement('button'); c.className = 'chip'; c.textContent = (w[1] ? w[1] + ' ' : '') + w[0] + ' ' + w[2];
         c.onclick = () => speakEn(w[0]);
         rv.querySelector('.chips').appendChild(c);
       });

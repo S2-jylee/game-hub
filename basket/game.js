@@ -170,7 +170,7 @@
   function wordQueue(n) {
     let qs = [];
     while (qs.length < n) {
-      const next = shuffle(grade.words.slice());
+      const next = shuffle(picWords(grade.words));
       if (qs.length && next[0][0] === qs[qs.length - 1][0]) next.push(next.shift());
       qs = qs.concat(next);
     }
@@ -268,7 +268,7 @@
   // 영어 단어를 보여주고, 그 뜻의 그림 열매를 받아요
   function setCatchQuestion() {
     const w = state.qs[state.i % state.qs.length];
-    state.cur = { w, ans: w[1], wrongs: shuffle(grade.words.filter(o => o[1] !== w[1])).slice(0, 6).map(o => o[1]) };
+    state.cur = { w, ans: w[1], wrongs: shuffle(picWords(grade.words).filter(o => o[1] !== w[1])).slice(0, 6).map(o => o[1]) };
     state.missedThis = false;
     $('#cqWord').textContent = cap(w[0]);
     const qm = $('#cqans'); qm.textContent = '?'; qm.className = 'q-mark';
@@ -703,9 +703,8 @@
 
   const RUN_KEYS = { ArrowLeft: 'l', a: 'l', A: 'l', ArrowRight: 'r', d: 'r', D: 'r' };
   window.addEventListener('blur', () => { cg.keys.l = cg.keys.r = false; });
-  const KO = {};
-  GRADES.forEach(g => g.words.forEach(w => { KO[w[1]] = w[2]; }));
-  const koOf = e => e + ' ' + (KO[e] || '');
+  // 그림 → 뜻 (지금 학년 단어에서 찾아요. 같은 그림이 다른 학년에도 있을 수 있어서)
+  const koOf = e => { const f = grade.words.find(w => w[1] === e); return e + ' ' + (f ? f[2] : ''); };
   function GUIDE(onStart) {
     return {
       id: GUIDE_ID, title: '단어 바구니',

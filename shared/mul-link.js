@@ -8,9 +8,18 @@
   var user = q.get("u") || null;
   var dans = get("ggd_dans", [2]).filter(function (d) { return d >= 2 && d <= 12; });
   if (!dans.length) dans = [2];
+  // 난이도: 구구단 놀이터 설정 창에서 고른 값 (?d=easy|normal|hard)
+  var DIFF_NAME = { easy: "느긋하게", normal: "알맞게", hard: "빠르게" };
+  var diff = q.get("d");
+  if (!DIFF_NAME[diff]) diff = get("ggd_diff", "normal");
+  if (!DIFF_NAME[diff]) diff = "normal";
 
   window.MulLink = {
     on: q.get("mul") === "1",
+    diff: diff,
+    diffName: DIFF_NAME[diff],
+    // 난이도별 값 고르기: ML.by({ easy: 1, normal: 2, hard: 3 })
+    by: function (o) { return o[diff]; },
     user: user,
     dans: dans.sort(function (a, b) { return a - b; }),
     sound: get("ggd_sound", true),

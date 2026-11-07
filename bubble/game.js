@@ -9,6 +9,7 @@
   var $ = function (s) { return document.querySelector(s); };
   var GRADES = window.SPELL_GRADES;
   var TIME = 60;              // 한 판 시간(초)
+  if (MATH) TIME = ML.by({ easy: 90, normal: 60, hard: 40 });   // 구구단: 고른 난이도대로
   var PER_LETTER = 5, WORD_BONUS = 10, TIME_BONUS = 3, WRONG = 3;
   var PROFILES_KEY = "bubble_profiles", GUIDE_ID = MATH ? "bubble_mul" : "bubble";
   var COLORS = ["#ff7eb6", "#ff9f43", "#f5b400", "#34d399", "#60a5fa", "#a78bfa", "#f472b6", "#2dd4bf", "#fb7185"];
@@ -193,7 +194,7 @@
         { icon: "🎈", title: "풍선이 둥둥", text: "숫자 풍선이 하늘에 <b>둥둥</b> 떠다녀요.<br>위에 나온 <b>몇 단</b>인지 잘 봐요!" },
         { icon: "👆", title: "작은 답부터 펑!", text: "단의 답을 <b>작은 것부터 순서대로</b> 터뜨려요.<br>예) 3단 → <b>3 → 6 → 9 → 12 → 15</b>" },
         { icon: "💫", title: "틀리면 튕겨요", text: "순서가 틀린 풍선은 <b>튕겨 나가고</b> <b>-3점</b>이에요." },
-        { icon: "⏰", title: "60초 스피드!", text: "숫자 하나 <b>+5점</b>, 묶음을 다 하면 <b>+10점</b>에 <b>+3초</b>!" }
+        { icon: "⏰", title: TIME + "초 스피드!", text: "시간은 <b>" + TIME + "초</b>예요. 숫자 하나 <b>+5점</b>,<br>묶음을 다 하면 <b>+10점</b>에 <b>+3초</b>!" }
       ],
       startText: "자, 풍선을 터뜨려 볼까?", startLabel: "시작! 🎈", onStart: onStart
     };
@@ -250,7 +251,7 @@
     if (mode.id === "word") {
       if (!G.queue.length) G.queue = makeQueue();
       var w = G.queue.shift();
-      G.cur = { en: w[0], emoji: w[1], ko: w[2] };
+      G.cur = { en: w[0], emoji: wordPic(w), ko: w[2] };
       G.target = w[0].toUpperCase();
     } else {
       if (G.chunk >= chunkCount()) { G.cleared = true; return endRound(); }
@@ -519,7 +520,7 @@
       if (isRecord) data.best[key] = G.score;
       saveUserData(data);
     }
-    var label = MATH ? esc(ML.danText()) : mode.id === "word" ? grade.grade + "학년 " + mode.name : mode.name;
+    var label = MATH ? esc(ML.danText()) + " · " + ML.diffName : mode.id === "word" ? grade.grade + "학년 " + mode.name : mode.name;
     var line = mode.id === "word" ? "만든 단어 <b>" + n + "</b>개" : "끝낸 묶음 <b>" + G.chunk + "</b> / " + chunkCount() + (cleared ? " · 남은 시간 " + timeLeft + "초 × 2점 보너스" : "");
     $("#result-text").innerHTML = mode.emoji + " " + label + " · " + line + "<br>" +
       "점수 <b>" + G.score + "</b>점" + (isRecord && G.score > 0 ? '<span class="record">🎊 최고 기록!</span>' : "");
@@ -550,6 +551,7 @@
     var back = $(".title-card .back-link");
     back.textContent = "← 게임 고르기";
     back.addEventListener("click", function (e) { e.preventDefault(); ML.back(); });
-    $("#btn-result-mode").textContent = "게임 고르기";
+    $("#btn-result-mode").textContent = "게임 선택";
+    $("#btn-again").textContent = "🔁 한 번 더 하기";
   }
 })();

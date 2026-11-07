@@ -146,7 +146,7 @@ button{font-family:inherit;font-weight:inherit;color:inherit;cursor:pointer;bord
   .card{padding:24px 20px}
   .btn-huge{padding:16px 36px;font-size:25px}
 }
-.home-top{width:100%;max-width:740px;display:flex;align-items:center;justify-content:space-between}
+.home-top{width:100%;max-width:740px;display:flex;align-items:center;justify-content:flex-end}
 .user-badge{background:#fff;border-radius:999px;padding:6px 14px;font-size:16px}
 .user-badge:empty{display:none}
 .big-btn{width:100%;height:54px;border-radius:20px;font-size:26px;color:#fff;background:linear-gradient(#ff8fc2,#ff5d9e);animation:wiggle 2.5s ease-in-out infinite}
@@ -155,6 +155,71 @@ button{font-family:inherit;font-weight:inherit;color:inherit;cursor:pointer;bord
 .row{display:flex;gap:10px;margin-top:10px}
 .small-btn{flex:1;height:42px;border-radius:14px;font-size:17px;background:#e8f4ff}
 .small-btn:active{transform:translateY(2px)}
+/* ---------- 두더지 잡기 ---------- */
+.mole-field{width:100%;max-width:min(560px,calc((100vh - 250px) * 1.15));display:grid;grid-template-columns:repeat(3,1fr);gap:4px 10px;
+  margin:6px 0 10px;padding:14px 14px 8px;border-radius:28px;background:radial-gradient(circle at 30% 20%,#9be26b,#5cbf3f 70%);box-shadow:inset 0 -8px 0 #3f9a2b}
+.hole{position:relative;aspect-ratio:1/0.9;cursor:pointer;touch-action:manipulation}
+.hole .pit{position:absolute;left:8%;right:8%;bottom:6%;height:30%;border-radius:50%;
+  background:radial-gradient(ellipse at 50% 35%,#2a1608,#5b3618 70%,#7a4a22);box-shadow:0 4px 0 #3f9a2b}
+.hole .clip{position:absolute;left:0;right:0;top:0;bottom:21%;overflow:hidden;border-radius:0 0 40% 40%/0 0 18% 18%}
+.mole{position:absolute;left:50%;bottom:-6%;width:62%;height:80%;transform:translate(-50%,105%);transition:transform .16s ease-out;
+  background:radial-gradient(circle at 50% 30%,#a8724b,#7c4f2f 75%);border-radius:50% 50% 38% 38%/60% 60% 40% 40%;pointer-events:none}
+.mole.up{transform:translate(-50%,0)}
+.mole.hit{transform:translate(-50%,0) scale(.92,.82);transition:transform .08s}
+.mole.shock{animation:moleShock .4s ease}
+@keyframes moleShock{0%,100%{transform:translate(-50%,0)}20%,60%{transform:translate(-56%,-4%) rotate(-8deg)}40%,80%{transform:translate(-44%,-4%) rotate(8deg)}}
+.m-ear{position:absolute;top:2%;width:18%;height:16%;border-radius:50%;background:#7c4f2f}
+.m-ear.l{left:8%}.m-ear.r{right:8%}
+.m-eye{position:absolute;top:22%;width:11%;height:13%;border-radius:50%;background:#1f140c}
+.m-eye.l{left:28%}.m-eye.r{right:28%}
+.m-eye::after{content:"";position:absolute;left:25%;top:18%;width:38%;height:38%;border-radius:50%;background:#fff}
+.mole.hit .m-eye,.mole.shock .m-eye{height:4%;top:28%;border-radius:4px}
+.mole.hit .m-eye::after,.mole.shock .m-eye::after{display:none}
+.m-nose{position:absolute;left:50%;top:36%;width:16%;height:11%;transform:translateX(-50%);border-radius:50%;background:#ff8fab}
+.m-num{position:absolute;left:50%;top:52%;transform:translateX(-50%);min-width:64%;padding:2px 6px;border-radius:12px;background:#fff;color:var(--ink);
+  font-family:"CookieRun","Jua",sans-serif;font-size:clamp(18px,5vw,30px);line-height:1.25;text-align:center;box-shadow:0 3px 0 #e2d2c2}
+.mole.hit .m-num{background:#d9fbe9;color:#0f7a3d}
+.mole.shock .m-num{background:#ffe1e6;color:#d6334f}
+.h-no{position:absolute;right:8%;bottom:0;font-size:12px;color:rgba(255,255,255,.85);font-weight:800}
+.hammer{position:fixed;z-index:90;pointer-events:none;font-size:46px;transform:translate(-30%,-80%) rotate(-30deg);transform-origin:80% 80%;animation:whack .3s ease-out forwards}
+@keyframes whack{0%{transform:translate(-30%,-80%) rotate(-40deg)}45%{transform:translate(-30%,-80%) rotate(25deg)}100%{transform:translate(-30%,-80%) rotate(15deg);opacity:0}}
+@media (max-width:560px){.mole-field{padding:10px 8px 6px;gap:2px 6px;border-radius:22px}}
+
+/* ---------- 게임 설정 팝업 (단 · 난이도 고르기) ---------- */
+/* 예전 구구단 놀이터 모양: 흰 팝업 · 분홍 제목 · 연보라 버튼(고르면 노랑) · 분홍-보라 시작 버튼 */
+.setup-box{max-width:620px;padding:22px 20px 16px;color:var(--ink)}
+.setup-title{margin:0 40px;text-align:center;font-family:"CookieRun","Jua",sans-serif;font-size:clamp(28px,6.5vw,38px);font-weight:700;color:#d81b7a;line-height:1.15}
+.setup-sub{margin:6px 0 0;text-align:center;font-size:17px;color:var(--muted)}
+.setup-info{margin:10px 0 0;padding:10px 14px;border-radius:16px;background:#f7f3fe;text-align:center;font-size:15px;line-height:1.6;color:#6b5f86;font-weight:400}
+.setup-info:empty{display:none}
+.setup-label{font-size:16px;color:var(--muted);margin:14px 2px 6px}
+.setup-label.warn{color:#e11d48;font-weight:800}
+.setup-box .dan-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:8px;margin:0}
+.setup-box .dan{height:46px;font-size:20px}
+@media (max-width:560px){.setup-box .dan-grid{grid-template-columns:repeat(4,1fr)}}
+.dan-grid.shake{animation:shake .4s}
+/* 전체 선택 · 모두 해제 · 구구단 외우기 · 소리: PC·태블릿은 한 줄, 모바일은 두 줄 */
+.tool-row{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:10px}
+.tool-row .small-btn{min-width:0;padding:0 6px;white-space:nowrap;font-size:16px}
+.sel-btn{background:#e8f4ff}
+@media (max-width:560px){.tool-row{grid-template-columns:repeat(2,1fr)}}
+.diff-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.diff{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;min-height:60px;border-radius:16px;padding:8px 4px;
+  background:#f1edff;line-height:1.2;transition:transform .1s}
+.diff b{font-size:18px}
+.diff small{font-size:13px;color:var(--muted)}
+.diff.on{background:var(--yellow)}
+.diff.on small{color:#6b5a1f}
+.diff:active,.sel-btn:active{transform:translateY(2px)}
+.setup-go{display:block;width:100%;height:56px;margin:16px 0 10px;border-radius:20px;font-size:23px;font-weight:800;color:#fff;
+  background:linear-gradient(135deg,#d81b7a,#7c2ce0);transition:transform .12s ease}
+.setup-go:hover{background:linear-gradient(135deg,#ff4fa3,#a259ff)}
+.setup-go:active{transform:scale(.97)}
+.key-hints{display:flex;flex-wrap:wrap;justify-content:center;gap:6px 14px;font-size:14px;color:var(--muted)}
+.key-hints:empty{display:none}
+.key-hints span{display:inline-flex;align-items:center;gap:6px}
+.key-hints kbd{font-family:inherit;font-size:13px;font-weight:800;background:#f1edff;color:var(--ink);border-radius:999px;padding:3px 10px}
+@media (max-width:560px){.setup-box{padding:20px 14px 14px}.diff b{font-size:16px}.diff small{font-size:12px}}
 
 /* 게임 카드 (영어 놀이와 같은 모양) */
 .app.menu{max-width:1000px}
@@ -309,9 +374,7 @@ button{font-family:inherit;font-weight:inherit;color:inherit;cursor:pointer;bord
 .table-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px}
 .dan-card{border-radius:18px;padding:10px 12px;background:var(--bg)}
 .dan-card h4{margin:0 0 6px;font-size:22px;font-weight:800;text-align:center}
-.dan-card button{display:block;width:100%;text-align:left;background:rgba(255,255,255,.7);border-radius:10px;padding:4px 10px;margin:4px 0;font-size:19px}
-.dan-card button:active{background:#fff;transform:scale(.97)}
-.table-tip{font-size:15px;color:var(--muted);text-align:center;margin:0 0 12px}
+.dan-card .dan-row{background:rgba(255,255,255,.7);border-radius:10px;padding:4px 10px;margin:4px 0;font-size:19px}
 
 @media (max-width:560px){
   .balloons{grid-template-columns:repeat(2,1fr);gap:12px 10px;padding-bottom:56px}
@@ -408,25 +471,16 @@ button{font-family:inherit;font-weight:inherit;color:inherit;cursor:pointer;bord
   <!-- 놀이 고르기 화면: 영어 놀이처럼 게임 카드를 골라요 -->
   <section id="home" class="screen hidden">
     <div class="home-top">
-      <button class="btn btn-ghost btn-small" id="changeUser">← 처음으로</button>
       <span class="user-badge" id="userBadge"></span>
     </div>
     <h1 class="game-title">구구단 놀이터</h1>
-    <div class="panel top-panel">
-      <div class="label">몇 단을 할까요? <small>(여러 개 골라도 돼요)</small></div>
-      <div class="dan-grid" id="danGrid"></div>
-      <div class="row">
-        <button class="small-btn" id="tableBtn">📖 구구단 외우기</button>
-        <button class="small-btn" id="soundBtn">🔊 소리 켜짐</button>
-      </div>
-    </div>
     <div class="play-grid" id="playGrid"></div>
   </section>
 
   <!-- 게임 화면 -->
   <section id="game" class="screen hidden">
     <div class="hud">
-      <button class="back-btn" id="quitBtn" title="놀이 고르기로 돌아가요">← 뒤로</button>
+      <button class="back-btn" id="quitBtn" title="게임 선택으로 돌아가요">← 뒤로</button>
       <div id="hearts"></div>
       <div class="score" id="scoreBox">⭐ <span id="score">0</span></div>
     </div>
@@ -494,6 +548,25 @@ button{font-family:inherit;font-weight:inherit;color:inherit;cursor:pointer;bord
     </div>
   </section>
 
+  <!-- 두더지 잡기 화면 -->
+  <section id="mole" class="screen hidden">
+    <div class="hud">
+      <button class="back-btn" id="moleQuit" title="게임 선택으로 돌아가요">← 뒤로</button>
+      <div id="moleHearts"></div>
+      <div class="score" id="moleScoreBox">⭐ <span id="moleScore">0</span></div>
+    </div>
+    <div class="bars">
+      <div class="bar"><div id="moleProgress" style="width:0"></div></div>
+      <div class="bar-label" id="moleProgressText">1 / 15</div>
+    </div>
+    <div class="question run-q">
+      <span class="n" id="mqa">2</span><span class="x">×</span><span class="n" id="mqb">3</span>
+      <span class="x">=</span><span class="q-mark" id="mqans">?</span>
+    </div>
+    <div class="run-msg" id="moleMsg"></div>
+    <div class="mole-field" id="moleField"></div>
+  </section>
+
   <!-- 결과 화면 -->
   <section id="result" class="screen hidden">
     <h2 class="result-title" id="resultTitle">참 잘했어요!</h2>
@@ -503,14 +576,35 @@ button{font-family:inherit;font-weight:inherit;color:inherit;cursor:pointer;bord
       <div class="result-card" id="resultCard"></div>
       <div class="review" id="review"></div>
       <div class="row">
-        <button class="small-btn" id="againBtn" style="background:#ffe7f2">🔁 다시 하기</button>
-        <button class="small-btn" id="homeBtn">🏠 처음으로</button>
+        <button class="small-btn" id="homeBtn">← 게임 선택</button>
+        <button class="small-btn" id="againBtn" style="background:#ffe7f2">🔁 한 번 더 하기</button>
       </div>
     </div>
   </section>
 </main>
 
-<!-- 구구단표 -->
+<!-- 게임 설정: 게임 카드를 누르면 단 · 난이도를 고르고 '선택 완료' -->
+<div class="modal hidden" id="setupModal">
+  <div class="modal-box setup-box">
+    <button class="close-btn" id="setupClose" title="게임 선택으로 돌아가요">✕</button>
+    <h2 class="setup-title" id="setupTitle">구구단 게임</h2>
+    <p class="setup-sub" id="setupSub"></p>
+    <p class="setup-info" id="setupInfo"></p>
+    <div class="setup-label" id="danLabel">어떤 단을 연습할까요?</div>
+    <div class="dan-grid" id="danGrid"></div>
+    <div class="tool-row">
+      <button class="small-btn sel-btn" id="selAllBtn">전체 선택</button>
+      <button class="small-btn sel-btn" id="selNoneBtn">모두 해제</button>
+      <button class="small-btn sel-btn" id="tableBtn">구구단 외우기</button>
+      <button class="small-btn sel-btn" id="soundBtn">소리 켜짐</button>
+    </div>
+    <div class="setup-label">난이도</div>
+    <div class="diff-grid" id="diffGrid"></div>
+    <button class="setup-go" id="setupGo">선택 완료</button>
+    <div class="key-hints" id="keyHints"></div>
+  </div>
+</div>
+
 <!-- 펭귄 달리기 시작 전 안내 -->
 <div class="modal hidden" id="runIntro">
   <div class="modal-box run-intro">
@@ -521,7 +615,7 @@ button{font-family:inherit;font-weight:inherit;color:inherit;cursor:pointer;bord
       <li><span>🐟</span><span><b>물고기</b>를 먹고 게이지를 채우면 <b>❤️ 하트 반 개</b>가 차요!</span></li>
       <li><span>🪵</span><span><b>통나무</b>는 <b>스페이스바</b> 또는 <b>화면 터치</b>로 점프해서 피할 수 있어요!</span></li>
     </ul>
-    <div class="gb-btns"><button class="btn btn-ghost btn-small" id="runIntroBack">← 놀이 고르기</button><button class="btn btn-primary btn-huge" id="runIntroOk">확인</button></div>
+    <div class="gb-btns"><button class="btn btn-ghost btn-small" id="runIntroBack">← 게임 선택</button><button class="btn btn-primary btn-huge" id="runIntroOk">확인</button></div>
   </div>
 </div>
 
@@ -531,7 +625,7 @@ button{font-family:inherit;font-weight:inherit;color:inherit;cursor:pointer;bord
     <div class="run-intro-emoji" id="giEmoji">🌱</div>
     <h3 id="giTitle">연습 놀이</h3>
     <ul class="run-intro-list" id="giList"></ul>
-    <div class="gb-btns"><button class="btn btn-ghost btn-small" id="giBack">← 놀이 고르기</button><button class="btn btn-primary btn-huge" id="giOk">확인</button></div>
+    <div class="gb-btns"><button class="btn btn-ghost btn-small" id="giBack">← 게임 선택</button><button class="btn btn-primary btn-huge" id="giOk">확인</button></div>
   </div>
 </div>
 
@@ -539,7 +633,6 @@ button{font-family:inherit;font-weight:inherit;color:inherit;cursor:pointer;bord
   <div class="modal-box">
     <button class="close-btn" id="closeTable">✖</button>
     <h3>📖 구구단 외우기</h3>
-    <p class="table-tip">줄을 누르면 소리로 읽어줘요!</p>
     <div class="table-grid" id="tableGrid"></div>
   </div>
 </div>
@@ -553,28 +646,56 @@ button{font-family:inherit;font-weight:inherit;color:inherit;cursor:pointer;bord
   };
 
   const TOTAL = 10;       // 한 판 문제 수
-  const RUN_STAGES = 10;  // 펭귄 달리기 스테이지 수
-  const PER_STAGE = 10;   // 스테이지마다 문제 수
-  const STAGE_TIME = [5, 4.4, 3.9, 3.5, 3.1, 2.8, 2.5, 2.25, 2.05, 1.9]; // 스테이지별 허들이 다가오는 시간(초)
-  const TIME = 10;        // 도전 모드 제한 시간(초)
+  // 난이도: 한 판 동안 속도는 그대로예요 (판이 이어지며 빨라지지 않아요)
+  const DIFFS = ['easy', 'normal', 'hard'];
+  const DIFF_NAME = { easy: '느긋하게', normal: '알맞게', hard: '빠르게' };
+  const QUIZ_TIME = { easy: 0, normal: 10, hard: 6 };        // 풍선 퀴즈 한 문제 제한 시간(초, 0 = 없음)
+  const RUN_TOTAL = 20;                                      // 펭귄 달리기 한 판 문제 수
+  const RUN_TIME = { easy: 5, normal: 3.6, hard: 2.6 };      // 허들이 다가오는 시간(초)
+  const RUN_LEVEL = { easy: 0, normal: 3, hard: 6 };         // 통나무 개수 · 좌우 속도에 쓰는 값
+  const CATCH_GOAL = 20;                                     // 정답 바구니: 정답 20개를 받으면 끝
+  const CATCH_LV = { easy: 0, normal: 12, hard: 24 };        // 열매가 떨어지는 속도에 쓰는 값
   const LIVES = 3;
   const COLORS = ['#ff7eb6', '#ffbe0b', '#60a5fa', '#34d399', '#a78bfa', '#ff9f43'];
   const CARD_BG = ['#ffe7f2', '#fff4cc', '#e1efff', '#dcfaec', '#efe9ff', '#ffecd9'];
   const BUDDIES = ['🐰', '🐻', '🐥', '🐶', '🐱', '🐼'];
   const PRAISE = ['딩동댕! 🔔', '잘했어! 🎉', '최고야! 👍', '우와, 천재다! 🌟', '멋져요! 💖', '정답이야! 🍭'];
-  const MODE_NAME = { practice: '연습 놀이', challenge: '도전 놀이', penguin: '펭귄 달리기', catch: '정답 바구니' };
-  // 게임 카드 목록: 새 게임은 여기에 한 줄 더하면 놀이 고르기 화면에 나와요 (href 가 있으면 다른 페이지에서 ?mul=1 로 열어요)
+  const MODE_NAME = { quiz: '풍선 퀴즈', penguin: '펭귄 달리기', catch: '정답 바구니', mole: '두더지 잡기' };
+  // 두더지 잡기: 난이도마다 두더지가 올라와 있는 시간(초) · 나오는 간격(초) · 한 번에 나오는 수
+  const MOLE_TOTAL = 15;
+  const MOLE_UP = { easy: 2.4, normal: 1.6, hard: 1.05 };
+  const MOLE_GAP = { easy: 0.9, normal: 0.65, hard: 0.45 };
+  const MOLE_MAX = { easy: 2, normal: 3, hard: 4 };
+  // 게임 카드 목록: 새 게임은 여기에 한 줄 더하면 게임 선택 화면에 나와요 (href 가 있으면 다른 페이지에서 ?mul=1&d=난이도 로 열어요)
+  // sub: 설정 창 부제목 · info: 설정 창 설명 · diffs: 느긋하게/알맞게/빠르게 아래 작은 글씨 · keys: 아래 조작키 안내
   const ARCADE = [
-    { mode: 'practice', emoji: '🌱', name: '연습 놀이', desc: '천천히, 틀려도 다시!', bg: '#22c55e' },
-    { mode: 'challenge', emoji: '⏱️', name: '도전 놀이', desc: '10초 안에! 하트 3개', bg: '#f97316' },
-    { mode: 'penguin', emoji: '🐧', name: '펭귄 달리기', desc: '정답 허들로 쌩쌩! 통나무는 점프!', bg: '#3b82f6' },
-    { mode: 'catch', emoji: '🧺', name: '정답 바구니', desc: '떨어지는 정답 열매를 쏙! 💣 폭탄 조심', bg: '#f59e0b' },
-    { mode: 'train', emoji: '🚂', name: '구구단 기차', desc: '단의 답을 차례대로 먹고 기차를 길게!', bg: '#84cc16', href: '../spelling/index.html' },
-    { mode: 'frog', emoji: '🐸', name: '구구단 징검다리', desc: '정답 숫자 연잎으로 폴짝! 강 건너기', bg: '#14b8a6', href: '../frog/index.html' },
-    { mode: 'bubble', emoji: '🎈', name: '구구단 버블 팝', desc: '3, 6, 9… 답 풍선을 순서대로 펑!', bg: '#ec4899', href: '../bubble/index.html' },
-    { mode: 'bee', emoji: '🐝', name: '구구단 꿀벌 비행', desc: '톡톡 날갯짓! 정답 꽃길로 쏙!', bg: '#eab308', href: '../bee/index.html' },
-    { mode: 'fishing', emoji: '🎣', name: '구구단 낚시', desc: '빈칸 숫자 물고기를 낚아요!', bg: '#0ea5e9', href: '../fishing/index.html' },
-    { mode: 'alien', emoji: '👾', name: '구구단 디펜스', desc: '정답 숫자 외계인을 쏘고 💖 하트도!', bg: '#8b5cf6', href: '../alien/index.html' }
+    { mode: 'quiz', emoji: '🎈', name: '풍선 퀴즈', desc: '정답 풍선을 펑! 터뜨려요', bg: '#22c55e',
+      sub: '정답 풍선을 터뜨리며 구구단을 외워요', info: '문제를 보고 알맞은 정답 풍선을 눌러요.<br>느긋하게는 틀려도 힌트를 보고 다시 고를 수 있어요.',
+      diffs: ['시간 제한 없음', '한 문제 10초', '한 문제 6초'], keys: [['1~4', '풍선 고르기']] },
+    { mode: 'penguin', emoji: '🐧', name: '펭귄 달리기', desc: '정답 허들로 쌩쌩! 통나무는 점프!', bg: '#3b82f6',
+      sub: '정답 허들을 지나 이글루까지 달려요', info: '펭귄이 얼음길을 달려요. 정답이 적힌 허들로 가고,<br>굴러오는 통나무는 뛰어넘어요. ' + RUN_TOTAL + '문제를 지나면 도착!',
+      diffs: ['천천히 달려요', '보통 속도', '쌩쌩 빨라요'], keys: [['← →', '이동'], ['Space', '점프']] },
+    { mode: 'catch', emoji: '🧺', name: '정답 바구니', desc: '떨어지는 정답 열매를 쏙! 💣 폭탄 조심', bg: '#f59e0b',
+      sub: '떨어지는 정답 열매를 바구니로 받아요', info: '정답 열매만 받고 틀린 열매와 폭탄은 피해요.<br>정답 ' + CATCH_GOAL + '개를 받으면 끝!',
+      diffs: ['천천히 떨어져요', '보통 속도', '빨리 떨어져요'], keys: [['← →', '이동'], ['마우스', '바구니 따라오기']] },
+    { mode: 'mole', emoji: '🔨', name: '두더지 잡기', desc: '정답 숫자 두더지만 뿅! 잡아요', bg: '#a16207',
+      sub: '정답 숫자를 든 두더지만 재빨리 잡아요', info: '구멍에서 숫자 두더지들이 쑥쑥 올라왔다 내려가요.<br>정답 두더지만 잡고, 틀린 두더지를 잡으면 하트가 줄어요.',
+      diffs: ['천천히 숨어요', '보통 속도', '빨리 숨어요'], keys: [['클릭 · 터치', '두더지 잡기'], ['1~9', '구멍 번호']] },
+    { mode: 'train', emoji: '🚂', name: '구구단 기차', desc: '단의 답을 차례대로 먹고 기차를 길게!', bg: '#84cc16', href: '../spelling/index.html',
+      sub: '단의 답을 차례대로 먹고 기차를 길게', info: '7단이면 7, 14, 21 … 처럼 작은 답부터 차례대로 먹어요.<br>틀린 숫자나 벽에 부딪히지 않게 조심!',
+      diffs: ['다음 숫자가 반짝', '방해 숫자 3개', '방해 숫자 6개'], keys: [['← ↑ → ↓', '방향 바꾸기']] },
+    { mode: 'frog', emoji: '🐸', name: '구구단 징검다리', desc: '정답 숫자 연잎으로 폴짝! 강 건너기', bg: '#14b8a6', href: '../frog/index.html',
+      sub: '정답 숫자 연잎으로 폴짝! 강을 건너요', info: '연잎 3개 중 정답 숫자 연잎으로 점프해요.<br>틀린 연잎은 가라앉아요. 연잎 10줄을 건너면 도착!',
+      diffs: ['시간 제한 없음', '한 줄 10초', '한 줄 6초'], keys: [['← →', '연잎 고르기'], ['Space', '점프']] },
+    { mode: 'bee', emoji: '🐝', name: '구구단 꿀벌 비행', desc: '톡톡 날갯짓! 정답 꽃길로 쏙!', bg: '#eab308', href: '../bee/index.html',
+      sub: '날갯짓으로 정답 꽃길을 지나가요', info: '꿀벌은 가만히 두면 아래로 내려가요.<br>톡톡 날갯짓해서 정답 숫자 길로 쏙 지나가요.',
+      diffs: ['천천히 날아요', '보통 속도', '쌩쌩 빨라요'], keys: [['Space', '날갯짓'], ['터치', '날갯짓']] },
+    { mode: 'fishing', emoji: '🎣', name: '구구단 낚시', desc: '빈칸 숫자 물고기를 낚아요!', bg: '#0ea5e9', href: '../fishing/index.html',
+      sub: '빈칸에 들어갈 숫자 물고기를 낚아요', info: '3 × _ = 12 처럼 빈칸이 있는 구구단이 나와요.<br>빈칸에 맞는 숫자 물고기를 낚아요.',
+      diffs: ['천천히 헤엄쳐요', '보통 속도', '빨리 헤엄쳐요'], keys: [['← →', '배 옮기기'], ['Space', '낚싯줄 내리기']] },
+    { mode: 'alien', emoji: '👾', name: '구구단 디펜스', desc: '정답 숫자 외계인을 쏘고 💖 하트도!', bg: '#8b5cf6', href: '../alien/index.html',
+      sub: '정답 숫자 외계인을 쏴서 지구를 지켜요', info: '내려오는 외계인 중 정답 숫자를 단 외계인만 쏴요.<br>다른 외계인은 방어벽이 막아줘요.',
+      diffs: ['천천히 내려와요', '보통 속도', '빨리 내려와요'], keys: [['← →', '대포 옮기기'], ['Space', '쏘기']] }
   ];
   const CATCH_LIVES = 5;  // 정답 바구니 하트 수
   const CHEER = ['괜찮아, 다시 골라봐!', '아깝다! 한 번 더!', '틀려도 괜찮아 😊'];
@@ -585,7 +706,8 @@ button{font-family:inherit;font-weight:inherit;color:inherit;cursor:pointer;bord
 
   const state = {
     dans: new Set(store.get('ggd_dans', [2])),
-    mode: 'practice',
+    mode: 'quiz',
+    diff: DIFFS.includes(store.get('ggd_diff')) ? store.get('ggd_diff') : 'normal',
     buddy: store.get('ggd_buddy', '🐰'),
     sound: store.get('ggd_sound', true),
     user: null, guest: false, guestData: null,
@@ -684,26 +806,29 @@ button{font-family:inherit;font-weight:inherit;color:inherit;cursor:pointer;bord
       b.className = 'dan' + (state.dans.has(d) ? ' on' : '');
       b.textContent = d + '단';
       b.onclick = () => {
-        if (state.dans.has(d) && state.dans.size > 1) state.dans.delete(d); else state.dans.add(d);
+        if (state.dans.has(d)) state.dans.delete(d); else state.dans.add(d);
         saveDans(); renderDanGrid();
       };
       g.appendChild(b);
     }
-    const all = document.createElement('button');
-    const isAll = state.dans.size === 11;
-    all.className = 'dan' + (isAll ? ' on' : '');
-    all.textContent = '전체';
-    all.onclick = () => {
-      state.dans = isAll ? new Set([2]) : new Set([2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]);
-      saveDans(); renderDanGrid();
-    };
-    g.appendChild(all);
+    if (state.dans.size) danWarn(false);
   }
   function saveDans() { store.set('ggd_dans', [...state.dans]); }
+  $('#selAllBtn').onclick = () => { state.dans = new Set([2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]); saveDans(); renderDanGrid(); };
+  $('#selNoneBtn').onclick = () => { state.dans = new Set(); saveDans(); renderDanGrid(); };
+  // 단을 하나도 안 골랐으면 안내하고 막아요
+  const DAN_LABEL = '어떤 단을 연습할까요?';
+  function danWarn(on) {
+    const l = $('#danLabel');
+    l.classList.toggle('warn', on);
+    l.textContent = on ? '단을 하나 이상 골라 주세요!' : DAN_LABEL;
+    if (on) animate($('#danGrid'), 'shake');
+  }
+  function needDans() { if (state.dans.size) return false; danWarn(true); return true; }
 
   function setBuddies() { ['#introBuddy', '#gameBuddy', '#resultBuddy'].forEach(s => $(s).textContent = state.buddy); }
 
-  function renderSoundBtn() { $('#soundBtn').textContent = state.sound ? '🔊 소리 켜짐' : '🔇 소리 꺼짐'; }
+  function renderSoundBtn() { $('#soundBtn').textContent = state.sound ? '소리 켜짐' : '소리 꺼짐'; }
 
   function renderArcade() {
     const best = userData().best || {};
@@ -714,33 +839,80 @@ button{font-family:inherit;font-weight:inherit;color:inherit;cursor:pointer;bord
       b.style.setProperty('--bg', game.bg);
       b.innerHTML = `<span class="pc-emoji">${game.emoji}</span><span class="pc-name">${game.name}</span><span class="pc-desc">${game.desc}</span>` +
         (best[game.mode] ? `<span class="pc-best">🏆 최고 ${best[game.mode]}점</span>` : '');
-      b.onclick = () => {
-        if (game.href) { location.href = game.href + '?mul=1&u=' + encodeURIComponent(state.guest ? '' : state.user || ''); return; }
-        state.mode = game.mode; startWithIntro();
-      };
+      b.onclick = () => openSetup(game);
       g.appendChild(b);
     });
   }
 
+  /* ---------- 게임 설정 창: 단 · 난이도를 고르고 '선택 완료' ---------- */
+  let setupGame = null;
+  function renderDiffs() {
+    const g = $('#diffGrid'); g.innerHTML = '';
+    DIFFS.forEach((d, i) => {
+      const b = document.createElement('button');
+      b.className = 'diff' + (state.diff === d ? ' on' : '');
+      b.innerHTML = `<b>${DIFF_NAME[d]}</b><small>${setupGame.diffs[i]}</small>`;
+      b.onclick = () => { state.diff = d; store.set('ggd_diff', d); renderDiffs(); };
+      g.appendChild(b);
+    });
+  }
+  function openSetup(game) {
+    setupGame = game;
+    $('#setupTitle').textContent = game.name;
+    $('#setupSub').textContent = game.sub;
+    $('#setupInfo').innerHTML = game.info;
+    $('#keyHints').innerHTML = game.keys.map(([k, t]) => `<span><kbd>${k}</kbd>${t}</span>`).join('');
+    renderDanGrid(); renderDiffs(); renderSoundBtn();
+    $('#setupModal').classList.remove('hidden');
+  }
+  const setupOpen = () => !$('#setupModal').classList.contains('hidden');
+  function closeSetup() { $('#setupModal').classList.add('hidden'); }
+  $('#setupClose').onclick = closeSetup;
+  $('#setupModal').onclick = e => { if (e.target.id === 'setupModal') closeSetup(); };
+  $('#setupGo').onclick = () => {
+    if (needDans()) return;
+    const game = setupGame;
+    closeSetup();
+    if (game.href) {
+      location.href = game.href + '?mul=1&d=' + state.diff + '&u=' + encodeURIComponent(state.guest ? '' : state.user || '');
+      return;
+    }
+    state.mode = game.mode; startWithIntro();
+  };
+  document.addEventListener('keydown', e => {
+    if (!setupOpen() || !$('#tableModal').classList.contains('hidden')) return;
+    if (e.key === 'Escape') closeSetup();
+    else if (e.key === 'Enter') { e.preventDefault(); $('#setupGo').onclick(); }
+  });
+
   /* ---------- 시작 전 놀이 방법 팝업 (펭귄 달리기는 자기 안내 팝업이 따로 있어요) ---------- */
+  // 풍선 퀴즈: 느긋하게는 예전 연습 놀이처럼(시간 없음 · 힌트 · 다시 고르기), 알맞게 · 빠르게는 도전 놀이처럼(제한 시간 · 하트 3개)
+  const relaxed = () => state.mode === 'quiz' && QUIZ_TIME[state.diff] === 0;
+  const quizTime = () => QUIZ_TIME[state.diff];
   const INTRO = {
-    practice: { emoji: '🌱', title: '연습 놀이', list: [
-      ['🎈', '문제를 보고 <b>정답 풍선</b>을 눌러 터뜨려요!'],
-      ['💡', '틀려도 괜찮아요. <b>힌트</b>를 보고 다시 골라요'],
-      ['⌨️', '키보드 <b>1 ~ 4</b> 번으로도 풍선을 고를 수 있어요']] },
-    challenge: { emoji: '⏱️', title: '도전 놀이', list: [
-      ['🎈', '문제를 보고 <b>정답 풍선</b>을 눌러 터뜨려요!'],
-      ['⏰', '한 문제에 <b>10초</b>! 시간이 지나면 하트가 줄어요'],
-      ['❤️', '틀리면 하트가 하나 줄어요. <b>하트 3개</b>를 다 쓰면 끝!'],
-      ['🔥', '연속으로 맞히면 <b>점수가 쑥쑥</b> 올라가요']] },
-    catch: { emoji: '🧺', title: '정답 바구니', list: [
+    quiz: () => relaxed()
+      ? { emoji: '🎈', title: '풍선 퀴즈 · 느긋하게', list: [
+        ['🎈', '문제를 보고 <b>정답 풍선</b>을 눌러 터뜨려요!'],
+        ['💡', '틀려도 괜찮아요. <b>힌트</b>를 보고 다시 골라요'],
+        ['⌨️', '키보드 <b>1 ~ 4</b> 번으로도 풍선을 고를 수 있어요']] }
+      : { emoji: '🎈', title: '풍선 퀴즈 · ' + DIFF_NAME[state.diff], list: [
+        ['🎈', '문제를 보고 <b>정답 풍선</b>을 눌러 터뜨려요!'],
+        ['⏰', `한 문제에 <b>${quizTime()}초</b>! 시간이 지나면 하트가 줄어요`],
+        ['❤️', '틀리면 하트가 하나 줄어요. <b>하트 3개</b>를 다 쓰면 끝!'],
+        ['🔥', '연속으로 맞히면 <b>점수가 쑥쑥</b> 올라가요']] },
+    catch: () => ({ emoji: '🧺', title: '정답 바구니 · ' + DIFF_NAME[state.diff], list: [
       ['⬅️➡️', '<b>← →</b> 방향키나 마우스·손가락으로 바구니를 움직여요'],
-      ['🍎', '<b>정답 열매</b>만 쏙 받아요!'],
+      ['🍎', `<b>정답 열매</b>만 쏙 받아요! 정답 <b>${CATCH_GOAL}개</b>를 받으면 끝!`],
       ['💣', '틀린 열매나 <b>폭탄</b>을 받으면 ❤️ 하트가 하나 줄어요'],
-      ['💎', '<b>❤️ 하트</b>는 하나 채워주고, <b>💎 보석</b>은 +50점! 정답 10개마다 빨라져요']] }
+      ['💎', '<b>❤️ 하트</b>는 하나 채워주고, <b>💎 보석</b>은 +50점!']] }),
+    mole: () => ({ emoji: '🔨', title: '두더지 잡기 · ' + DIFF_NAME[state.diff], list: [
+      ['🕳️', '구멍에서 <b>숫자 두더지</b>들이 쑥쑥 올라왔다 내려가요'],
+      ['🔨', '<b>정답 숫자</b>를 든 두더지를 눌러서 뿅! 잡아요'],
+      ['❤️', '틀린 두더지를 잡으면 하트가 하나 줄어요. <b>하트 3개</b>를 다 쓰면 끝!'],
+      ['⌨️', '키보드 <b>1 ~ 9</b> 번으로도 잡을 수 있어요 (왼쪽 위부터)']] })
   };
   function startWithIntro() {
-    const it = INTRO[state.mode];
+    const it = INTRO[state.mode] && INTRO[state.mode]();
     if (!it) { startGame(); return; }
     $('#giEmoji').textContent = it.emoji;
     $('#giTitle').textContent = it.title;
@@ -753,7 +925,7 @@ button{font-family:inherit;font-weight:inherit;color:inherit;cursor:pointer;bord
   $('#giOk').onclick = () => { $('#gameIntro').classList.add('hidden'); };
   $('#giBack').onclick = () => {
     $('#gameIntro').classList.add('hidden');
-    $(state.mode === 'catch' ? '#catchQuit' : '#quitBtn').onclick();
+    $(state.mode === 'catch' ? '#catchQuit' : state.mode === 'mole' ? '#moleQuit' : '#quitBtn').onclick();
   };
   // 안내 팝업이 떠 있으면 스페이스·엔터로도 확인
   document.addEventListener('keydown', e => {
@@ -814,7 +986,6 @@ button{font-family:inherit;font-weight:inherit;color:inherit;cursor:pointer;bord
   $('#userNameInput').addEventListener('keydown', e => { if (e.key === 'Enter') submitNewUser(); });
   $('#userGuest').onclick = () => { enterAs(null); };
   $('#userBack').onclick = () => { show('#intro'); };
-  $('#changeUser').onclick = () => { show('#intro'); };
   $('#soundBtn').onclick = () => {
     state.sound = !state.sound; store.set('ggd_sound', state.sound);
     if (!state.sound && 'speechSynthesis' in window) speechSynthesis.cancel();
@@ -823,6 +994,7 @@ button{font-family:inherit;font-weight:inherit;color:inherit;cursor:pointer;bord
 
   /* ---------- 구구단표 ---------- */
   $('#tableBtn').onclick = () => {
+    if (needDans()) return;
     const g = $('#tableGrid'); g.innerHTML = '';
     [...state.dans].sort((a, b) => a - b).forEach((d, idx) => {
       const card = document.createElement('div');
@@ -830,9 +1002,9 @@ button{font-family:inherit;font-weight:inherit;color:inherit;cursor:pointer;bord
       card.style.setProperty('--bg', CARD_BG[idx % CARD_BG.length]);
       card.innerHTML = `<h4>${d}단</h4>`;
       for (let b = 1; b <= 9; b++) {
-        const row = document.createElement('button');
+        const row = document.createElement('div');
+        row.className = 'dan-row';
         row.textContent = `${d} × ${b} = ${d * b}`;
-        row.onclick = () => speak(`${d} 곱하기 ${b}${eun(b)} ${d * b}`);
         card.appendChild(row);
       }
       g.appendChild(card);
@@ -844,7 +1016,7 @@ button{font-family:inherit;font-weight:inherit;color:inherit;cursor:pointer;bord
 
   /* ---------- 게임 ---------- */
   function show(id) {
-    ['#intro', '#user', '#home', '#game', '#run', '#catch', '#result'].forEach(s => $(s).classList.toggle('hidden', s !== id));
+    ['#intro', '#user', '#home', '#game', '#run', '#catch', '#mole', '#result'].forEach(s => $(s).classList.toggle('hidden', s !== id));
     $('.app').classList.toggle('menu', id === '#home');
     // 정답 바구니는 타자게임처럼 넓은 화면을 써요
     $('.app').classList.toggle('wide', id === '#catch');
@@ -875,7 +1047,7 @@ button{font-family:inherit;font-weight:inherit;color:inherit;cursor:pointer;bord
   function startGame() {
     speak(''); // iOS 등에서 음성 권한 깨우기
     // 정답 바구니는 하트가 다 없어질 때까지 계속해요
-    state.total = state.mode === 'penguin' ? RUN_STAGES * PER_STAGE : state.mode === 'catch' ? 999 : TOTAL;
+    state.total = state.mode === 'penguin' ? RUN_TOTAL : state.mode === 'catch' ? CATCH_GOAL : state.mode === 'mole' ? MOLE_TOTAL : TOTAL;
     Object.assign(state, {
       qs: buildQuestions(), i: 0, score: 0, lives: state.mode === 'catch' ? CATCH_LIVES : LIVES, combo: 0,
       correct: 0, wrong: [], locked: false
@@ -883,17 +1055,19 @@ button{font-family:inherit;font-weight:inherit;color:inherit;cursor:pointer;bord
     $('#score').textContent = '0';
     $('#runScore').textContent = '0';
     $('#catchScore').textContent = '0';
+    $('#moleScore').textContent = '0';
+    if (state.mode === 'mole') return startMole();
     if (state.mode === 'penguin') return startRun();
     if (state.mode === 'catch') return startCatch();
-    $('#timerBar').classList.toggle('hidden', state.mode !== 'challenge');
+    $('#timerBar').classList.toggle('hidden', relaxed());
     renderHearts();
     show('#game');
     nextQuestion();
   }
 
   function renderHearts(justLost) {
-    const h = $(state.mode === 'penguin' ? '#runHearts' : state.mode === 'catch' ? '#catchHearts' : '#hearts');
-    if (state.mode === 'practice') { h.className = 'practice-tag'; h.textContent = '🌱 연습 놀이'; return; }
+    const h = $(state.mode === 'penguin' ? '#runHearts' : state.mode === 'catch' ? '#catchHearts' : state.mode === 'mole' ? '#moleHearts' : '#hearts');
+    if (relaxed()) { h.className = 'practice-tag'; h.textContent = '🌱 느긋하게'; return; }
     h.className = 'hearts';
     let html = '';
     // 펭귄 달리기는 하트를 반 개씩 잃고 채워요
@@ -910,7 +1084,7 @@ button{font-family:inherit;font-weight:inherit;color:inherit;cursor:pointer;bord
   function talk(text) { $('#talk').textContent = text; }
 
   function nextQuestion() {
-    if (state.i >= state.total || (state.mode === 'challenge' && state.lives <= 0)) return finish();
+    if (state.i >= state.total || (!relaxed() && state.lives <= 0)) return finish();
     const [a, b] = state.qs[state.i];
     state.cur = { a, b, ans: a * b };
     state.missedThis = false;
@@ -938,11 +1112,12 @@ button{font-family:inherit;font-weight:inherit;color:inherit;cursor:pointer;bord
 
     const q = `${a} 곱하기 ${b}${eun(b)}?`;
     talk(q + ' 🎈 풍선을 터뜨려!');
-    if (state.mode === 'challenge') startTimer();
+    if (!relaxed()) startTimer();
   }
 
   function startTimer() {
     stopTimer();
+    const TIME = quizTime();
     state.timeLeft = TIME;
     const fill = $('#timerFill');
     fill.classList.remove('hurry');
@@ -967,8 +1142,8 @@ button{font-family:inherit;font-weight:inherit;color:inherit;cursor:pointer;bord
 
   function bumpScore(gain) {
     state.score += gain;
-    $('#score').textContent = $('#runScore').textContent = $('#catchScore').textContent = state.score;
-    animate($(state.mode === 'penguin' ? '#runScoreBox' : state.mode === 'catch' ? '#catchScoreBox' : '#scoreBox'), 'bump');
+    $('#score').textContent = $('#runScore').textContent = $('#catchScore').textContent = $('#moleScore').textContent = state.score;
+    animate($(state.mode === 'penguin' ? '#runScoreBox' : state.mode === 'catch' ? '#catchScoreBox' : state.mode === 'mole' ? '#moleScoreBox' : '#scoreBox'), 'bump');
   }
 
   function showCombo() {
@@ -1007,8 +1182,8 @@ button{font-family:inherit;font-weight:inherit;color:inherit;cursor:pointer;bord
     if (!state.missedThis) state.wrong.push({ a, b, ans });
     state.missedThis = true;
 
-    if (state.mode === 'practice') {
-      // 연습 모드: 힌트 주고 다시 고르기
+    if (relaxed()) {
+      // 느긋하게: 힌트 주고 다시 고르기
       talk(pick(CHEER));
       $('#hint').textContent = `💡 힌트: ${a}${eul(a)} ${b}번 더해 봐!  ${Array(b).fill(a).join(' + ')}`;
       return;
@@ -1046,15 +1221,15 @@ button{font-family:inherit;font-weight:inherit;color:inherit;cursor:pointer;bord
   }
 
   function finish() {
-    stopTimer(); stopRun(); stopCatch();
+    stopTimer(); stopRun(); stopCatch(); stopMole();
     $('#progressFill').style.width = '100%';
     const isCatch = state.mode === 'catch';
     const ratio = state.correct / state.total;
-    // 정답 바구니는 끝이 없어서, 받은 정답 개수로 별을 줘요
-    const stars = isCatch ? (state.correct >= 30 ? 3 : state.correct >= 15 ? 2 : 1) : ratio >= 0.9 ? 3 : ratio >= 0.6 ? 2 : 1;
+    // 정답 바구니는 정답을 다 받았으면 남은 하트로, 못 받았으면 받은 개수로 별을 줘요
+    const stars = isCatch ? (state.correct < CATCH_GOAL ? (ratio >= 0.6 ? 2 : 1) : state.lives >= CATCH_LIVES - 1 ? 3 : state.lives >= 2 ? 2 : 1)
+      : ratio >= 0.9 ? 3 : ratio >= 0.6 ? 2 : 1;
     const titles = { 3: '완벽해요! 🏆', 2: '아주 잘했어요! 🎉', 1: '잘했어요! 다음엔 더 잘할 수 있어 💪' };
-    $('#resultTitle').textContent = isCatch ? titles[stars]
-      : (state.mode !== 'practice' && state.lives <= 0) ? '하트를 다 썼어요! 다시 도전! 💪' : titles[stars];
+    $('#resultTitle').textContent = (!relaxed() && state.lives <= 0) ? '하트를 다 썼어요! 다시 도전! 💪' : titles[stars];
     $('#stars').innerHTML = [1, 2, 3].map(k =>
       `<span class="${k <= stars ? '' : 'dim'}" style="animation-delay:${k * 0.25}s">⭐</span>`).join('');
 
@@ -1063,8 +1238,8 @@ button{font-family:inherit;font-weight:inherit;color:inherit;cursor:pointer;bord
     const isRecord = state.score > best;
     if (isRecord) data.best[state.mode] = state.score;
     $('#resultCard').innerHTML =
-      (state.mode === 'penguin' ? `도착한 스테이지 <b>${Math.min(RUN_STAGES, run.stage + 1)}</b> / ${RUN_STAGES}<br>` : '') +
-      (isCatch ? `받은 정답 <b>${state.correct}</b>개 · 💎 보석 <b>${cg.gems}</b>개<br>` : `맞힌 문제 <b>${state.correct}</b> / ${state.total}<br>`) +
+      `${MODE_NAME[state.mode]} · ${DIFF_NAME[state.diff]}<br>` +
+      (isCatch ? `받은 정답 <b>${state.correct}</b> / ${CATCH_GOAL}개 · 💎 보석 <b>${cg.gems}</b>개<br>` : `맞힌 문제 <b>${state.correct}</b> / ${state.total}<br>`) +
       `점수 <b>${state.score}</b>점 ${isRecord && state.score > 0 ? '<span class="record">🎊 최고 기록!</span>' : ''}<br>` +
       `<small style="color:var(--muted)">${MODE_NAME[state.mode]} 최고 점수: ${Math.max(best, state.score)}점</small>` +
       (isCatch ? catchRankHtml() : '');
@@ -1080,7 +1255,7 @@ button{font-family:inherit;font-weight:inherit;color:inherit;cursor:pointer;bord
       rv.innerHTML = '<div class="label" style="text-align:center">💯 틀린 문제가 하나도 없어요!</div>';
     }
 
-    $('#resultBuddy').textContent = state.mode === 'penguin' ? '🐧' : state.buddy;
+    $('#resultBuddy').textContent = state.mode === 'penguin' ? '🐧' : state.mode === 'mole' ? '🔨' : state.buddy;
     show('#result');
     sfx.win();
     speak(stars === 3 ? '완벽해요! 최고야!' : '잘했어요!');
@@ -1135,7 +1310,7 @@ button{font-family:inherit;font-weight:inherit;color:inherit;cursor:pointer;bord
     renderHearts();
     show('#run');
     resizeRun();
-    Object.assign(run, { active: false, dist: 0, px: 0, lean: 0, dir: 0, target: null, gates: [], jumpT: 0, fallT: 0, stage: 0, banner: null,
+    Object.assign(run, { active: false, dist: 0, px: 0, lean: 0, dir: 0, target: null, gates: [], jumpT: 0, fallT: 0, snap: false, stage: RUN_LEVEL[state.diff], banner: null,
       fish: [], fishT: 4, goal: null, gulpT: 0, logs: [], freezeT: 0, energy: 0, hopT: 0 });
     renderEnergy();
     run.keys.l = run.keys.r = false;
@@ -1173,15 +1348,10 @@ button{font-family:inherit;font-weight:inherit;color:inherit;cursor:pointer;bord
     $('#rqa').textContent = a; $('#rqb').textContent = b;
     const qm = $('#rqans'); qm.textContent = '?'; qm.className = 'q-mark';
     $('#runProgress').style.width = (state.i / state.total * 100) + '%';
-    // 스테이지가 올라갈수록 허들이 빨리 다가옴
-    const stage = Math.floor(state.i / PER_STAGE);
-    if (stage !== run.stage || state.i === 0) {
-      run.stage = stage;
-      run.banner = { text: stage === 0 ? '스테이지 1 출발! 🐧' : `스테이지 ${stage + 1}! 더 빨라져요 🚀`, t: 1.8 };
-      if (stage > 0) $('#runMsg').textContent = '◀ ▶ 로 정답 허들로! 🪵 통나무는 스페이스(화면 톡)로 점프!';
-    }
-    $('#runProgressText').textContent = `스테이지 ${stage + 1} / ${RUN_STAGES}  ·  ${state.i + 1} / ${state.total}`;
-    run.speed = Z_SPAWN / STAGE_TIME[stage];
+    // 허들이 다가오는 속도는 고른 난이도대로 한 판 내내 그대로예요
+    if (state.i === 0) run.banner = { text: `${DIFF_NAME[state.diff]} 출발! 🐧`, t: 1.8 };
+    $('#runProgressText').textContent = `${DIFF_NAME[state.diff]}  ·  ${state.i + 1} / ${state.total}`;
+    run.speed = Z_SPAWN / RUN_TIME[state.diff];
     run.gates.push({ z: Z_SPAWN, vals: makeChoices(a, b, 3), ans: a * b, done: false, pick: -1, ok: false });
   }
 
@@ -1216,14 +1386,14 @@ button{font-family:inherit;font-weight:inherit;color:inherit;cursor:pointer;bord
       $('#runMsg').textContent = `앗! ${a} × ${b} = ${ans} 이야!`;
       delay = 1700;
     }
-    const goalNext = (state.i + 1) % PER_STAGE === 0 || state.i + 1 >= state.total;
+    const goalNext = state.i + 1 >= state.total;
     if (state.lives > 0 && !goalNext) maybeLog(delay / 1000);
     const tok = run.tok;
     setTimeout(() => {
       if (tok !== run.tok) return;
       state.i++;
-      // 스테이지 마지막 문제를 지나면 이글루까지 달려가요
-      if (state.lives > 0 && state.i % PER_STAGE === 0) startGoal();
+      // 마지막 문제를 지나면 이글루까지 달려가요
+      if (state.lives > 0 && state.i >= state.total) startGoal();
       else nextRunQuestion();
     }, delay);
   }
@@ -1342,14 +1512,13 @@ button{font-family:inherit;font-weight:inherit;color:inherit;cursor:pointer;bord
       run.target = 0;
       if (gl.z <= 4.2) {
         gl.z = 4.2; gl.phase = 'wave'; gl.t = 0;
-        const stage = state.i / PER_STAGE;
         sfx.win();
         const g = geo(), p = proj(g, 0, 0), r = canvas.getBoundingClientRect();
         burstAt(r.left + p.x, r.top + p.y - g.R * 0.4);
         if (gl.last) { confetti(30); speak('도착! 다 해냈어요!'); }
         else speak('도착!');
-        $('#runMsg').textContent = gl.last ? '🎉 마지막 이글루 도착! 다 해냈어요!' : `🏠 이글루 도착! 스테이지 ${stage}${eul(stage)} 통과했어요!`;
-        run.banner = { text: gl.last ? '🎉 모든 스테이지 도착!' : `🏠 스테이지 ${stage} 도착!`, t: 1.8 };
+        $('#runMsg').textContent = '🎉 이글루 도착! 다 해냈어요!';
+        run.banner = { text: '🎉 이글루 도착!', t: 1.8 };
       }
     } else if (gl.t > (gl.last ? 3.2 : 2.6)) {
       run.goal = null;
@@ -1376,7 +1545,12 @@ button{font-family:inherit;font-weight:inherit;color:inherit;cursor:pointer;bord
     }
     if (run.fallT > 0 || run.freezeT > 0 || (run.goal && run.goal.phase === 'wave')) dir = 0;
     run.dir = dir;
-    run.px = Math.max(-0.82, Math.min(0.82, run.px + dir * (1.9 + run.stage * 0.15) * (MOBILE.matches ? MOBILE_SPEED * 1.2 : 1) * dt));
+    // 방향키 · ◀ ▶ 로 고른 줄은 슉! 빠르게 그 줄 가운데로 가요 (마우스 · 손가락 밀기는 원래 속도)
+    const spd = run.snap && run.target != null ? LANE_SNAP : (1.9 + run.stage * 0.15) * (MOBILE.matches ? MOBILE_SPEED * 1.2 : 1);
+    let nx = run.px + dir * spd * dt;
+    if (run.snap && run.target != null && (nx - run.target) * (run.px - run.target) <= 0) { nx = run.target; run.target = null; }
+    run.px = Math.max(-0.82, Math.min(0.82, nx));
+    if (run.target == null) run.snap = false;
     run.lean += (dir * 0.22 - run.lean) * Math.min(1, dt * 10);
     $('#padL').classList.toggle('on', dir < -0.1);
     $('#padR').classList.toggle('on', dir > 0.1);
@@ -1805,12 +1979,19 @@ button{font-family:inherit;font-weight:inherit;color:inherit;cursor:pointer;bord
   function aim(e) {
     const g = geo(), r = field.getBoundingClientRect();
     run.target = Math.max(-0.82, Math.min(0.82, (e.clientX - r.left - g.cx) / g.R));
+    run.snap = false;
   }
-  // dir 쪽으로 가장 가까운 다음 줄 (끝 줄이면 가장자리까지)
+  // dir 쪽으로 가장 가까운 다음 줄 가운데 (끝 줄이면 그 줄 가운데에 그대로)
+  const LANE_SNAP = 7;   // 줄을 옮길 때 속도 (한 줄을 0.1초쯤에)
   function nextLane(dir) {
     const from = run.target != null ? run.target : run.px;
     const lanes = dir > 0 ? LANE_X.filter(x => x > from + 0.05) : LANE_X.filter(x => x < from - 0.05).reverse();
-    return lanes.length ? lanes[0] : dir * 0.82;
+    return lanes.length ? lanes[0] : LANE_X[dir > 0 ? 2 : 0];
+  }
+  function laneStep(dir) {
+    if (!run.active) return;
+    run.target = nextLane(dir);
+    run.snap = true;
   }
   field.addEventListener('pointerdown', e => {
     if (e.target.closest('.run-pad')) return;
@@ -1824,7 +2005,7 @@ button{font-family:inherit;font-weight:inherit;color:inherit;cursor:pointer;bord
     if (!swipe) return;
     const dx = e.clientX - swipe.x;
     if (!swipe.moved && Math.abs(dx) > 14) swipe.moved = true;
-    if (swipe.moved) run.target = Math.max(-0.82, Math.min(0.82, swipe.px + dx * 1.6 / geo().R));
+    if (swipe.moved) { run.target = Math.max(-0.82, Math.min(0.82, swipe.px + dx * 1.6 / geo().R)); run.snap = false; }
   });
   field.addEventListener('pointerup', e => {
     if (!swipe) return;
@@ -1837,22 +2018,9 @@ button{font-family:inherit;font-weight:inherit;color:inherit;cursor:pointer;bord
     swipe = null;
   });
   field.addEventListener('pointercancel', () => { swipe = null; });
-  // ◀ ▶ 버튼: 톡 누르면 옆 줄로 한 칸, 꾹 누르고 있으면 계속 그쪽으로 가요
-  [['#padL', 'l', -1], ['#padR', 'r', 1]].forEach(([sel, k, dir]) => {
-    const pad = $(sel);
-    let holdTimer = null;
-    pad.addEventListener('pointerdown', e => {
-      e.preventDefault();
-      if (!run.active) return;
-      run.target = nextLane(dir);
-      clearTimeout(holdTimer);
-      holdTimer = setTimeout(() => { run.keys[k] = true; }, 250);
-      try { pad.setPointerCapture(e.pointerId); } catch (err) { /* 이미 끝난 터치 */ }
-    });
-    const up = () => { clearTimeout(holdTimer); run.keys[k] = false; };
-    pad.addEventListener('pointerup', up);
-    pad.addEventListener('pointercancel', up);
-    pad.addEventListener('lostpointercapture', up);
+  // ◀ ▶ 버튼: 한 번 누를 때마다 옆 줄 가운데로 슉!
+  [['#padL', -1], ['#padR', 1]].forEach(([sel, dir]) => {
+    $(sel).addEventListener('pointerdown', e => { e.preventDefault(); laneStep(dir); });
   });
 
   // 키보드: ← → 또는 A D
@@ -1862,10 +2030,9 @@ button{font-family:inherit;font-weight:inherit;color:inherit;cursor:pointer;bord
     if (!$('#runIntro').classList.contains('hidden') && (e.code === 'Space' || e.key === 'Enter')) { e.preventDefault(); beginRun(); return; }
     if (run.active && (e.code === 'Space' || e.key === ' ' || e.key === 'ArrowUp' || e.key === 'w' || e.key === 'W')) { e.preventDefault(); if (!e.repeat) hop(); return; }
     if (!run.active || !RUN_KEYS[e.key]) return;
-    run.keys[RUN_KEYS[e.key]] = true; e.preventDefault();
-  });
-  document.addEventListener('keyup', e => {
-    if (RUN_KEYS[e.key]) run.keys[RUN_KEYS[e.key]] = false;
+    // 한 번 누를 때마다 옆 줄 가운데로 한 칸 (꾹 눌러도 한 칸만)
+    e.preventDefault();
+    if (!e.repeat) laneStep(RUN_KEYS[e.key] === 'l' ? -1 : 1);
   });
   window.addEventListener('blur', () => { run.keys.l = run.keys.r = false; cg.keys.l = cg.keys.r = false; });
 
@@ -1902,15 +2069,8 @@ button{font-family:inherit;font-weight:inherit;color:inherit;cursor:pointer;bord
     const baseY = H - gh * 0.45;
     return { W, H, gh, cs, baseY, basketY: baseY - cs * 0.42, bw: cs * 0.62, ir: Math.max(17, Math.min(26, Math.min(W, H) * 0.04)) };
   }
-  // 속도는 6단계: 정답 10개마다 한 단계씩 빨라지고, 6단계부터는 하트가 다 없어질 때까지 그대로예요
-  const SPEED_STEPS = 6, PER_SPEED = 10;
-  const speedStep = () => Math.min(SPEED_STEPS - 1, Math.floor(state.correct / PER_SPEED));   // 0 ~ 5
-  const catchLevel = () => speedStep() * 6;   // 아래 속도 식에 쓰는 값 (0 ~ 30)
-  function showSpeedUp() {
-    const step = speedStep() + 1;
-    cg.speedUp = { t: 1.5, step };
-    [660, 880, 1175].forEach((fq, i) => tone(fq, 0.14, 'triangle', i * 0.08, 0.1));
-  }
+  // 속도는 고른 난이도대로 한 판 내내 그대로예요 (아래 속도 식에 쓰는 값 0 ~ 24)
+  const catchLevel = () => CATCH_LV[state.diff];
 
   function startCatch() {
     renderHearts();
@@ -1920,7 +2080,7 @@ button{font-family:inherit;font-weight:inherit;color:inherit;cursor:pointer;bord
       active: true, t: 0, px: 0.5, lean: 0, target: null, items: [], spawnT: 0.6, sinceAns: 1,
       heartT: 25 + Math.random() * 10, gemT: 9 + Math.random() * 6, gems: 0,
       waitT: 0, overT: 0, hurtT: 0, happyT: 0, shakeT: 0, flashT: 0, basket: [],
-      banner: { text: '준비~ 시작! 🧺', t: 1.8 }, speedUp: null
+      banner: { text: '준비~ 시작! 🧺', t: 1.8 }
     });
     cg.keys.l = cg.keys.r = false;
     $('#catchGems').textContent = '0';
@@ -2002,9 +2162,14 @@ button{font-family:inherit;font-weight:inherit;color:inherit;cursor:pointer;bord
       cg.basket.push(it.color); if (cg.basket.length > 5) cg.basket.shift();
       $('#catchMsg').textContent = pick(PRAISE) + (state.combo >= 2 ? `  🔥 ${state.combo}콤보!` : '');
       if (state.combo % 5 === 0) cg.banner = { text: `🔥 ${state.combo}콤보! 보너스 점수 UP`, t: 1.8 };
-      // 정답 10개마다 한 단계씩 빨라져요 (6단계까지)
-      if (state.correct % PER_SPEED === 0 && state.correct / PER_SPEED < SPEED_STEPS) showSpeedUp();
       $('#catchMsg').textContent = `${a} × ${b} = ${ans} 정답! ` + pick(PRAISE) + (state.combo >= 2 ? `  🔥 ${state.combo}콤보!` : '');
+      // 정답을 다 받으면 끝!
+      if (state.correct >= CATCH_GOAL) {
+        cg.overT = 1.6;
+        cg.banner = { text: `🎉 정답 ${CATCH_GOAL}개 다 받았어요!`, t: 1.8 };
+        cg.items.forEach(o => { if (!o.done) { o.done = true; o.fade = FADE; } });
+        return;
+      }
       // 화면은 멈추지 않아요: 이미 떨어지고 있던 열매도 그대로 받을 수 있고(새 문제로 채점해요),
       // 다음 문제의 열매가 바로 이어서 떨어져요
       state.i++;
@@ -2105,7 +2270,6 @@ button{font-family:inherit;font-weight:inherit;color:inherit;cursor:pointer;bord
     cg.shakeT = Math.max(0, cg.shakeT - dt);
     cg.flashT = Math.max(0, cg.flashT - dt);
     if (cg.banner && (cg.banner.t -= dt) <= 0) cg.banner = null;
-    if (cg.speedUp && (cg.speedUp.t -= dt) <= 0) cg.speedUp = null;
 
     drawCatch(g);
     cg.raf = requestAnimationFrame(catchFrame);
@@ -2148,47 +2312,21 @@ button{font-family:inherit;font-weight:inherit;color:inherit;cursor:pointer;bord
     if (cg.flashT > 0) { c.fillStyle = `rgba(255,93,115,${0.28 * cg.flashT / 0.35})`; c.fillRect(-10, -10, W + 20, H + 20); }
     if (cg.banner) drawCatchBanner(c, g, cg.banner);
     drawSpeedBadge(c, g);
-    if (cg.speedUp) drawSpeedUp(c, g, cg.speedUp);
     c.restore();
   }
 
-  // 왼쪽 위 지금 속도 단계
+  // 왼쪽 위: 난이도 · 받은 정답 수
   function drawSpeedBadge(c, g) {
-    const step = speedStep() + 1, fs = Math.max(13, Math.min(18, g.W * 0.03));
-    const text = `🚀 속도 ${step} / ${SPEED_STEPS}`;
+    const fs = Math.max(13, Math.min(18, g.W * 0.03));
+    const text = `${DIFF_NAME[state.diff]} · 🍎 ${state.correct} / ${CATCH_GOAL}`;
     c.save();
     c.font = `800 ${fs}px Pretendard, sans-serif`;
     const w = c.measureText(text).width + fs * 1.4, h = fs * 2;
     c.fillStyle = 'rgba(255,255,255,.85)';
     c.beginPath(); if (c.roundRect) c.roundRect(10, 10, w, h, h / 2); else c.rect(10, 10, w, h); c.fill();
-    c.fillStyle = step >= SPEED_STEPS ? '#e8590c' : '#3b2d5c';
+    c.fillStyle = '#3b2d5c';
     c.textAlign = 'left'; c.textBaseline = 'middle';
     c.fillText(text, 10 + fs * 0.7, 10 + h / 2 + 1);
-    c.restore();
-  }
-
-  // 화면 가운데 "스피드 업!" (톡 커졌다가 사라져요)
-  function drawSpeedUp(c, g, su) {
-    const life = 1.5, k = 1 - su.t / life;
-    const pop = k < 0.15 ? 0.6 + k / 0.15 * 0.55 : k < 0.25 ? 1.15 - (k - 0.15) / 0.1 * 0.15 : 1;
-    const alpha = su.t < 0.35 ? su.t / 0.35 : 1;
-    const fs = Math.max(30, Math.min(64, g.W * 0.09));
-    c.save();
-    c.globalAlpha = alpha;
-    c.translate(g.W / 2, g.H * 0.42);
-    c.scale(pop, pop);
-    c.rotate(-0.05);
-    c.font = `${fs}px CookieRun, Jua, sans-serif`;
-    c.textAlign = 'center'; c.textBaseline = 'middle';
-    c.lineJoin = 'round';
-    c.lineWidth = fs * 0.22; c.strokeStyle = '#ffffff';
-    c.strokeText('스피드 업! 🚀', 0, 0);
-    c.fillStyle = '#ff5d73';
-    c.fillText('스피드 업! 🚀', 0, 0);
-    const sub = su.step >= SPEED_STEPS ? '최고 속도! 끝까지 버텨요 🔥' : `속도 ${su.step}단계`;
-    c.font = `800 ${fs * 0.42}px Pretendard, sans-serif`;
-    c.lineWidth = fs * 0.12; c.strokeText(sub, 0, fs * 0.85);
-    c.fillStyle = '#3b2d5c'; c.fillText(sub, 0, fs * 0.85);
     c.restore();
   }
 
@@ -2362,6 +2500,149 @@ button{font-family:inherit;font-weight:inherit;color:inherit;cursor:pointer;bord
     renderArcade(); show('#home');
   };
 
+  /* ---------- 두더지 잡기: 구멍에서 올라오는 숫자 두더지 중 정답 두더지만 잡아요 ---------- */
+  const mg = { active: false, raf: 0, last: 0, holes: [], spawnT: 0, sinceAns: 0, waitT: 0, overT: 0 };
+  function buildMoleField() {
+    const f = $('#moleField'); f.innerHTML = '';
+    mg.holes = [];
+    for (let k = 0; k < 9; k++) {
+      const h = document.createElement('div');
+      h.className = 'hole';
+      h.innerHTML = `<div class="pit"></div><div class="clip"><div class="mole"><span class="m-ear l"></span><span class="m-ear r"></span>` +
+        `<span class="m-eye l"></span><span class="m-eye r"></span><span class="m-nose"></span><span class="m-num"></span></div></div><span class="h-no">${k + 1}</span>`;
+      const hole = { el: h, mole: h.querySelector('.mole'), num: h.querySelector('.m-num'), st: 'down', v: 0, t: 0, life: 0, cool: 0 };
+      h.addEventListener('pointerdown', e => { e.preventDefault(); whack(hole, e.clientX, e.clientY); });
+      f.appendChild(h);
+      mg.holes.push(hole);
+    }
+  }
+  function startMole() {
+    renderHearts();
+    show('#mole');
+    buildMoleField();
+    Object.assign(mg, { active: true, spawnT: 0.8, sinceAns: 0, waitT: 0, overT: 0 });
+    $('#moleMsg').textContent = '정답 숫자를 든 두더지를 뿅! 잡아요';
+    setMoleQuestion();
+    mg.last = performance.now();
+    cancelAnimationFrame(mg.raf);
+    mg.raf = requestAnimationFrame(moleFrame);
+  }
+  function stopMole() { mg.active = false; cancelAnimationFrame(mg.raf); }
+  function setMoleQuestion() {
+    const [a, b] = state.qs[state.i];
+    state.cur = { a, b, ans: a * b, wrongs: makeChoices(a, b, 7).filter(n => n !== a * b) };
+    state.missedThis = false;
+    $('#mqa').textContent = a; $('#mqb').textContent = b;
+    const qm = $('#mqans'); qm.textContent = '?'; qm.className = 'q-mark';
+    $('#moleProgress').style.width = (state.i / state.total * 100) + '%';
+    $('#moleProgressText').textContent = `${DIFF_NAME[state.diff]}  ·  ${state.i + 1} / ${state.total}`;
+  }
+  function moleDown(h, fast) {
+    h.st = 'down'; h.cool = fast ? 0.15 : 0.3;
+    h.mole.classList.remove('up', 'hit', 'shock');
+  }
+  function spawnMole() {
+    const free = mg.holes.filter(h => h.st === 'down' && h.cool <= 0);
+    const up = mg.holes.filter(h => h.st === 'up');
+    if (!free.length || up.length >= MOLE_MAX[state.diff]) return;
+    const { ans, wrongs } = state.cur;
+    const ansUp = up.some(h => h.v === ans);
+    let v;
+    // 정답 두더지는 너무 오래 안 나오지 않게, 한 번에 하나만
+    if (!ansUp && (mg.sinceAns >= 2 || Math.random() < 0.4)) { v = ans; mg.sinceAns = 0; }
+    else {
+      const opts = wrongs.filter(n => !up.some(h => h.v === n));
+      v = pick(opts.length ? opts : wrongs); mg.sinceAns++;
+    }
+    const h = pick(free);
+    Object.assign(h, { st: 'up', v, t: 0, life: MOLE_UP[state.diff] * (0.85 + Math.random() * 0.3) });
+    h.num.textContent = v;
+    h.mole.classList.remove('hit', 'shock');
+    h.mole.classList.add('up');
+  }
+  function hammerAt(x, y) {
+    const m = document.createElement('div');
+    m.className = 'hammer'; m.textContent = '🔨';
+    m.style.left = x + 'px'; m.style.top = y + 'px';
+    document.body.appendChild(m);
+    setTimeout(() => m.remove(), 350);
+  }
+  function whack(h, x, y) {
+    if (!mg.active || introOpen() || mg.overT > 0) return;
+    if (x == null) { const r = h.el.getBoundingClientRect(); x = r.left + r.width / 2; y = r.top + r.height * 0.45; }
+    hammerAt(x, y);
+    if (h.st !== 'up' || mg.waitT > 0) return;
+    const { a, b, ans } = state.cur;
+    if (h.v === ans) {
+      h.st = 'hit'; h.t = 0;
+      h.mole.classList.add('hit');
+      if (!state.missedThis) state.correct++;
+      state.combo++;
+      const gain = (state.missedThis ? 5 : 10) + Math.min(state.combo - 1, 5) * 2;
+      bumpScore(gain);
+      tone(1500, 0.06, 'square', 0, 0.06); tone(2100, 0.1, 'triangle', 0.05, 0.1); sfx.correct();
+      burstAt(x, y); floatAt(x, y - 30, '뿅! +' + gain);
+      const qm = $('#mqans'); qm.textContent = ans; qm.className = 'q-mark ok';
+      $('#moleMsg').textContent = `${a} × ${b} = ${ans} 정답! ` + pick(PRAISE) + (state.combo >= 2 ? `  🔥 ${state.combo}연속!` : '');
+      // 다른 두더지는 쏙 숨고, 잠깐 쉬었다가 다음 문제
+      mg.holes.forEach(o => { if (o !== h && o.st === 'up') moleDown(o, true); });
+      state.i++;
+      if (state.i >= state.total) { mg.overT = 1.3; sfx.win(); return; }
+      mg.waitT = 0.8;
+      return;
+    }
+    // 틀린 두더지: 깜짝 놀라 도망가요
+    h.st = 'hit'; h.t = 0;
+    h.mole.classList.add('shock');
+    sfx.wrong();
+    state.combo = 0;
+    if (!state.missedThis) state.wrong.push({ a, b, ans });
+    state.missedThis = true;
+    state.lives--;
+    renderHearts(true);
+    floatAt(x, y - 30, '앗! ' + h.v);
+    $('#moleMsg').textContent = `${h.v}${eun(h.v)} 정답이 아니에요! ${a} × ${b}${eun(b)}?`;
+    if (state.lives <= 0) {
+      mg.overT = 1.3;
+      mg.holes.forEach(o => { if (o !== h && o.st === 'up') moleDown(o, true); });
+      $('#moleMsg').textContent = '하트를 다 썼어요! 💪';
+    }
+  }
+  function moleFrame(now) {
+    if (!mg.active) return;
+    const dt = introOpen() ? 0 : Math.min(0.05, (now - mg.last) / 1000);   // 안내 팝업이 떠 있으면 멈춰요
+    mg.last = now;
+    if (mg.overT > 0) {
+      if ((mg.overT -= dt) <= 0) { finish(); return; }
+    } else if (mg.waitT > 0) {
+      if ((mg.waitT -= dt) <= 0) { setMoleQuestion(); mg.sinceAns = 2; mg.spawnT = 0.2; }
+    } else if ((mg.spawnT -= dt) <= 0) {
+      spawnMole();
+      mg.spawnT = MOLE_GAP[state.diff] * (0.8 + Math.random() * 0.4);
+    }
+    mg.holes.forEach(h => {
+      if (h.st === 'down') { h.cool -= dt; return; }
+      h.t += dt;
+      if (h.st === 'hit' && h.t > 0.45) moleDown(h);
+      else if (h.st === 'up' && h.t >= h.life && mg.overT <= 0) {
+        if (h.v === state.cur.ans && mg.waitT <= 0) $('#moleMsg').textContent = '정답 두더지가 숨었어요! 다시 나올 거예요 👀';
+        moleDown(h);
+      }
+    });
+    mg.raf = requestAnimationFrame(moleFrame);
+  }
+  $('#moleQuit').onclick = () => {
+    stopMole();
+    if ('speechSynthesis' in window) speechSynthesis.cancel();
+    renderArcade(); show('#home');
+  };
+  // 키보드 1~9: 구멍 번호 (왼쪽 위부터)
+  document.addEventListener('keydown', e => {
+    if ($('#mole').classList.contains('hidden')) return;
+    const k = +e.key;
+    if (k >= 1 && k <= 9 && mg.holes[k - 1]) { e.preventDefault(); whack(mg.holes[k - 1]); }
+  });
+
   $('#againBtn').onclick = startWithIntro;
   $('#homeBtn').onclick = () => { renderArcade(); show('#home'); };
   $('#quitBtn').onclick = () => {
@@ -2382,7 +2663,7 @@ button{font-family:inherit;font-weight:inherit;color:inherit;cursor:pointer;bord
 
   renderDanGrid(); setBuddies(); renderSoundBtn();
 
-  // 다른 페이지에서 연 구구단 게임(기차 · 징검다리 · 버블 팝 · 꿀벌 · 낚시 · 디펜스)에서 돌아오면 같은 사용자로 놀이 고르기 화면을 열어요
+  // 다른 페이지에서 연 구구단 게임(기차 · 징검다리 · 꿀벌 · 낚시 · 디펜스)에서 돌아오면 같은 사용자로 게임 선택 화면을 열어요
   const back = new URLSearchParams(location.search);
   if (back.get('back') === 'arcade') {
     const u = back.get('u');

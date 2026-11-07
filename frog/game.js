@@ -12,6 +12,8 @@
   var LIVES = 5;              // 하트 수
   var PROFILES_KEY = "frog_profiles", GUIDE_ID = MATH ? "frog_mul" : "frog";
   var JUMP_T = 0.5, SINK_T = 0.9, CAM_T = 0.45;
+  // 구구단 난이도: 한 줄(연잎 고르기)에 쓸 수 있는 시간(초, 0 = 제한 없음)
+  var ROW_TIME = MATH ? ML.by({ easy: 0, normal: 10, hard: 6 }) : 0;
 
   var store = {
     get: function (k, d) { try { var v = localStorage.getItem(k); return v == null ? d : JSON.parse(v); } catch (e) { return d; } },
@@ -220,7 +222,7 @@
         // 길이가 비슷한 단어를 섞어서 헷갈리게
         var near = all.filter(function (x) { return x !== w[0] && Math.abs(x.length - w[0].length) <= 1; });
         var others = pickOthers(near.length >= 2 ? near : all, [w[0]], 2);
-        qs.push({ emoji: w[1], html: esc(w[2]), sub: "알맞은 영어 단어 연잎으로 점프!", answer: w[0], options: shuffle([w[0]].concat(others)),
+        qs.push({ emoji: wordPic(w), html: esc(w[2]), sub: "알맞은 영어 단어 연잎으로 점프!", answer: w[0], options: shuffle([w[0]].concat(others)),
           learn: { en: w[0], ko: w[2], emoji: w[1] } });
       });
     } else {
@@ -246,7 +248,7 @@
   var G = {
     W: 0, H: 0, raf: 0, last: 0, t: 0, active: false,
     rows: [], row: 0, x: 0.5, aim: 1, cam: 0, camFrom: 0, camT: 0,
-    jump: null, sink: null, lock: false, after: null,
+    jump: null, sink: null, lock: false, after: null, rowT: 0,
     lives: LIVES, score: 0, firstTry: 0, missed: false, learned: [], ripples: [], winT: 0
   };
   var PAD_X = [0.2, 0.5, 0.8];
@@ -298,6 +300,7 @@
     animate($(".q-card"), "pop");
     G.missed = false;
     G.aim = 1;
+    G.rowT = ROW_TIME;
   }
   function renderHearts(justLost) {
     var h = "";
@@ -403,8 +406,23 @@
     G.ripples.forEach(function (r) { r.t += dt; });
     G.ripples = G.ripples.filter(function (r) { return r.t < 1.2; });
     if (G.winT > 0) G.winT += dt;
+    // 제한 시간: 연잎을 고르는 동안만 줄어요. 다 되면 하트가 하나 줄고 시간이 다시 채워져요
+    if (ROW_TIME && G.rowT > 0 && !G.lock && !G.jump && !G.sink && G.camT === 0 && nextPads()) {
+      G.rowT -= dt;
+      if (G.rowT <= 0) timeUp();
+    }
     draw();
     G.raf = requestAnimationFrame(frame);
+  }
+
+  function timeUp() {
+    G.missed = true;
+    sfx.splash();
+    G.lives--;
+    renderHearts(true);
+    msg("⏰ 시간 끝! 하트가 하나 줄었어요. 얼른 골라요!");
+    if (G.lives <= 0) { G.lock = true; setTimeout(function () { if (G.active) endRound(false); }, 400); return; }
+    G.rowT = ROW_TIME;
   }
 
   function win() {
@@ -487,8 +505,18 @@
       if (G.winT > 0) py -= Math.abs(Math.sin(G.winT * 7)) * g.r * 0.5;
     }
     drawFrog(c, px, py, g.r * 0.95 * s, alpha, look, G.winT > 0);
+    if (ROW_TIME && nextPads()) drawTimer(c, W);
     // 빠진 동안에는 출발했던 자리에 흐릿한 개구리가 다시 나와요
     if (G.sink) drawFrog(c, G.x * W, rowY(g, G.row), g.r * 0.95, Math.min(1, G.sink.t * 1.4) * 0.9, 0, false);
+  }
+
+  // 위쪽 남은 시간 막대 (3초 남으면 빨개져요)
+  function drawTimer(c, W) {
+    var k = Math.max(0, Math.min(1, G.rowT / ROW_TIME)), bw = Math.min(W - 24, 420), x = (W - bw) / 2;
+    c.fillStyle = "rgba(255,255,255,.7)";
+    c.beginPath(); if (c.roundRect) c.roundRect(x, 10, bw, 12, 6); else c.rect(x, 10, bw, 12); c.fill();
+    c.fillStyle = G.rowT <= 3 ? "#ff5d73" : "#22c55e";
+    c.beginPath(); if (c.roundRect) c.roundRect(x, 10, Math.max(12, bw * k), 12, 6); else c.rect(x, 10, bw * k, 12); c.fill();
   }
 
   function drawGrassEdge(c, W, y, dir) {
@@ -585,7 +613,7 @@
       if (isRecord) data.best[key] = G.score;
       saveUserData(data);
     }
-    var label = MATH ? "🔢 " + esc(ML.danText()) : mode.emoji + " " + (mode.id === "meaning" ? grade.grade + "학년 " + mode.name : mode.name);
+    var label = MATH ? "🔢 " + esc(ML.danText()) + " · " + ML.diffName : mode.emoji + " " + (mode.id === "meaning" ? grade.grade + "학년 " + mode.name : mode.name);
     $("#result-text").innerHTML = label + " · 한 번에 맞힌 문제 <b>" + n + "</b> / " + PER_ROUND + "<br>" +
       "점수 <b>" + G.score + "</b>점" + (isRecord && G.score > 0 ? '<span class="record">🎊 최고 기록!</span>' : "");
     var wb = $("#result-words"); wb.innerHTML = "";
@@ -611,7 +639,8 @@
     var back = $(".title-card .back-link");
     back.textContent = "← 게임 고르기";
     back.addEventListener("click", function (e) { e.preventDefault(); ML.back(); });
-    $("#btn-result-mode").textContent = "게임 고르기";
+    $("#btn-result-mode").textContent = "게임 선택";
+    $("#btn-again").textContent = "🔁 한 번 더 하기";
   }
 
   /* ---------- 키보드 · 터치 ---------- */

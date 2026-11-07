@@ -9,6 +9,8 @@
   const ML = window.MulLink || { on: false }, MATH = ML.on;
   const GRADES = window.SPELL_GRADES;
   const TOTAL = 12, LIVES = 5;
+  // 구구단: 고른 난이도대로 물고기 헤엄 속도가 달라요
+  const FISH_MUL = MATH ? ML.by({ easy: 0.65, normal: 1, hard: 1.6 }) : 1;
   const MAX_FISH = 7;          // 바닷속 물고기는 많아야 7마리
   const PROFILES_KEY = "fishing_profiles", GUIDE_ID = MATH ? "fishing_mul" : "fishing";
   const SOUND = !MATH || ML.sound;
@@ -175,7 +177,7 @@
       const pool = (VOWELS.indexOf(ans) >= 0 ? VOWELS : CONSONANTS).split("").filter(ch => ch !== ans && !ALL_WORDS.has(word.slice(0, at) + ch + word.slice(at + 1)));
       const decoys = shuffle(pool).slice(0, 4);
       while (decoys.length < 4) { const ch = pick(CONSONANTS.split("")); if (ch !== ans && decoys.indexOf(ch) < 0) decoys.push(ch); }
-      return { slots: word.split("").map((ch, i) => ({ t: ch, blank: i === at })), ans, decoys, emoji: w[1], sub: w[2], say: w[0],
+      return { slots: word.split("").map((ch, i) => ({ t: ch, blank: i === at })), ans, decoys, emoji: wordPic(w), sub: w[2], say: w[0],
         learn: { en: w[0], ko: w[2], emoji: w[1] } };
     });
   }
@@ -403,7 +405,7 @@
     // 물고기 헤엄
     G.fish.forEach(f => {
       if (f.caught) return;
-      f.x += f.dir * f.speed * dt;
+      f.x += f.dir * f.speed * FISH_MUL * dt;
       if (f.flee > 0) f.flee = Math.max(0, f.flee - dt);
       if (!f.leave && f.speed > 0.1 && f.flee <= 0) f.speed = 0.06;
       // 화면 끝에서 돌아와요 (떠나는 물고기는 그냥 나가요)
@@ -550,7 +552,7 @@
       if (isRecord) data.best[key] = G.score;
       saveUserData(data);
     }
-    const label = MATH ? "🎣 " + ML.danText() : "🎣 " + grade.grade + "학년";
+    const label = MATH ? "🎣 " + ML.danText() + " · " + ML.diffName : "🎣 " + grade.grade + "학년";
     $("#result-text").innerHTML = esc(label) + " · 낚은 빈칸 <b>" + n + "</b> / " + TOTAL + "<br>" +
       "점수 <b>" + G.score + "</b>점" + (isRecord && G.score > 0 ? '<span class="record">🎊 최고 기록!</span>' : "");
     const wb = $("#result-words"); wb.innerHTML = "";
@@ -575,7 +577,8 @@
     const back = $("#title-back");
     back.textContent = "← 게임 고르기";
     back.addEventListener("click", e => { e.preventDefault(); ML.back(); });
-    $("#btn-result-back").textContent = "게임 고르기";
+    $("#btn-result-back").textContent = "게임 선택";
+    $("#btn-again").textContent = "🔁 한 번 더 하기";
     $("#btn-say").style.display = "none";
   }
 

@@ -139,7 +139,8 @@
     enterAs(name);
   }
   $("#btn-start").addEventListener("click", function () {
-    if (MATH) { renderLevels(); show("screen-level"); return; }
+    // 구구단: 난이도는 구구단 놀이터 설정 창에서 이미 골랐어요
+    if (MATH) { chooseLevel(mathLevel()); return; }
     renderUserList(); $("#user-name-input").value = ""; show("screen-user"); });
   $("#btn-user-new").addEventListener("click", submitNewUser);
   $("#user-name-input").addEventListener("keydown", function (e) { if (e.key === "Enter") submitNewUser(); });
@@ -186,6 +187,7 @@
       g.appendChild(b);
     });
   }
+  function mathLevel() { return LEVELS.filter(function (l) { return l.id === ML.diff; })[0] || LEVELS[1]; }
   var MATH_DESC = { easy: "필요한 숫자만 나와요. 다음 숫자가 반짝!", normal: "헷갈리는 방해 숫자 3개", hard: "방해 숫자 6개! 기차도 더 빨라요" };
   function guide(onStart) {
     if (MATH) return {
@@ -281,7 +283,7 @@
     G.snake = [{ x: cx, y: cy }]; G.prev = [{ x: cx, y: cy }];
     G.cars = []; G.dir = null; G.queue = []; G.moving = false; G.acc = 0;
     placeLetters();
-    $("#hint-emoji").textContent = G.word.emoji;
+    $("#hint-emoji").textContent = MATH ? G.word.emoji : wordPic([G.word.en, G.word.emoji]);
     animate($("#hint-emoji"), "pop");
     $("#hint-meaning").textContent = MATH ? "" : G.word.ko;
     $("#hud-word").textContent = (G.wi + 1) + " / " + G.words.length;
@@ -498,7 +500,7 @@
       if (isRecord) data.best[recKey(lv)] = G.score;
       saveUserData(data);
     }
-    $("#result-text").innerHTML = (MATH ? esc(ML.danText()) + " " : grade.grade + "학년 ") + lv.emoji + " " + lv.name + " · 완성한 " + (MATH ? "차례" : "단어") + " <b>" + n + "</b> / " + G.words.length + "<br>" +
+    $("#result-text").innerHTML = (MATH ? esc(ML.danText()) + " · " + ML.diffName : grade.grade + "학년 " + lv.emoji + " " + lv.name) + " · 완성한 " + (MATH ? "차례" : "단어") + " <b>" + n + "</b> / " + G.words.length + "<br>" +
       "점수 <b>" + G.score + "</b>점" + (isRecord && G.score > 0 ? '<span class="record">🎊 최고 기록!</span>' : "");
 
     var wb = $("#result-words"); wb.innerHTML = "";
@@ -544,10 +546,11 @@
   }
 
   $("#btn-again").addEventListener("click", function () { chooseLevel(G.level); });
-  $("#btn-result-level").addEventListener("click", function () { renderLevels(); show("screen-level"); });
+  $("#btn-result-level").addEventListener("click", function () { if (MATH) { ML.back(); return; } renderLevels(); show("screen-level"); });
   $("#btn-quit").addEventListener("click", function () {
     G.active = false; cancelAnimationFrame(G.raf);
     if ("speechSynthesis" in window) speechSynthesis.cancel();
+    if (MATH) { ML.back(); return; }
     renderLevels(); show("screen-level");
   });
   $("#btn-speak").addEventListener("click", function () { if (G.word) speakEn(G.word.en); });
@@ -732,6 +735,8 @@
     back.addEventListener("click", function (e) { e.preventDefault(); ML.back(); });
     $("#btn-level-back").textContent = "← 게임 고르기";
     $("#hud-word").previousElementSibling.textContent = "차례";
+    $("#btn-result-level").textContent = "게임 선택";
+    $("#btn-again").textContent = "🔁 한 번 더 하기";
   }
 
   /* ---------- 키보드 · 밀기 · 방향 버튼 ---------- */

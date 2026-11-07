@@ -9,6 +9,8 @@
   const ML = window.MulLink || { on: false }, MATH = ML.on;
   const GRADES = window.SPELL_GRADES;
   const TOTAL = 15, LIVES = 5;
+  // 구구단: 고른 난이도의 속도로 한 판 내내 날아요 (영어는 맞힐수록 조금씩 빨라져요)
+  const MUL_SPEED = MATH ? ML.by({ easy: 0.15, normal: 0.21, hard: 0.28 }) : 0;
   const PROFILES_KEY = "bee_profiles", GUIDE_ID = MATH ? "bee_mul" : "bee";
   const SOUND = !MATH || ML.sound;
   const GRAVITY = 1.15, FLAP = -0.62, MAX_FALL = 0.75;  // 화면 높이 기준(1초에 화면 몇 배)
@@ -49,7 +51,9 @@
     flap() { tone(520, 0.06, "triangle", 0, 0.05); },
     correct() { [784, 988, 1319].forEach((f, i) => tone(f, 0.14, "triangle", i * 0.07, 0.13)); },
     wrong() { tone(220, 0.22, "square", 0, 0.06); tone(160, 0.3, "sine", 0.1, 0.1); },
-    win() { [523, 659, 784, 1047, 784, 1047].forEach((f, i) => tone(f, 0.18, "triangle", i * 0.1, 0.12)); }
+    win() { [523, 659, 784, 1047, 784, 1047].forEach((f, i) => tone(f, 0.18, "triangle", i * 0.1, 0.12)); },
+    gem() { [1319, 1760].forEach((f, i) => tone(f, 0.09, "sine", i * 0.05, 0.09)); },
+    heart() { [659, 880, 1175].forEach((f, i) => tone(f, 0.12, "sine", i * 0.07, 0.11)); }
   };
   function speak(text, lang) {
     if (GuideBook.defer(() => speak(text, lang))) return;   // 방법 팝업이 닫히면 읽어줘요
@@ -152,6 +156,7 @@
         { icon: "🐝", title: "꿀벌이 날아요", text: "꿀벌은 가만히 두면 <b>아래로 슝</b> 내려가요.<br>화면을 <b>톡</b>(또는 <b>스페이스바</b>)하면 <b>위로 파닥!</b>" },
         { icon: "🌼", title: "꽃길이 다가와요", text: "꽃 기둥에 <b>위 · 가운데 · 아래</b> 세 길이 있어요.<br>길마다 " + (MATH ? "<b>숫자</b>" : "<b>그림</b>") + "이 하나씩 달려 있어요." },
         { icon: MATH ? "🔢" : "🔤", title: "맞는 길로 쏙!", text: MATH ? "위에 나온 <b>구구단의 정답</b> 길로 지나가요.<br>예) 6 × 7 → <b>42</b> 길" : "위에 나온 <b>영어 단어</b>의 뜻에 맞는 <b>그림 길</b>로 지나가요.<br>예) Apple → <b>🍎</b> 길" },
+        { icon: "💎", title: "보석을 먹어요", text: "꽃길 사이에 <b>보석 💎</b>이 줄지어 떠 있어요. 꿀벌이 지나가며 먹으면 <b>점수</b>가 올라가요!<br>가끔 <b>⭐ 별</b>이 날아오고, <b>❤️</b>를 먹으면 하트가 다시 차요." },
         { icon: "💫", title: "틀리면 꽈당", text: "틀린 길로 가면 꽃잎에 부딪혀 ❤️ 하트가 하나 줄어요.<br>꽃길 <b>" + TOTAL + "개</b>를 지나면 <b>벌집</b> 도착!" }
       ],
       startText: "자, 날아 볼까?", startLabel: "출발! 🐝", onStart
@@ -166,8 +171,9 @@
 
   /* ---------- 문제 ---------- */
   function englishQuestions() {
-    return shuffle(grade.words.slice()).slice(0, TOTAL).map(w => {
-      const others = shuffle(grade.words.filter(o => o[1] !== w[1])).slice(0, 2);
+    const pics = picWords(grade.words);
+    return shuffle(pics.slice()).slice(0, TOTAL).map(w => {
+      const others = shuffle(pics.filter(o => o[1] !== w[1])).slice(0, 2);
       return { word: cap(w[0]), sub: "뜻에 맞는 그림 꽃길로 날아가요!", ans: w[1], opts: shuffle([w[1]].concat(others.map(o => o[1]))), emojiOpts: true,
         say: w[0], learn: { en: w[0], ko: w[2], emoji: w[1] }, reveal: w[1] + " " + w[2] };
     });
@@ -185,7 +191,8 @@
   const G = {
     W: 0, H: 0, raf: 0, last: 0, t: 0, active: false, started: false,
     y: 0.45, vy: 0, cols: [], scroll: 0, speed: 0.2, qs: [], i: 0, cur: null,
-    lives: LIVES, score: 0, combo: 0, correct: 0, learned: [], hurtT: 0, happyT: 0, ending: 0, hive: null, trail: []
+    lives: LIVES, score: 0, combo: 0, correct: 0, learned: [], hurtT: 0, happyT: 0, ending: 0, hive: null, trail: [],
+    gems: [], gemT: 0, gemsGot: 0
   };
   function resize() {
     const r = $("#field").getBoundingClientRect(), dpr = window.devicePixelRatio || 1;
@@ -205,9 +212,10 @@
   function startGame() {
     stopGame();
     Object.assign(G, {
-      active: true, started: false, y: 0.45, vy: 0, cols: [], scroll: 0, speed: 0.19,
+      active: true, started: false, y: 0.45, vy: 0, cols: [], scroll: 0, speed: MATH ? MUL_SPEED : 0.19,
       qs: MATH ? mathQuestions() : englishQuestions(), i: 0, cur: null,
-      lives: LIVES, score: 0, combo: 0, correct: 0, learned: [], hurtT: 0, happyT: 0, ending: 0, hive: null, trail: [], t: 0
+      lives: LIVES, score: 0, combo: 0, correct: 0, learned: [], hurtT: 0, happyT: 0, ending: 0, hive: null, trail: [], t: 0,
+      gems: [], gemT: 5, gemsGot: 0
     });
     $("#hud-score").textContent = "0";
     renderHearts();
@@ -231,6 +239,7 @@
     if (!MATH) speak(q.say);
     // 꽃 기둥은 화면 오른쪽 밖에서 출발해요
     G.cols.push({ x: 1.1, q, done: false, pick: -1, ok: false, pop: 0 });
+    spawnArc(1.1 + COL_W * 2);
   }
   function renderHearts(justLost) {
     let h = "";
@@ -269,7 +278,7 @@
       qw.className = "q-word ok";
       $("#q-sub").textContent = MATH ? col.q.learn.en : col.q.word + " = " + col.q.reveal;
       if (MATH) speak(col.q.say, "ko-KR"); else speak(col.q.say);
-      G.speed = Math.min(0.32, G.speed + 0.008);
+      if (!MATH) G.speed = Math.min(0.32, G.speed + 0.008);
       msg(pick(PRAISE) + (G.combo >= 2 ? "  🔥 " + G.combo + "연속!" : ""));
     } else {
       G.combo = 0;
@@ -305,6 +314,7 @@
       G.scroll += move * W;
       G.cols.forEach(c => { c.x -= move; if (!c.done && c.x <= BEE_X) judge(c); if (c.pop > 0) c.pop += dt; });
       G.cols = G.cols.filter(c => c.x > -COL_W * 2);
+      updateGems(dt);
       if (G.hive) {
         G.hive.x -= move;
         if (G.hive.x <= BEE_X + 0.08 && !G.ending) { G.ending = 2.2; G.win = true; sfx.win(); confetti(30); msg("🎉 벌집 도착! 꿀이 가득해요!"); }
@@ -323,6 +333,77 @@
     if (G.ending && (G.ending -= dt) <= 0) { G.ending = 0; endGame(); return; }
     draw();
     G.raf = requestAnimationFrame(frame);
+  }
+
+  /* ---------- 보석 · 하트: 마리오 동전처럼 꽃 기둥 사이에 포물선 모양으로 떠 있어요 (화면과 같이 흘러와요)
+     가끔 ⭐ 별은 포물선을 그리며 날아와요. 먹으면 점수, ❤️ 는 하트 +1 ---------- */
+  const GEM_GRAVITY = 1.05;
+  const GEM = { e: "💎", pts: 3 }, CROWN = { e: "👑", pts: 15 }, HEART = { e: "❤️", heart: true }, STAR = { e: "⭐", pts: 10, big: true };
+  // 꽃 기둥 하나가 나올 때, 그 기둥과 다음 기둥 사이에 보석 줄을 하나 놓아요
+  function spawnArc(x0) {
+    const n = 5 + Math.floor(Math.random() * 3), gap = 0.07;
+    const shape = ["arch", "arch", "valley", "line"][Math.floor(Math.random() * 4)];
+    const h = 0.12 + Math.random() * 0.12;
+    const base = shape === "valley" ? 0.2 + Math.random() * 0.25 : 0.45 + Math.random() * 0.3;
+    const mid = Math.floor((n - 1) / 2);
+    const withHeart = G.lives < LIVES && Math.random() < 0.45;
+    const withCrown = !withHeart && Math.random() < 0.15;
+    for (let k = 0; k < n; k++) {
+      const t = n === 1 ? 0.5 : k / (n - 1), bump = 4 * t * (1 - t);
+      const y = shape === "arch" ? base - h * bump : shape === "valley" ? base + h * bump : base;
+      let kind = GEM;
+      if (k === mid && withHeart) kind = HEART;
+      else if (k === mid && withCrown) kind = CROWN;
+      G.gems.push({ kind, x: x0 + k * gap, y: Math.max(0.08, Math.min(0.82, y)), fly: false, spin: k * 0.7, got: 0 });
+    }
+  }
+  function spawnStar() {
+    G.gems.push({ kind: STAR, x: 1.05, y: 0.84 + Math.random() * 0.06, fly: true,
+      vx: -(G.speed + 0.3 + Math.random() * 0.2), vy: -(0.9 + Math.random() * 0.4), spin: 0, got: 0 });
+  }
+  function updateGems(dt) {
+    if (!G.hive) {
+      G.gemT -= dt;
+      if (G.gemT <= 0) { spawnStar(); G.gemT = 6 + Math.random() * 5; }
+    }
+    const bx = BEE_X * G.W, by = G.y * G.H, rad = Math.max(28, Math.min(G.W, G.H) * 0.07);
+    G.gems.forEach(g => {
+      if (g.got) { g.got += dt; return; }
+      if (g.fly) { g.vy += GEM_GRAVITY * dt; g.x += g.vx * dt; g.y += g.vy * dt; }
+      else g.x -= G.speed * dt;
+      g.spin += dt * 4;
+      const dx = g.x * G.W - bx, dy = g.y * G.H - by;
+      if (dx * dx + dy * dy < rad * rad) {
+        g.got = 0.0001;
+        const r = canvas.getBoundingClientRect(), sx = r.left + g.x * G.W, sy = r.top + g.y * G.H - 20;
+        if (g.kind.heart) {
+          if (G.lives < LIVES) { G.lives++; renderHearts(); }
+          sfx.heart(); floatAt(sx, sy, "❤️+1", "#ef4444");
+        } else {
+          G.gemsGot++; addScore(g.kind.pts); sfx.gem();
+          if (g.kind.pts >= 10) floatAt(sx, sy, "+" + g.kind.pts, "#7c3aed");
+        }
+      }
+    });
+    G.gems = G.gems.filter(g => g.got ? g.got < 0.3 : g.x > -0.1 && g.y < 1.1);
+  }
+  function drawGems() {
+    const base = Math.max(32, Math.min(G.W, G.H) * 0.085);
+    ctx.textAlign = "center"; ctx.textBaseline = "middle";
+    G.gems.forEach(g => {
+      const x = g.x * G.W, y = g.y * G.H + (g.fly ? 0 : Math.sin(g.spin * 0.8) * 3);
+      const sz = g.kind === GEM ? base * 0.7 : base;
+      ctx.save();
+      ctx.translate(x, y);
+      if (g.got) { const k = g.got / 0.35; ctx.globalAlpha = 1 - k; ctx.scale(1 + k, 1 + k); }
+      // 반짝이는 빛
+      ctx.fillStyle = g.kind.heart ? "rgba(248,113,113,.28)" : "rgba(255,255,255,.55)";
+      ctx.beginPath(); ctx.arc(0, 0, sz * (0.62 + Math.sin(g.spin) * 0.08), 0, Math.PI * 2); ctx.fill();
+      ctx.rotate(Math.sin(g.spin) * 0.25);
+      ctx.font = sz + "px " + EMOJI_FONT; ctx.fillStyle = "#000";
+      ctx.fillText(g.kind.e, 0, sz * 0.05);
+      ctx.restore();
+    });
   }
 
   /* ---------- 그리기 ---------- */
@@ -359,6 +440,7 @@
     }
     G.cols.forEach(drawColumn);
     if (G.hive) drawHive(G.hive.x * W, gy);
+    drawGems();
     // 날갯짓 반짝이
     G.trail.forEach(p => {
       ctx.fillStyle = "rgba(255,255,255," + (0.5 * (1 - p.t / 0.5)).toFixed(2) + ")";
@@ -473,17 +555,11 @@
       if (isRecord) data.best[key] = G.score;
       saveUserData(data);
     }
-    const label = MATH ? "🐝 " + ML.danText() : "🐝 " + grade.grade + "학년";
-    $("#result-text").innerHTML = esc(label) + " · 맞힌 꽃길 <b>" + n + "</b> / " + TOTAL + "<br>" +
+    const label = MATH ? "🐝 " + ML.danText() + " · " + ML.diffName : "🐝 " + grade.grade + "학년";
+    $("#result-text").innerHTML = esc(label) + " · 맞힌 꽃길 <b>" + n + "</b> / " + TOTAL + " · 💎 <b>" + G.gemsGot + "</b>개<br>" +
       "점수 <b>" + G.score + "</b>점" + (isRecord && G.score > 0 ? '<span class="record">🎊 최고 기록!</span>' : "");
-    const wb = $("#result-words"); wb.innerHTML = "";
-    G.learned.forEach(w => {
-      const b = document.createElement("button");
-      b.type = "button"; b.className = "word-chip";
-      b.innerHTML = esc((w.emoji ? w.emoji + " " : "") + w.en) + (w.ko ? "<small>" + esc(w.ko) + "</small>" : "");
-      if (!MATH) { b.title = "눌러서 듣기"; b.addEventListener("click", () => speak(w.en)); }
-      wb.appendChild(b);
-    });
+    // 맞힌 문제 목록은 보여 주지 않아요
+    const wb = $("#result-words"); wb.innerHTML = ""; wb.style.display = "none";
     show("screen-result");
   }
   $("#btn-again").addEventListener("click", choose);
@@ -498,7 +574,8 @@
     const back = $("#title-back");
     back.textContent = "← 게임 고르기";
     back.addEventListener("click", e => { e.preventDefault(); ML.back(); });
-    $("#btn-result-back").textContent = "게임 고르기";
+    $("#btn-result-back").textContent = "게임 선택";
+    $("#btn-again").textContent = "🔁 한 번 더 하기";
     $("#btn-say").style.display = "none";
   }
 

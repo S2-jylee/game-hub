@@ -51,103 +51,67 @@
   .adv-opt.no { border-color: #ef4444; background: #fef2f2; color: #b91c1c; animation: advShake 0.35s ease; pointer-events: none; opacity: 0.75; }
   @keyframes advShake { 25%, 75% { transform: translateX(-5px); } 50% { transform: translateX(5px); } }
   @media (max-width: 560px) { .adv-line, .adv-opt { font-size: 0.86rem; } .adv-pad { width: 120px; height: 120px; } .adv-pad button { width: 40px; height: 40px; } .adv-pad .u, .adv-pad .d { left: 40px; } .adv-pad .l, .adv-pad .r { top: 40px; } }
+  /* 장소가 20곳이라 장소 고르기 카드를 작게: PC 5개 · 태블릿 3개 · 휴대폰 2개씩 */
+  #screen-level { justify-content: flex-start; overflow-y: auto; }
+  #level-grid { grid-template-columns: repeat(5, 1fr); gap: 10px; }
+  #level-grid .level-btn { padding: 14px 6px 12px; gap: 4px; border-radius: 18px; }
+  #level-grid .lv-emoji { font-size: 2.2rem; }
+  #level-grid .lv-name { font-size: 1.2rem; }
+  #level-grid .lv-desc { font-size: 0.74rem; min-height: 2.6em; text-align: center; }
+  #level-grid .lv-go { font-size: 0.8rem; padding: 4px 12px; }
+  @media (max-width: 760px) { #level-grid { grid-template-columns: repeat(3, 1fr); } }
+  @media (max-width: 480px) { #level-grid { grid-template-columns: repeat(2, 1fr); } }
 </style>
 </head>
 <body>
 <script src="../spelling/guidebook.js"></script>
 <script src="talk-common.js"></script>
+<script src="adventure-data.js"></script>
+<script src="adv/classroom.js"></script>
+<script src="adv/playground.js"></script>
+<script src="adv/market.js"></script>
+<script src="adv/airport.js"></script>
+<script src="adv/restaurant.js"></script>
+<script src="adv/hospital.js"></script>
+<script src="adv/library.js"></script>
+<script src="adv/zoo.js"></script>
+<script src="adv/home.js"></script>
+<script src="adv/station.js"></script>
+<script src="adv/pool.js"></script>
+<script src="adv/camping.js"></script>
+<script src="adv/cinema.js"></script>
+<script src="adv/salon.js"></script>
+<script src="adv/bus.js"></script>
+<script src="adv/museum.js"></script>
+<script src="adv/themepark.js"></script>
+<script src="adv/beach.js"></script>
+<script src="adv/party.js"></script>
+<script src="adv/farm.js"></script>
 <script>
 (function () {
   "use strict";
-  // 장소마다: 바닥 색, 꾸밈(지나갈 수 없는 칸) [x, y, 그림], 만날 사람들
-  // 사람: { x, y, e: 그림, name, turns: [[상대방의 말, 알맞은 대답, 틀린 대답, 틀린 대답], ...] }
-  var AREAS = {
-    classroom: { floor: "#f7efe2", floor2: "#e9dcc5", start: [3, 7],
-      deco: [[0, 0, "🟩"], [1, 0, "🟩"], [2, 0, "🟩"], [3, 0, "🟩"], [4, 0, "🟩"], [6, 0, "🕐"], [1, 2, "🪑"], [2, 2, "📚"], [4, 2, "🪑"], [5, 2, "✏️"], [1, 4, "🪑"], [5, 4, "🪑"], [0, 6, "🪴"], [6, 6, "🗑️"]],
-      npcs: [
-        { x: 3, y: 4, e: "🧒", name: "넘어진 친구", turns: [
-          ["Ouch! I fell down...", "Are you okay?", "Ha ha, that's funny!", "I like apples."],
-          ["My knee hurts a little.", "Do you need a band-aid?", "Let's run fast!", "Good night!"],
-          ["Yes, please. Thank you!", "Here you go. Feel better!", "No, it's mine.", "See you last week!"]] },
-        { x: 5, y: 1, e: "👩‍🏫", name: "선생님", turns: [
-          ["Good morning! Did you do your homework?", "Yes, I did. Here it is.", "No, I'm a student.", "It's sunny."],
-          ["Great job! Can you close the door, please?", "Sure, no problem!", "I'm sorry to hear that.", "My name is Door."],
-          ["Thank you!", "You're welcome!", "Me too!", "Happy birthday!"]] },
-        { x: 1, y: 6, e: "👧", name: "새로 온 친구", turns: [
-          ["Hi, I'm new here. I'm Lily.", "Hi, Lily! Nice to meet you.", "Bye, Lily!", "I'm ten o'clock."],
-          ["Where is the bathroom?", "It's next to the library. I'll show you.", "Yes, it is.", "It's my pencil."],
-          ["Thanks! You're so kind.", "No problem! Let's be friends.", "No, thank you.", "It's raining."]] }
-      ] },
-    playground: { floor: "#dff5d3", floor2: "#b7e3a1", start: [3, 7],
-      deco: [[0, 0, "🌳"], [6, 0, "🌳"], [2, 1, "🛝"], [5, 3, "⛲"], [0, 4, "🌷"], [3, 5, "🌼"], [6, 6, "🌳"], [0, 7, "🌲"]],
-      npcs: [
-        { x: 1, y: 2, e: "🧒", name: "그네 기다리는 친구", turns: [
-          ["Can I use the swing after you?", "Sure! I'll be done soon.", "No, I'm a swing.", "It's Monday."],
-          ["Thanks! How long will you swing?", "Just two more minutes.", "I'm nine years old.", "Yes, please."],
-          ["Okay, I'll wait here.", "Here, it's your turn now!", "See you yesterday!", "I'm hungry."]] },
-        { x: 5, y: 1, e: "👦", name: "공을 잃어버린 아이", turns: [
-          ["I lost my ball. Have you seen it?", "I think it's under the slide.", "Yes, it's a ball.", "Good morning!"],
-          ["Oh, can you help me get it?", "Sure, let's go together.", "I'm sorry to hear that.", "I like soccer."],
-          ["I found it! Thank you!", "You're welcome! Have fun!", "Oh no, that's too bad.", "It's under the bed."]] },
-        { x: 2, y: 4, e: "👵", name: "벤치의 할머니", turns: [
-          ["Excuse me, is this seat taken?", "No, please sit down.", "Yes, I'm a seat.", "I like ice cream."],
-          ["It's a beautiful day, isn't it?", "Yes, it's really sunny!", "No, it's my bag.", "Good night!"],
-          ["Have a nice day, dear.", "You too! Bye!", "Yes, please.", "I'm seven."]] }
-      ] },
-    market: { floor: "#eef2ff", floor2: "#c7d2fe", start: [3, 7],
-      deco: [[0, 0, "🥛"], [1, 0, "🥚"], [2, 0, "🧀"], [4, 0, "🍎"], [5, 0, "🍌"], [6, 0, "🥕"], [0, 3, "🍞"], [1, 3, "🥖"], [5, 3, "🍪"], [6, 3, "🍫"], [6, 6, "🛒"]],
-      npcs: [
-        { x: 3, y: 2, e: "🧑‍💼", name: "가게 직원", turns: [
-          ["Hello! Can I help you?", "Yes, where can I find the milk?", "Yes, I'm a student.", "Happy New Year!"],
-          ["It's over there, next to the eggs.", "Thank you very much!", "I'm sorry to hear that.", "It's blue."],
-          ["You're welcome. Anything else?", "No, that's all. Thanks!", "Yes, it's mine.", "Nice to meet you, too."]] },
-        { x: 0, y: 5, e: "👧", name: "엄마를 잃어버린 아이", turns: [
-          ["I can't find my mom...", "Don't worry. I'll help you.", "That's great!", "I like milk."],
-          ["She's wearing a red coat.", "Let's ask the staff for help.", "I'm wearing shoes.", "Yes, please."],
-          ["Mom! There she is! Thank you so much!", "I'm glad you found her!", "Oh, that's too bad.", "It's under the table."]] },
-        { x: 5, y: 5, e: "🧑", name: "계산대 직원", turns: [
-          ["That will be five dollars.", "Here you are.", "I'm five years old.", "See you!"],
-          ["Do you need a bag?", "Yes, please.", "No, I'm a bag.", "It's cloudy."],
-          ["Here's your change. Have a good day!", "Thanks, you too!", "Happy birthday!", "I lost my pencil."]] }
-      ] },
-    airport: { floor: "#f1f5f9", floor2: "#cbd5e1", start: [3, 7],
-      deco: [[0, 0, "🪟"], [1, 0, "✈️"], [2, 0, "🪟"], [4, 0, "🪟"], [5, 0, "🛫"], [6, 0, "🪟"], [3, 3, "🧳"], [0, 5, "💺"], [6, 4, "💺"], [6, 7, "🪴"]],
-      npcs: [
-        { x: 1, y: 2, e: "👮", name: "출국 심사 직원", turns: [
-          ["May I see your passport, please?", "Sure, here it is.", "No, it's a passport.", "I'm hungry."],
-          ["Where are you going?", "I'm going to London.", "I went yesterday.", "It's red."],
-          ["Okay. Have a nice trip!", "Thank you!", "You're welcome!", "Good night!"]] },
-        { x: 5, y: 2, e: "💁", name: "안내 데스크", turns: [
-          ["Hello! How can I help you?", "Where is Gate 5, please?", "I'm fine, and you?", "It's my birthday."],
-          ["Go straight and turn left.", "Thank you. Is it far?", "Turn left is a dog.", "See you tomorrow!"],
-          ["No, it's just a five-minute walk.", "Great, thanks a lot!", "I'm sorry to hear that.", "It's a banana."]] },
-        { x: 2, y: 5, e: "🧑‍✈️", name: "비행기 승무원", turns: [
-          ["Would you like chicken or fish?", "Chicken, please.", "Yes, please.", "I'm a fish."],
-          ["Anything to drink?", "Orange juice, please.", "I'm eating chicken.", "It's a plane."],
-          ["Here you go. Enjoy your meal!", "Thank you very much!", "Nice to meet you!", "I'm late."]] }
-      ] }
-  };
+  var AREAS = window.ADV_AREAS; // adventure-data.js + adv/*.js: 장소 20곳 × 상황 50가지
   var W = 7, H = 8;
 
   Talk.mount({
     id: "talk_adventure", title: "어떻게 말할까?", unit: "친구", goLabel: "출발 ▶", startLabel: "모험 시작! 🗺️",
-    levels: [
-      { id: "classroom", name: "교실", emoji: "🏫", desc: "넘어진 친구 · 선생님 · 새 친구", bg: "#ecfccb", c: "#65a30d" },
-      { id: "playground", name: "놀이터", emoji: "🛝", desc: "그네 · 잃어버린 공 · 할머니", bg: "#dbeafe", c: "#2563eb" },
-      { id: "market", name: "마트", emoji: "🛒", desc: "물건 찾기 · 길 잃은 아이 · 계산", bg: "#fef3c7", c: "#d97706" },
-      { id: "airport", name: "공항", emoji: "✈️", desc: "여권 · 길 묻기 · 기내식", bg: "#fce7f3", c: "#db2777" }
-    ],
+    levels: window.ADV_LEVELS, // adventure-data.js: 장소 20곳
     guide: function () {
       return [
         { icon: "🧒", title: "돌아다녀요", text: "나(<b>🙂</b>)를 <b>방향키</b>나 <b>▲▼◀▶</b>로 움직이거나, 가고 싶은 칸을 <b>톡</b> 눌러요." },
         { icon: "💛", title: "도움이 필요한 사람", text: "<b>노란 테두리</b> 사람에게 가면 대화가 시작돼요. 소리로도 들려줘요 🔊" },
         { icon: "💬", title: "2~3번 주고받기", text: "상황에 <b>알맞은 말</b>을 골라 대화를 이어가요. 틀리면 하트가 하나 줄고 다시 골라요." },
         Talk.canListen && { icon: "🎤", title: "말로 대답해도 돼요", text: "<b>🎤 눌러서 말하기</b>를 누르고 알맞은 말을 <b>소리 내어 말하면</b> 그 말을 고른 것과 같아요." },
-        { icon: "⭐", title: "모두 도와주면 성공", text: "이 장소의 <b>세 사람</b>과 대화를 끝내면 성공!" }
+        { icon: "⭐", title: "모두 도와주면 성공", text: "이 장소의 <b>세 사람</b>과 대화를 끝내면 성공! 장소마다 <b>50가지 상황</b> 중 3가지가 무작위로 나와요." }
       ].filter(Boolean);
     },
     create: function (stage, lv) {
-      var A = AREAS[lv.id];
+      var AR = AREAS[lv.id];
+      // 상황 50가지 중 3가지를 무작위로 골라 자리(spots)에 세워요
+      var A = { floor: AR.floor, floor2: AR.floor2, start: AR.start, deco: AR.deco,
+        npcs: Talk.shuffle(AR.pool.slice()).slice(0, AR.spots.length).map(function (p, i) {
+          return { x: AR.spots[i][0], y: AR.spots[i][1], e: p.e, name: p.name, turns: p.turns };
+        }) };
       Talk.setTotal(A.npcs.length);
       stage.innerHTML =
         '<div class="talk-msg" id="talk-msg"></div>' +

@@ -10,6 +10,9 @@
   const ML = window.MulLink, MATH = ML.on;
   const GROUPS = window.ALIEN_GROUPS;
   const GOAL = 15, LIVES = 5;
+  // 구구단: 고른 난이도대로 한 판 내내 같은 속도 (영어는 물리칠수록 조금씩 빨라져요)
+  const MUL_SPEED = MATH ? ML.by({ easy: 0.035, normal: 0.055, hard: 0.08 }) : 0;
+  const MUL_SPAWN = MATH ? ML.by({ easy: 2.3, normal: 1.8, hard: 1.3 }) : 0;
   const PROFILES_KEY = "alien_profiles", GUIDE_ID = MATH ? "alien_mul" : "alien";
   const SOUND = !MATH || ML.sound;
   const ALIEN_COLORS = ["#4ade80", "#f472b6", "#60a5fa", "#fbbf24", "#a78bfa", "#2dd4bf", "#fb923c"];
@@ -228,7 +231,7 @@
       a.word = w[0]; a.ko = w[1];
     }
     G.aliens.push(a);
-    G.spawnT = Math.max(1.0, 2.3 - G.kills * 0.06) * (0.8 + Math.random() * 0.4);
+    G.spawnT = (MATH ? MUL_SPAWN : Math.max(1.0, 2.3 - G.kills * 0.06)) * (0.8 + Math.random() * 0.4);
   }
 
   /* ---------- 시작 · 끝 ---------- */
@@ -237,7 +240,7 @@
     setupPools();
     Object.assign(G, {
       active: true, cx: 0.5, target: null, autoFire: false, cool: 0, recoil: 0, aliens: [], bullets: [], bits: [], spawnT: 0.3,
-      speed: 0.045, lives: LIVES, score: 0, combo: 0, kills: 0, wrongShots: 0, learned: [], shieldFlash: 0, shieldHurt: 0,
+      speed: MATH ? MUL_SPEED : 0.045, lives: LIVES, score: 0, combo: 0, kills: 0, wrongShots: 0, learned: [], shieldFlash: 0, shieldHurt: 0,
       q: null, qs: MATH ? ML.questions(GOAL) : [], qi: 0, ending: 0, t: 0, heartT: 12
     });
     G.keys.l = G.keys.r = false;
@@ -317,7 +320,7 @@
         msg("명중! " + a.word + " = " + a.ko + " 🎯" + (G.combo >= 2 ? "  🔥 " + G.combo + "연속!" : ""));
         speak(a.word);
       }
-      G.speed = Math.min(0.11, G.speed + 0.003);
+      if (!MATH) G.speed = Math.min(0.11, G.speed + 0.003);
       if (G.kills >= GOAL && !G.ending) { G.ending = 1.4; G.win = true; sfx.win(); confetti(30); msg("🎉 외계인을 다 물리쳤어요! 지구를 지켰어요!"); }
     } else {
       // 쏘면 안 되는 외계인: 놀라서 흐려지고 하트 -1 (다시 맞아도 괜찮아요)
@@ -577,7 +580,7 @@
       if (isRecord) data.best[mode] = G.score;
       saveUserData(data);
     }
-    const label = MATH ? "👾 " + ML.danText() : GROUPS[mode].emoji + " " + GROUPS[mode].name;
+    const label = MATH ? "👾 " + ML.danText() + " · " + ML.diffName : GROUPS[mode].emoji + " " + GROUPS[mode].name;
     $("#result-text").innerHTML = esc(label) + " · 물리친 외계인 <b>" + n + "</b> / " + GOAL + "<br>" +
       "점수 <b>" + G.score + "</b>점" + (isRecord && G.score > 0 ? '<span class="record">🎊 최고 기록!</span>' : "");
     const wb = $("#result-words"); wb.innerHTML = "";
@@ -601,7 +604,8 @@
     const back = $("#title-back");
     back.textContent = "← 게임 고르기";
     back.addEventListener("click", e => { e.preventDefault(); ML.back(); });
-    $("#btn-result-back").textContent = "게임 고르기";
+    $("#btn-result-back").textContent = "게임 선택";
+    $("#btn-again").textContent = "🔁 한 번 더 하기";
   }
 
   /* ---------- 조작 ---------- */
