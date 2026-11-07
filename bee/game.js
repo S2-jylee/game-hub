@@ -7,6 +7,7 @@
 
   const $ = s => document.querySelector(s);
   const ML = window.MulLink || { on: false }, MATH = ML.on;
+  const EL = window.EngLink || { on: false }, LINK = !MATH && EL.on;   // 영어 놀이 메뉴 팝업에서 열렸어요
   const GRADES = window.SPELL_GRADES;
   const TOTAL = 15, LIVES = 5;
   // 구구단: 고른 난이도의 속도로 한 판 내내 날아요 (영어는 맞힐수록 조금씩 빨라져요)
@@ -212,7 +213,7 @@
   function startGame() {
     stopGame();
     Object.assign(G, {
-      active: true, started: false, y: 0.45, vy: 0, cols: [], scroll: 0, speed: MATH ? MUL_SPEED : 0.19,
+      active: true, started: false, y: 0.45, vy: 0, cols: [], scroll: 0, speed: MATH ? MUL_SPEED : LINK ? EL.by({ easy: 0.15, normal: 0.19, hard: 0.25 }) : 0.19,
       qs: MATH ? mathQuestions() : englishQuestions(), i: 0, cur: null,
       lives: LIVES, score: 0, combo: 0, correct: 0, learned: [], hurtT: 0, happyT: 0, ending: 0, hive: null, trail: [], t: 0,
       gems: [], gemT: 5, gemsGot: 0
@@ -563,8 +564,8 @@
     show("screen-result");
   }
   $("#btn-again").addEventListener("click", choose);
-  $("#btn-result-back").addEventListener("click", () => { if (MATH) ML.back(); else { renderGrades(); show("screen-grade"); } });
-  $("#btn-quit").addEventListener("click", () => { stopGame(); if (MATH) ML.back(); else { renderGrades(); show("screen-grade"); } });
+  $("#btn-result-back").addEventListener("click", () => { if (MATH) ML.back(); else if (LINK) EL.back(); else { renderGrades(); show("screen-grade"); } });
+  $("#btn-quit").addEventListener("click", () => { stopGame(); if (MATH) ML.back(); else if (LINK) EL.back(); else { renderGrades(); show("screen-grade"); } });
   $("#btn-say").addEventListener("click", () => { if (G.cur) { if (MATH) speak(G.cur.say, "ko-KR"); else speak(G.cur.say); } });
 
   if (MATH) {
@@ -585,4 +586,6 @@
     if (e.code === "Space" || e.key === " " || e.key === "ArrowUp" || e.key === "w" || e.key === "W" || e.key === "Enter") { e.preventDefault(); if (!e.repeat) flap(); }
   });
   $("#field").addEventListener("pointerdown", e => { e.preventDefault(); flap(); });
+  // 영어 놀이 메뉴 팝업에서 고른 사용자 · 학년 · 난이도로 바로 시작해요
+  if (LINK) { $("#btn-result-back").textContent = "게임 선택"; enterAs(EL.user); grade = GRADES[EL.grade - 1]; choose(); }
 })();

@@ -44,6 +44,41 @@
   #screen-menu { justify-content: flex-start; overflow-y: auto; padding: 14px 0 20px; }
   @media (max-width: 560px) { #screen-menu { padding-top: 12px; } }
   .english-title h1.game-title { margin: 0 0 12px; }
+
+  /* ---------- 게임 설정 팝업: 이름 · 놀이 · 학년 · 난이도를 한 번에 (구구단 놀이터와 같은 모양) ---------- */
+  .setup-modal { position: fixed; inset: 0; z-index: 80; background: rgba(59, 45, 92, 0.45); display: none; align-items: center; justify-content: center; padding: 16px; }
+  .setup-modal.show { display: flex; }
+  .setup-box { position: relative; background: #fff; border-radius: 26px; width: 100%; max-width: 620px; max-height: 92vh; overflow-y: auto; padding: 22px 20px 16px; color: var(--text-dark); box-shadow: 0 16px 40px rgba(36, 27, 58, 0.25); }
+  .setup-close { position: absolute; top: 12px; right: 12px; width: 40px; height: 40px; border: none; border-radius: 50%; background: #f4eefd; font-size: 1.1rem; cursor: pointer; }
+  .setup-title { margin: 0 40px; text-align: center; font-family: "CookieRun", "Jua", sans-serif; font-size: clamp(26px, 6.5vw, 36px); font-weight: 700; color: #d81b7a; line-height: 1.15; }
+  .setup-sub { margin: 6px 0 0; text-align: center; font-size: 1rem; color: var(--text-soft); }
+  .setup-label { font-size: 0.98rem; font-weight: 700; color: var(--text-soft); margin: 14px 2px 6px; }
+  .opt-grid { display: grid; gap: 8px; }
+  .opt-grid.g6 { grid-template-columns: repeat(6, 1fr); }
+  .opt-grid.g3 { grid-template-columns: repeat(3, 1fr); }
+  .opt-grid.g5 { grid-template-columns: repeat(5, 1fr); }
+  .opt-grid.names { grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); }
+  .opt { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; min-height: 52px; border: none; border-radius: 16px; padding: 8px 4px;
+    background: #f1edff; line-height: 1.2; font-family: inherit; color: var(--text-dark); cursor: pointer; transition: transform 0.1s; }
+  .opt b { font-size: 1.05rem; }
+  .opt small { font-size: 0.78rem; color: var(--text-soft); }
+  .opt.on { background: var(--yellow); }
+  .opt.on small { color: #6b5a1f; }
+  .opt:active { transform: translateY(2px); }
+  .new-name { display: flex; gap: 8px; margin-top: 8px; }
+  .new-name input { flex: 1; min-width: 0; padding: 10px 14px; border-radius: 999px; border: 2px solid #ece4fb; font-family: inherit; font-size: 1rem; outline: none; }
+  .new-name input:focus { border-color: var(--lavender-dark); }
+  .new-name button { border: none; border-radius: 999px; padding: 0 16px; background: #e8f4ff; font-family: inherit; font-weight: 800; cursor: pointer; }
+  .setup-go { display: block; width: 100%; height: 56px; margin: 18px 0 6px; border: none; border-radius: 20px; font-family: inherit; font-size: 1.4rem; font-weight: 800; color: #fff; cursor: pointer;
+    background: linear-gradient(135deg, #d81b7a, #7c2ce0); transition: transform 0.12s ease; }
+  .setup-go:active { transform: scale(0.97); }
+  .hide { display: none !important; }
+  @media (max-width: 560px) {
+    .setup-box { padding: 20px 14px 14px; }
+    .opt-grid.g6 { grid-template-columns: repeat(3, 1fr); }
+    .opt-grid.g5 { grid-template-columns: repeat(3, 1fr); }
+    .opt b { font-size: 0.95rem; } .opt small { font-size: 0.72rem; }
+  }
 </style>
 <link rel="stylesheet" href="../shared/game-title.css">
 <link rel="stylesheet" href="../shared/english-bg.css">
@@ -109,6 +144,152 @@
   </div>
 </section>
 
+<!-- 게임 설정: 게임 카드를 누르면 이름 · 놀이 · 학년 · 난이도를 한 번에 고르고 '선택 완료' -->
+<div class="setup-modal" id="setup">
+  <div class="setup-box" role="dialog" aria-modal="true" aria-labelledby="setup-title">
+    <button class="setup-close" id="setup-close" type="button" title="닫기">✕</button>
+    <h2 class="setup-title" id="setup-title">영어 놀이</h2>
+    <p class="setup-sub" id="setup-sub"></p>
+    <div class="setup-label">누가 할까요?</div>
+    <div class="opt-grid names" id="name-grid"></div>
+    <div class="new-name"><input id="new-name" type="text" maxlength="12" placeholder="새 이름 쓰기" autocomplete="off"><button id="new-name-add" type="button">＋ 추가</button></div>
+    <div id="mode-wrap"><div class="setup-label" id="mode-label">놀이 종류</div><div class="opt-grid" id="mode-grid"></div></div>
+    <div id="grade-wrap"><div class="setup-label">학년</div><div class="opt-grid g6" id="grade-grid"></div></div>
+    <div class="setup-label">난이도</div>
+    <div class="opt-grid g3" id="diff-grid"></div>
+    <button class="setup-go" id="setup-go" type="button">선택 완료</button>
+  </div>
+</div>
+
+<script src="../spelling/words-data.js"></script>
+<script src="../alien/alien-data.js"></script>
+<script>
+(function () {
+  "use strict";
+  var $ = function (s) { return document.querySelector(s); };
+  var store = {
+    get: function (k, d) { try { var v = localStorage.getItem(k); return v == null ? d : JSON.parse(v); } catch (e) { return d; } },
+    set: function (k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) { /* storage unavailable, ignore */ } }
+  };
+  function esc(s) { return String(s).replace(/[&<>"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; }); }
+  var DIFFS = [["easy", "쉬움"], ["normal", "보통"], ["hard", "어려움"]];
+  var ALIEN_MODES = Object.keys(window.ALIEN_GROUPS || {}).map(function (id) { var g = window.ALIEN_GROUPS[id]; return { id: id, name: g.emoji + " " + g.name }; });
+  // 게임마다: 경로 · 기록 저장 이름 · 놀이 종류(있으면) · 학년이 필요한 놀이 · 난이도 아래 작은 글씨
+  var GAMES = {
+    penguin: { href: "../penguin/index.html", profiles: "penguin_profiles", sub: "그림을 보고 맞는 영어 단어 허들로 쌩쌩!", diffs: ["천천히 달려요", "보통 속도", "쌩쌩 빨라요"] },
+    basket: { href: "../basket/index.html", profiles: "basket_profiles", sub: "영어 단어를 보고 맞는 그림 열매를 쏙!", diffs: ["천천히 떨어져요", "보통 속도", "빨리 떨어져요"] },
+    spelling: { href: "../spelling/index.html", profiles: "spell_profiles", sub: "글자를 순서대로 먹고 영어 단어 완성!", diffs: ["짧은 단어 · 글자가 반짝", "방해 글자 3개", "긴 단어 · 방해 글자 6개"] },
+    frog: { href: "../frog/index.html", profiles: "frog_profiles", sub: "맞는 영어 단어 연잎으로 폴짝!", diffs: ["시간 제한 없음", "한 줄 12초", "한 줄 8초"],
+      modes: [{ id: "meaning", name: "🍎 뜻 찾기" }, { id: "opposite", name: "↔️ 반대말" }, { id: "synonym", name: "🤝 비슷한 말" }], gradeFor: ["meaning"] },
+    bubble: { href: "../bubble/index.html", profiles: "bubble_profiles", sub: "알파벳 풍선을 순서대로 펑펑!", diffs: ["90초", "60초", "45초"],
+      modes: [{ id: "abc", name: "🔠 ABC 순서" }, { id: "abcs", name: "🔡 abc 순서" }, { id: "word", name: "🐶 단어 만들기" }], gradeFor: ["word"] },
+    bee: { href: "../bee/index.html", profiles: "bee_profiles", sub: "톡톡 날갯짓! 단어에 맞는 그림 꽃길로 쏙", diffs: ["천천히 날아요", "보통 속도", "쌩쌩 빨라요"] },
+    fishing: { href: "../fishing/index.html", profiles: "fishing_profiles", sub: "빈칸 알파벳 물고기를 낚아요", diffs: ["천천히 헤엄쳐요", "보통 속도", "빨리 헤엄쳐요"] },
+    alien: { href: "../alien/index.html", profiles: "alien_profiles", sub: "미션에 맞는 단어 외계인만 쏴요!", diffs: ["천천히 내려와요", "보통 속도", "빨리 내려와요"],
+      modes: ALIEN_MODES, gradeFor: [] }
+  };
+  var PROFILE_KEYS = Object.keys(GAMES).map(function (k) { return GAMES[k].profiles; });
+  // 이 기기에 저장된 이름들 (어느 영어 놀이에서든 만든 이름) + 팝업에서 새로 쓴 이름
+  function savedNames() {
+    var names = store.get("eng_names", []).slice();
+    PROFILE_KEYS.forEach(function (k) { Object.keys(store.get(k, {})).forEach(function (n) { if (names.indexOf(n) < 0) names.push(n); }); });
+    return names;
+  }
+  // 고른 값 기억하기 (게임마다 따로)
+  var cur = null, gameId = null, pick = store.get("eng_pick", { user: "", grade: 1, diff: "normal", modes: {} });
+  if (!pick.modes) pick.modes = {};
+
+  function renderNames() {
+    var g = $("#name-grid"); g.innerHTML = "";
+    var list = savedNames().map(function (n) { return [n, "👤 " + n]; }).concat([["", "🙂 게스트"]]);
+    if (pick.user && savedNames().indexOf(pick.user) < 0) pick.user = "";
+    list.forEach(function (it) {
+      var b = document.createElement("button");
+      b.type = "button"; b.className = "opt" + (pick.user === it[0] ? " on" : "");
+      b.innerHTML = "<b>" + esc(it[1]) + "</b>" + (it[0] ? "" : "<small>기록 저장 안 해요</small>");
+      b.addEventListener("click", function () { pick.user = it[0]; renderNames(); });
+      g.appendChild(b);
+    });
+  }
+  function addName() {
+    var n = $("#new-name").value.trim();
+    if (!n) { $("#new-name").focus(); return; }
+    var names = store.get("eng_names", []);
+    if (names.indexOf(n) < 0) { names.push(n); store.set("eng_names", names); }
+    pick.user = n; $("#new-name").value = "";
+    renderNames();
+  }
+  function curMode() { return cur.modes ? (pick.modes[gameId] || cur.modes[0].id) : ""; }
+  function renderModes() {
+    var wrap = $("#mode-wrap");
+    if (!cur.modes) { wrap.classList.add("hide"); return; }
+    wrap.classList.remove("hide");
+    $("#mode-label").textContent = gameId === "alien" ? "미션" : "놀이 종류";
+    var g = $("#mode-grid"); g.innerHTML = "";
+    g.className = "opt-grid " + (cur.modes.length > 3 ? "g5" : "g3");
+    cur.modes.forEach(function (m) {
+      var b = document.createElement("button");
+      b.type = "button"; b.className = "opt" + (curMode() === m.id ? " on" : "");
+      b.innerHTML = "<b>" + esc(m.name) + "</b>";
+      b.addEventListener("click", function () { pick.modes[gameId] = m.id; renderModes(); renderGrades(); });
+      g.appendChild(b);
+    });
+  }
+  function needGrade() { return !cur.gradeFor || cur.gradeFor.indexOf(curMode()) >= 0; }
+  function renderGrades() {
+    $("#grade-wrap").classList.toggle("hide", !needGrade());
+    var g = $("#grade-grid"); g.innerHTML = "";
+    window.SPELL_GRADES.forEach(function (gr) {
+      var b = document.createElement("button");
+      b.type = "button"; b.className = "opt" + (pick.grade === gr.grade ? " on" : "");
+      b.innerHTML = "<b>" + gr.emoji + " " + gr.grade + "학년</b>";
+      b.title = gr.desc;
+      b.addEventListener("click", function () { pick.grade = gr.grade; renderGrades(); });
+      g.appendChild(b);
+    });
+  }
+  function renderDiffs() {
+    var g = $("#diff-grid"); g.innerHTML = "";
+    DIFFS.forEach(function (d, i) {
+      var b = document.createElement("button");
+      b.type = "button"; b.className = "opt" + (pick.diff === d[0] ? " on" : "");
+      b.innerHTML = "<b>" + d[1] + "</b><small>" + esc(cur.diffs[i]) + "</small>";
+      b.addEventListener("click", function () { pick.diff = d[0]; renderDiffs(); });
+      g.appendChild(b);
+    });
+  }
+  function openSetup(id, name) {
+    gameId = id; cur = GAMES[id];
+    $("#setup-title").textContent = name;
+    $("#setup-sub").textContent = cur.sub;
+    renderNames(); renderModes(); renderGrades(); renderDiffs();
+    $("#setup").classList.add("show");
+  }
+  function closeSetup() { $("#setup").classList.remove("show"); }
+  function go() {
+    store.set("eng_pick", pick);
+    var url = cur.href + "?eng=1&u=" + encodeURIComponent(pick.user || "") + "&g=" + pick.grade + "&d=" + pick.diff +
+      (cur.modes ? "&m=" + encodeURIComponent(curMode()) : "");
+    location.href = url;
+  }
+  // 게임 카드: 바로 넘어가지 않고 설정 팝업을 띄워요
+  Array.prototype.forEach.call(document.querySelectorAll(".play-card[href]"), function (a) {
+    var id = (a.getAttribute("href").match(/\.\.\/(\w+)\//) || [])[1];
+    if (!GAMES[id]) return;
+    a.addEventListener("click", function (e) { e.preventDefault(); openSetup(id, a.querySelector(".pc-name").textContent); });
+  });
+  $("#setup-close").addEventListener("click", closeSetup);
+  $("#setup").addEventListener("click", function (e) { if (e.target.id === "setup") closeSetup(); });
+  $("#setup-go").addEventListener("click", go);
+  $("#new-name-add").addEventListener("click", addName);
+  $("#new-name").addEventListener("keydown", function (e) { if (e.key === "Enter") { e.preventDefault(); addName(); } });
+  document.addEventListener("keydown", function (e) {
+    if (!$("#setup").classList.contains("show")) return;
+    if (e.key === "Escape") closeSetup();
+    else if (e.key === "Enter" && document.activeElement !== $("#new-name")) { e.preventDefault(); go(); }
+  });
+})();
+</script>
 <script src="../shared/game-title.js"></script>
 <script src="../shared/english-bg.js"></script>
 </body>

@@ -5,6 +5,7 @@
   "use strict";
 
   var ML = window.MulLink || { on: false }, MATH = ML.on;
+  var EL = window.EngLink || { on: false }, LINK = !MATH && EL.on;   // 영어 놀이 메뉴 팝업에서 열렸어요
 
   var $ = function (s) { return document.querySelector(s); };
   var GRADES = window.SPELL_GRADES, OPPOSITES = window.FROG_OPPOSITES, SYNONYMS = window.FROG_SYNONYMS;
@@ -13,7 +14,7 @@
   var PROFILES_KEY = "frog_profiles", GUIDE_ID = MATH ? "frog_mul" : "frog";
   var JUMP_T = 0.5, SINK_T = 0.9, CAM_T = 0.45;
   // 구구단 난이도: 한 줄(연잎 고르기)에 쓸 수 있는 시간(초, 0 = 제한 없음)
-  var ROW_TIME = MATH ? ML.by({ easy: 0, normal: 10, hard: 6 }) : 0;
+  var ROW_TIME = MATH ? ML.by({ easy: 0, normal: 10, hard: 6 }) : LINK ? EL.by({ easy: 0, normal: 12, hard: 8 }) : 0;
 
   var store = {
     get: function (k, d) { try { var v = localStorage.getItem(k); return v == null ? d : JSON.parse(v); } catch (e) { return d; } },
@@ -628,8 +629,8 @@
     show("screen-result");
   }
   $("#btn-again").addEventListener("click", choose);
-  $("#btn-result-mode").addEventListener("click", function () { if (MATH) { ML.back(); return; } renderModes(); show("screen-mode"); });
-  $("#btn-quit").addEventListener("click", function () { stopRound(); if (MATH) { ML.back(); return; } renderModes(); show("screen-mode"); });
+  $("#btn-result-mode").addEventListener("click", function () { if (MATH) { ML.back(); return; } if (LINK) { EL.back(); return; } renderModes(); show("screen-mode"); });
+  $("#btn-quit").addEventListener("click", function () { stopRound(); if (MATH) { ML.back(); return; } if (LINK) { EL.back(); return; } renderModes(); show("screen-mode"); });
 
   /* ---------- 구구단 놀이터에서 열었을 때 ---------- */
   if (MATH) {
@@ -671,4 +672,12 @@
     });
   });
 
+  // 영어 놀이 메뉴 팝업에서 고른 사용자 · 놀이 · 학년 · 난이도로 바로 시작해요
+  if (LINK) {
+    $("#btn-result-mode").textContent = "게임 선택";
+    enterAs(EL.user);
+    mode = MODES.filter(function (m) { return m.id === EL.mode; })[0] || MODES[0];
+    grade = GRADES[EL.grade - 1];
+    choose();
+  }
 })();

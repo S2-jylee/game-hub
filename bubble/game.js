@@ -5,11 +5,13 @@
   "use strict";
 
   var ML = window.MulLink || { on: false }, MATH = ML.on;
+  var EL = window.EngLink || { on: false }, LINK = !MATH && EL.on;   // 영어 놀이 메뉴 팝업에서 열렸어요
 
   var $ = function (s) { return document.querySelector(s); };
   var GRADES = window.SPELL_GRADES;
   var TIME = 60;              // 한 판 시간(초)
   if (MATH) TIME = ML.by({ easy: 90, normal: 60, hard: 40 });   // 구구단: 고른 난이도대로
+  else if (LINK) TIME = EL.by({ easy: 90, normal: 60, hard: 45 });   // 영어 놀이 팝업: 고른 난이도대로
   var PER_LETTER = 5, WORD_BONUS = 10, TIME_BONUS = 3, WRONG = 3;
   var PROFILES_KEY = "bubble_profiles", GUIDE_ID = MATH ? "bubble_mul" : "bubble";
   var COLORS = ["#ff7eb6", "#ff9f43", "#f5b400", "#34d399", "#60a5fa", "#a78bfa", "#f472b6", "#2dd4bf", "#fb7185"];
@@ -536,8 +538,8 @@
     show("screen-result");
   }
   $("#btn-again").addEventListener("click", choose);
-  $("#btn-result-mode").addEventListener("click", function () { if (MATH) { ML.back(); return; } renderModes(); show("screen-mode"); });
-  $("#btn-quit").addEventListener("click", function () { stopRound(); if (MATH) { ML.back(); return; } renderModes(); show("screen-mode"); });
+  $("#btn-result-mode").addEventListener("click", function () { if (MATH) { ML.back(); return; } if (LINK) { EL.back(); return; } renderModes(); show("screen-mode"); });
+  $("#btn-quit").addEventListener("click", function () { stopRound(); if (MATH) { ML.back(); return; } if (LINK) { EL.back(); return; } renderModes(); show("screen-mode"); });
   $("#btn-say").addEventListener("click", function () {
     if (!G.cur) return;
     speakEn(mode.id === "word" ? G.cur.en : toks().join(", "));
@@ -553,5 +555,13 @@
     back.addEventListener("click", function (e) { e.preventDefault(); ML.back(); });
     $("#btn-result-mode").textContent = "게임 선택";
     $("#btn-again").textContent = "🔁 한 번 더 하기";
+  }
+  // 영어 놀이 메뉴 팝업에서 고른 사용자 · 놀이 · 학년 · 난이도로 바로 시작해요
+  if (LINK) {
+    $("#btn-result-mode").textContent = "게임 선택";
+    enterAs(EL.user);
+    mode = MODES.filter(function (m) { return m.id === EL.mode; })[0] || MODES[0];
+    grade = GRADES[EL.grade - 1];
+    choose();
   }
 })();

@@ -29,6 +29,7 @@
     qs: [], i: 0, total: 0, score: 0, lives: LIVES, combo: 0, correct: 0, wrong: [], missedThis: false, cur: null
   };
   let grade = GRADES[0];
+  const EL = window.EngLink || { on: false }, LINK = EL.on;   // 영어 놀이 메뉴 팝업에서 열렸어요
 
   /* ---------- 소리 ---------- */
   let actx = null;
@@ -289,7 +290,7 @@
   function addItem(kind, g, v, speedMul = 1) {
     const lv = catchLevel();
     // 처음엔 화면을 9초쯤 걸려 내려오고, 정답 30개쯤이면 3.5초쯤으로 빨라져요
-    const fall = g.H * (0.11 + lv * 0.006) * (0.9 + Math.random() * 0.25) * speedMul;
+    const fall = g.H * (0.11 + lv * 0.006) * (0.9 + Math.random() * 0.25) * speedMul * (LINK ? EL.by({ easy: 0.75, normal: 1, hard: 1.3 }) : 1);
     cg.items.push({
       kind, v, x: freeX(g), y: -g.ir, r: g.ir * (kind === 'num' ? 1.2 : 0.9), vy: fall,
       ph: Math.random() * 6, color: pick(COLORS), done: false, fade: null, wob: kind === 'gem' ? 0.06 : 0
@@ -728,7 +729,7 @@
     const stars = state.correct >= 30 ? 3 : state.correct >= 15 ? 2 : 1;
     showResult(stars, false, `받은 정답 <b>${state.correct}</b>개 · 💎 보석 <b>${cg.gems}</b>개<br>`, '🧺', catchRankHtml);
   }
-  $('#catchQuit').onclick = () => { stopCatch(); if ('speechSynthesis' in window) speechSynthesis.cancel(); renderGrades(); show('#grade'); };
+  $('#catchQuit').onclick = () => { stopCatch(); if ('speechSynthesis' in window) speechSynthesis.cancel(); if (LINK) { EL.back(); return; } renderGrades(); show('#grade'); };
   $('#cqSay').onclick = () => { if (state.cur) speakEn(state.cur.w[0]); };
 
   /* ---------- 결과 ---------- */
@@ -758,6 +759,8 @@
     confetti(stars * 15);
   }
   $('#againBtn').onclick = choose;   // 다시 할 때도 방법 팝업부터
-  $('#homeBtn').onclick = () => { renderGrades(); show('#grade'); };
+  $('#homeBtn').onclick = () => { if (LINK) { EL.back(); return; } renderGrades(); show('#grade'); };
   renderSoundBtn();
+  // 영어 놀이 메뉴 팝업에서 고른 사용자 · 학년으로 바로 시작해요
+  if (LINK) { $('#homeBtn').textContent = '게임 선택'; enterAs(EL.user); grade = GRADES[EL.grade - 1]; choose(); }
 })();

@@ -8,6 +8,7 @@
 
   const $ = s => document.querySelector(s);
   const ML = window.MulLink, MATH = ML.on;
+  const EL = window.EngLink || { on: false }, LINK = !MATH && EL.on;   // 영어 놀이 메뉴 팝업에서 열렸어요
   const GROUPS = window.ALIEN_GROUPS;
   const GOAL = 15, LIVES = 5;
   // 구구단: 고른 난이도대로 한 판 내내 같은 속도 (영어는 물리칠수록 조금씩 빨라져요)
@@ -206,23 +207,29 @@
     G.q = { a, b, ans: a * b };
     $("#mission-text").innerHTML = '<span class="eq">' + a + " × " + b + " = ?</span>정답 외계인을 쏘세요!";
     animate($("#mission"), "pop");
-    // 정답 외계인이 화면에 없으면 곧 내려보내요
-    if (!G.aliens.some(x => !x.dead && x.num === G.q.ans)) G.spawnT = Math.min(G.spawnT, 0.5);
+    // 정답 외계인이 화면에 없으면 화면 윗부분에 바로 나타나요 (위에서 내려올 때까지 기다리지 않게)
+    if (!G.aliens.some(x => !x.dead && x.num === G.q.ans)) spawn(true);
   }
+  // 다음 문제의 정답 (미리 화면에 섞어 두려고)
+  function upcomingAns() { const n = G.qs[G.qi]; return n ? n[0] * n[1] : null; }
 
-  function spawn() {
+  function spawn(forceAns) {
     const live = G.aliens.filter(a => !a.dead);
-    if (live.length >= 6) { G.spawnT = 0.6; return; }
+    if (live.length >= 6 && !forceAns) { G.spawnT = 0.6; return; }
     const r = alienR();
     // 위쪽에서 다른 외계인과 겹치지 않는 자리
     let x = 0.5, tries = 0;
     do { x = 0.1 + Math.random() * 0.8; tries++; } while (tries < 20 && live.some(a => a.y < r * 5 && Math.abs(a.x - x) * G.W < r * 4.2));
-    const a = { x, y: -r * 2.2, r, ph: Math.random() * 6, color: pick(ALIEN_COLORS), dead: false, wrong: 0, eyes: Math.random() < 0.4 ? 1 : 2, vy: G.speed * (0.85 + Math.random() * 0.3) };
+    const a = { x, y: forceAns ? r * 2.8 : -r * 2.2, r, warp: forceAns ? 0.5 : 0, ph: Math.random() * 6, color: pick(ALIEN_COLORS), dead: false, wrong: 0, eyes: Math.random() < 0.4 ? 1 : 2, vy: G.speed * (0.85 + Math.random() * 0.3) };
     if (MATH) {
       const hasAns = live.some(o => o.num === G.q.ans);
-      const want = !hasAns && Math.random() < 0.75;
+      const next = upcomingAns();
+      const hasNext = next == null || next === G.q.ans || live.some(o => o.num === next);
       const nums = ML.choices(G.q.a, G.q.b, 4);
-      a.num = want ? G.q.ans : pick(nums.filter(n => n !== G.q.ans));
+      if (forceAns || (!hasAns && Math.random() < 0.6)) a.num = G.q.ans;
+      // 다음 문제의 정답을 미리 섞어 둬요 → 지금 문제를 맞히면 바로 다음 정답을 쏠 수 있어요
+      else if (!hasNext && Math.random() < 0.55) a.num = next;
+      else a.num = pick(nums.filter(n => n !== G.q.ans));
       a.word = String(a.num);
     } else {
       const targets = live.filter(o => o.target).length;
@@ -231,7 +238,8 @@
       a.word = w[0]; a.ko = w[1];
     }
     G.aliens.push(a);
-    G.spawnT = (MATH ? MUL_SPAWN : Math.max(1.0, 2.3 - G.kills * 0.06)) * (0.8 + Math.random() * 0.4);
+    if (forceAns) { burst(a.x * G.W, a.y, "#fde68a"); return; }
+    G.spawnT = (MATH ? MUL_SPAWN : Math.max(1.0, 2.3 - G.kills * 0.06) * (LINK ? EL.by({ easy: 1.25, normal: 1, hard: 0.8 }) : 1)) * (0.8 + Math.random() * 0.4);
   }
 
   /* ---------- 시작 · 끝 ---------- */
@@ -240,7 +248,7 @@
     setupPools();
     Object.assign(G, {
       active: true, cx: 0.5, target: null, autoFire: false, cool: 0, recoil: 0, aliens: [], bullets: [], bits: [], spawnT: 0.3,
-      speed: MATH ? MUL_SPEED : 0.045, lives: LIVES, score: 0, combo: 0, kills: 0, wrongShots: 0, learned: [], shieldFlash: 0, shieldHurt: 0,
+      speed: MATH ? MUL_SPEED : LINK ? EL.by({ easy: 0.035, normal: 0.045, hard: 0.06 }) : 0.045, lives: LIVES, score: 0, combo: 0, kills: 0, wrongShots: 0, learned: [], shieldFlash: 0, shieldHurt: 0,
       q: null, qs: MATH ? ML.questions(GOAL) : [], qi: 0, ending: 0, t: 0, heartT: 12
     });
     G.keys.l = G.keys.r = false;
@@ -381,6 +389,7 @@
       if (a.dead) return;
       a.y += a.vy * G.H * dt * (G.ending ? 0 : 1);
       if (a.wrong) a.wrong = Math.max(0.35, a.wrong - dt * 0.8);
+      if (a.warp) a.warp = Math.max(0, a.warp - dt);
       if (a.y + a.r >= sy && !G.ending) {
         a.dead = true;
         const [sx, sy2] = screenXY(a.x * G.W, sy);
@@ -480,6 +489,7 @@
     if (a.heart) { drawHeart(x, y, r, t); return; }
     ctx.save();
     if (a.wrong) ctx.globalAlpha = a.wrong;
+    else if (a.warp) ctx.globalAlpha = Math.max(0.15, 1 - a.warp * 1.7); // 바로 나타날 때 스르륵
     // 줄 + 단어 표지판
     const fs = signFont(a);
     ctx.font = "800 " + fs + "px Nunito, Pretendard, sans-serif";
@@ -594,8 +604,8 @@
     show("screen-result");
   }
   $("#btn-again").addEventListener("click", choose);
-  $("#btn-result-back").addEventListener("click", () => { if (MATH) ML.back(); else { renderModes(); show("screen-mode"); } });
-  $("#btn-quit").addEventListener("click", () => { stopGame(); if (MATH) ML.back(); else { renderModes(); show("screen-mode"); } });
+  $("#btn-result-back").addEventListener("click", () => { if (MATH) ML.back(); else if (LINK) EL.back(); else { renderModes(); show("screen-mode"); } });
+  $("#btn-quit").addEventListener("click", () => { stopGame(); if (MATH) ML.back(); else if (LINK) EL.back(); else { renderModes(); show("screen-mode"); } });
 
   if (MATH) {
     document.title = "구구단 디펜스";
@@ -641,4 +651,6 @@
     b.addEventListener("pointercancel", up);
     b.addEventListener("lostpointercapture", up);
   });
+  // 영어 놀이 메뉴 팝업에서 고른 사용자 · 미션 · 난이도로 바로 시작해요
+  if (LINK) { $("#btn-result-back").textContent = "게임 선택"; enterAs(EL.user); if (GROUPS[EL.mode]) mode = EL.mode; choose(); }
 })();

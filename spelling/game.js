@@ -5,6 +5,7 @@
   "use strict";
 
   var ML = window.MulLink || { on: false }, MATH = ML.on;
+  var EL = window.EngLink || { on: false }, LINK = !MATH && EL.on;   // 영어 놀이 메뉴 팝업에서 열렸어요
 
   var $ = function (s) { return document.querySelector(s); };
   var GRADES = window.SPELL_GRADES, LEVELS = window.SPELL_LEVELS;
@@ -146,7 +147,7 @@
   $("#user-name-input").addEventListener("keydown", function (e) { if (e.key === "Enter") submitNewUser(); });
   $("#btn-user-guest").addEventListener("click", function () { enterAs(null); });
   $("#btn-user-back").addEventListener("click", function () { show("screen-title"); });
-  $("#btn-level-back").addEventListener("click", function () { if (MATH) { ML.back(); return; } renderGrades(); show("screen-grade"); });
+  $("#btn-level-back").addEventListener("click", function () { if (MATH) { ML.back(); return; } if (LINK) { EL.back(); return; } renderGrades(); show("screen-grade"); });
   $("#btn-grade-back").addEventListener("click", function () { show("screen-title"); });
 
   /* ---------- 학년 고르기 ---------- */
@@ -546,11 +547,11 @@
   }
 
   $("#btn-again").addEventListener("click", function () { chooseLevel(G.level); });
-  $("#btn-result-level").addEventListener("click", function () { if (MATH) { ML.back(); return; } renderLevels(); show("screen-level"); });
+  $("#btn-result-level").addEventListener("click", function () { if (MATH) { ML.back(); return; } if (LINK) { EL.back(); return; } renderLevels(); show("screen-level"); });
   $("#btn-quit").addEventListener("click", function () {
     G.active = false; cancelAnimationFrame(G.raf);
     if ("speechSynthesis" in window) speechSynthesis.cancel();
-    if (MATH) { ML.back(); return; }
+    if (MATH) { ML.back(); return; } if (LINK) { EL.back(); return; }
     renderLevels(); show("screen-level");
   });
   $("#btn-speak").addEventListener("click", function () { if (G.word) speakEn(G.word.en); });
@@ -765,4 +766,10 @@
   Array.prototype.forEach.call(document.querySelectorAll(".dp"), function (btn) {
     btn.addEventListener("pointerdown", function (e) { e.preventDefault(); input(btn.dataset.dir); });
   });
+  // 영어 놀이 메뉴 팝업에서 고른 사용자 · 학년 · 난이도로 바로 시작해요
+  if (LINK) {
+    $("#btn-result-level").textContent = "게임 선택";
+    enterAs(EL.user); grade = GRADES[EL.grade - 1];
+    chooseLevel(LEVELS.filter(function (l) { return l.id === EL.diff; })[0] || LEVELS[1]);
+  }
 })();

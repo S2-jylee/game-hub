@@ -29,6 +29,7 @@
     qs: [], i: 0, total: 0, score: 0, lives: LIVES, combo: 0, correct: 0, wrong: [], missedThis: false, cur: null
   };
   let grade = GRADES[0];
+  const EL = window.EngLink || { on: false }, LINK = EL.on;   // 영어 놀이 메뉴 팝업에서 열렸어요
 
   /* ---------- 소리 ---------- */
   let actx = null;
@@ -286,7 +287,7 @@
       if (stage > 0) $('#runMsg').textContent = '◀ ▶ 로 정답 허들로! 🪵 통나무는 스페이스(화면 톡)로 점프!';
     }
     $('#runProgressText').textContent = `스테이지 ${stage + 1} / ${RUN_STAGES}  ·  ${state.i + 1} / ${state.total}`;
-    run.speed = Z_SPAWN / STAGE_TIME[stage];
+    run.speed = Z_SPAWN / (STAGE_TIME[stage] * (LINK ? EL.by({ easy: 1.3, normal: 1, hard: 0.8 }) : 1));
     run.gates.push({ z: Z_SPAWN, vals: wordChoices(w, 3), ans: w[0], done: false, pick: -1, ok: false });
   }
 
@@ -1012,7 +1013,7 @@
     showResult(stars, state.lives <= 0,
       `도착한 스테이지 <b>${Math.min(RUN_STAGES, run.stage + 1)}</b> / ${RUN_STAGES}<br>맞힌 단어 <b>${state.correct}</b> / ${state.total}<br>`, '🐧');
   }
-  $('#runQuit').onclick = () => { stopRun(); if ('speechSynthesis' in window) speechSynthesis.cancel(); renderGrades(); show('#grade'); };
+  $('#runQuit').onclick = () => { stopRun(); if ('speechSynthesis' in window) speechSynthesis.cancel(); if (LINK) { EL.back(); return; } renderGrades(); show('#grade'); };
 
   /* ---------- 결과 ---------- */
   function showResult(stars, lost, line, emoji, extra) {
@@ -1041,6 +1042,8 @@
     confetti(stars * 15);
   }
   $('#againBtn').onclick = choose;   // 다시 할 때도 방법 팝업부터
-  $('#homeBtn').onclick = () => { renderGrades(); show('#grade'); };
+  $('#homeBtn').onclick = () => { if (LINK) { EL.back(); return; } renderGrades(); show('#grade'); };
   renderSoundBtn();
+  // 영어 놀이 메뉴 팝업에서 고른 사용자 · 학년으로 바로 시작해요
+  if (LINK) { $('#homeBtn').textContent = '게임 선택'; enterAs(EL.user); grade = GRADES[EL.grade - 1]; choose(); }
 })();

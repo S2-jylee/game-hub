@@ -7,10 +7,11 @@
 
   const $ = s => document.querySelector(s);
   const ML = window.MulLink || { on: false }, MATH = ML.on;
+  const EL = window.EngLink || { on: false }, LINK = !MATH && EL.on;   // 영어 놀이 메뉴 팝업에서 열렸어요
   const GRADES = window.SPELL_GRADES;
   const TOTAL = 12, LIVES = 5;
   // 구구단: 고른 난이도대로 물고기 헤엄 속도가 달라요
-  const FISH_MUL = MATH ? ML.by({ easy: 0.65, normal: 1, hard: 1.6 }) : 1;
+  const FISH_MUL = MATH ? ML.by({ easy: 0.65, normal: 1, hard: 1.6 }) : LINK ? EL.by({ easy: 0.65, normal: 1, hard: 1.5 }) : 1;
   const MAX_FISH = 7;          // 바닷속 물고기는 많아야 7마리
   const PROFILES_KEY = "fishing_profiles", GUIDE_ID = MATH ? "fishing_mul" : "fishing";
   const SOUND = !MATH || ML.sound;
@@ -566,8 +567,8 @@
     show("screen-result");
   }
   $("#btn-again").addEventListener("click", choose);
-  $("#btn-result-back").addEventListener("click", () => { if (MATH) ML.back(); else { renderGrades(); show("screen-grade"); } });
-  $("#btn-quit").addEventListener("click", () => { stopGame(); if (MATH) ML.back(); else { renderGrades(); show("screen-grade"); } });
+  $("#btn-result-back").addEventListener("click", () => { if (MATH) ML.back(); else if (LINK) EL.back(); else { renderGrades(); show("screen-grade"); } });
+  $("#btn-quit").addEventListener("click", () => { stopGame(); if (MATH) ML.back(); else if (LINK) EL.back(); else { renderGrades(); show("screen-grade"); } });
   $("#btn-say").addEventListener("click", () => { if (G.cur) { if (MATH) speak(G.cur.say, "ko-KR"); else speak(G.cur.say); } });
 
   if (MATH) {
@@ -614,4 +615,6 @@
     b.addEventListener("pointercancel", up);
     b.addEventListener("lostpointercapture", up);
   });
+  // 영어 놀이 메뉴 팝업에서 고른 사용자 · 학년 · 난이도로 바로 시작해요
+  if (LINK) { $("#btn-result-back").textContent = "게임 선택"; enterAs(EL.user); grade = GRADES[EL.grade - 1]; choose(); }
 })();
