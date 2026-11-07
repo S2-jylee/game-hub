@@ -1468,3 +1468,11 @@ html, body { overflow-x: clip; }
 @media (max-width: 400px) {
   #stats-bar .stat + .stat::before { margin-right: 2px; }
 }
+
+/* 홈 타일: 구구단 놀이터와 같은 폭 · 같은 글자 크기 (이름 23px / 휴대폰 19px) */
+.tile-grid { max-width: 860px; margin: 0 auto; gap: 14px; }
+.tile-title { font-size: 23px; }
+@media (max-width: 560px) {
+  .tile-grid { gap: 10px; }
+  .tile-title { font-size: 19px; }
+}
