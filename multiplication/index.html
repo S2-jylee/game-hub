@@ -2104,7 +2104,7 @@ button{font-family:inherit;font-weight:inherit;color:inherit;cursor:pointer;bord
   }
 
   // 마우스: 누른 곳으로 펭귄이 따라가요
-  // 터치(태블릿): 톡 치면 점프, 옆으로 스와이프하면 손가락을 따라 움직이고 휙 밀면 옆 줄로 가요
+  // 터치(휴대폰 · 태블릿): 화면을 터치하면 점프만 해요. 옆 줄 이동은 ◀ ▶ 버튼으로만 해요
   const field = $('#runField');
   let swipe = null;
   function aim(e) {
@@ -2130,7 +2130,7 @@ button{font-family:inherit;font-weight:inherit;color:inherit;cursor:pointer;bord
     if (e.target.closest('.run-pad')) return;
     try { field.setPointerCapture(e.pointerId); } catch (err) { /* 이미 끝난 터치 */ }
     if (e.pointerType === 'mouse') aim(e);
-    else { swipe = { x: e.clientX, px: run.px, t: performance.now(), moved: false }; hop(); }   // 손가락이 닿는 순간 바로 점프 (옆으로 밀면 이동도 같이 돼요)
+    else hop();   // 휴대폰 · 태블릿: ◀ ▶ 버튼이 아닌 곳을 터치하면 그 순간 점프 (밀어서 움직이기는 없어요. 이동은 ◀ ▶ 버튼으로만)
   });
   field.addEventListener('pointermove', e => {
     if (!field.hasPointerCapture(e.pointerId)) return;
