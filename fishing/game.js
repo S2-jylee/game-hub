@@ -288,6 +288,8 @@
     renderSlots(q);
     $("#q-emoji").textContent = q.emoji;
     $("#q-sub").textContent = q.sub;
+    // 무슨 단어인지 알 수 있게 한글 뜻을 영어 빈칸 앞에 크게 보여 줘요 (구구단은 없어요)
+    $("#q-ko").textContent = MATH ? "" : (q.learn.ko || "");
     $("#hud-q").textContent = (G.i + 1) + " / " + TOTAL;
     animate($(".q-card"), "pop");
     // 바닷속 물고기는 그대로 계속 헤엄쳐요. 먼저 나와 있던 물고기도 새 정답이면 낚을 수 있어요.
@@ -578,7 +580,7 @@
     const back = $("#title-back");
     back.textContent = "← 게임 고르기";
     back.addEventListener("click", e => { e.preventDefault(); ML.back(); });
-    $("#btn-result-back").textContent = "게임 선택";
+    $("#btn-result-back").textContent = "← 게임 선택";
     $("#btn-again").textContent = "🔁 한 번 더 하기";
     $("#btn-say").style.display = "none";
   }
@@ -616,5 +618,5 @@
     b.addEventListener("lostpointercapture", up);
   });
   // 영어 놀이 메뉴 팝업에서 고른 사용자 · 학년 · 난이도로 바로 시작해요
-  if (LINK) { $("#btn-result-back").textContent = "게임 선택"; enterAs(EL.user); grade = GRADES[EL.grade - 1]; choose(); }
+  if (LINK) { $("#btn-result-back").textContent = "← 게임 선택"; enterAs(EL.user); grade = GRADES[EL.grade - 1]; choose(); }
 })();

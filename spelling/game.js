@@ -736,7 +736,7 @@
     back.addEventListener("click", function (e) { e.preventDefault(); ML.back(); });
     $("#btn-level-back").textContent = "← 게임 고르기";
     $("#hud-word").previousElementSibling.textContent = "차례";
-    $("#btn-result-level").textContent = "게임 선택";
+    $("#btn-result-level").textContent = "← 게임 선택";
     $("#btn-again").textContent = "🔁 한 번 더 하기";
   }
 
@@ -768,7 +768,7 @@
   });
   // 영어 놀이 메뉴 팝업에서 고른 사용자 · 학년 · 난이도로 바로 시작해요
   if (LINK) {
-    $("#btn-result-level").textContent = "게임 선택";
+    $("#btn-result-level").textContent = "← 게임 선택";
     enterAs(EL.user); grade = GRADES[EL.grade - 1];
     chooseLevel(LEVELS.filter(function (l) { return l.id === EL.diff; })[0] || LEVELS[1]);
   }

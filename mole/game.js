@@ -110,7 +110,7 @@
   function wordQueue(n) {
     let qs = [];
     while (qs.length < n) {
-      const next = shuffle(picWords(grade.words));
+      const next = shuffle(grade.words.filter(w => w[2]));   // 두더지가 한글 뜻을 들고 나와서, 그림 없는 단어도 괜찮아요
       if (qs.length && next[0][0] === qs[qs.length - 1][0]) next.push(next.shift());
       qs = qs.concat(next);
     }
@@ -147,8 +147,8 @@
     return {
       id: GUIDE_ID, title: '두더지 잡기',
       pages: [
-        { icon: '🕳️', title: '두더지가 쑥쑥', text: '구멍에서 <b>그림</b>을 든 두더지들이 쑥쑥 올라왔다 내려가요.' },
-        { icon: '🔨', title: '맞는 그림을 뿅!', text: '위에 나온 <b>영어 단어</b>의 뜻 그림을 든 두더지를 눌러서 잡아요.<br>예) Apple → <b>🍎</b> 두더지' },
+        { icon: '🕳️', title: '두더지가 쑥쑥', text: '구멍에서 <b>한글 뜻</b>을 든 두더지들이 쑥쑥 올라왔다 내려가요.' },
+        { icon: '🔨', title: '맞는 뜻을 뿅!', text: '위에 나온 <b>영어 단어</b>의 뜻을 든 두더지를 눌러서 잡아요.<br>예) Apple → <b>사과</b> 두더지' },
         { icon: '❤️', title: '틀리면 하트가 줄어요', text: '틀린 두더지를 잡으면 ❤️ 하트가 하나 줄어요.<br><b>하트 3개</b>를 다 쓰면 끝!' },
         { icon: '⌨️', title: '키보드로도 OK', text: '키보드 <b>1 ~ 9</b> 번으로도 잡을 수 있어요 (왼쪽 위부터).<br>단어 <b>' + TOTAL + '개</b>를 다 잡으면 성공!' }
       ],
@@ -163,7 +163,7 @@
     show('#mole');
     buildField();
     Object.assign(mg, { active: true, spawnT: 0.8, sinceAns: 0, waitT: 0, overT: 0 });
-    $('#moleMsg').textContent = '단어에 맞는 그림 두더지를 뿅! 잡아요';
+    $('#moleMsg').textContent = '단어 뜻에 맞는 두더지를 뿅! 잡아요';
     setQuestion();
     mg.last = performance.now();
     cancelAnimationFrame(mg.raf);
@@ -173,8 +173,10 @@
   function stopGame() { mg.active = false; cancelAnimationFrame(mg.raf); }
   function setQuestion() {
     const w = state.qs[state.i];
-    const others = shuffle(picWords(grade.words).filter(o => o[1] !== w[1])).slice(0, 7).map(o => o[1]);
-    state.cur = { w, ans: w[1], wrongs: others };
+    // 두더지는 그림 대신 한글 뜻을 들고 올라와요
+    const others = [];
+    shuffle(grade.words.filter(o => o[2] && o[2] !== w[2])).forEach(o => { if (others.length < 7 && !others.includes(o[2])) others.push(o[2]); });
+    state.cur = { w, ans: w[2], wrongs: others };
     state.missedThis = false;
     $('#mqWord').textContent = cap(w[0]);
     const qm = $('#mqans'); qm.textContent = '?'; qm.className = 'q-mark';
@@ -227,7 +229,7 @@
       tone(1500, 0.06, 'square', 0, 0.06); tone(2100, 0.1, 'triangle', 0.05, 0.1); sfx.correct();
       burstAt(x, y); floatAt(x, y - 30, '뿅! +' + gain);
       const qm = $('#mqans'); qm.textContent = ans; qm.className = 'q-mark ok';
-      $('#moleMsg').textContent = `${cap(w[0])} = ${ans} ${w[2]} 정답! ` + pick(PRAISE) + (state.combo >= 2 ? `  🔥 ${state.combo}연속!` : '');
+      $('#moleMsg').textContent = `${cap(w[0])} = ${ans} 정답! ` + pick(PRAISE) + (state.combo >= 2 ? `  🔥 ${state.combo}연속!` : '');
       mg.holes.forEach(o => { if (o !== h && o.st === 'up') moleDown(o, true); });
       state.i++;
       if (state.i >= TOTAL) { mg.overT = 1.3; sfx.win(); return; }
@@ -244,7 +246,7 @@
     state.lives--;
     renderHearts(true);
     floatAt(x, y - 30, '앗! ' + h.v);
-    $('#moleMsg').textContent = `앗! 그 그림이 아니에요. ${cap(w[0])} 는(은) 뭘까요?`;
+    $('#moleMsg').textContent = `앗! 그 뜻이 아니에요. ${cap(w[0])} 는(은) 무슨 뜻일까요?`;
     if (state.lives <= 0) {
       mg.overT = 1.3;
       mg.holes.forEach(o => { if (o !== h && o.st === 'up') moleDown(o, true); });
@@ -258,7 +260,7 @@
     if (mg.overT > 0) {
       if ((mg.overT -= dt) <= 0) { finish(); return; }
     } else if (mg.waitT > 0) {
-      if ((mg.waitT -= dt) <= 0) { setQuestion(); mg.sinceAns = 2; mg.spawnT = 0.2; }
+      if ((mg.waitT -= dt) <= 0) { setQuestion(); mg.sinceAns = 0; mg.spawnT = 0.2; }
     } else if ((mg.spawnT -= dt) <= 0) {
       spawn();
       mg.spawnT = GAP * (0.8 + Math.random() * 0.4);

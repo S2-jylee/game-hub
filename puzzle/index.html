@@ -61,29 +61,15 @@
 
 <!-- 난이도 고르기 팝업: 그림을 고르면 떠요 -->
 <div id="diff-modal" class="diff-modal">
-  <div class="diff-card">
-    <div class="diff-pick-title"><span id="diff-pick-name"></span> 난이도를 골라주세요</div>
+  <div class="diff-card" role="dialog" aria-modal="true">
+    <button class="diff-close" id="btn-diff-x" type="button" title="닫기">✕</button>
+    <h2 class="diff-pick-title">난이도를 골라주세요</h2>
+    <p class="diff-pick-sub" id="diff-pick-name"></p>
     <div class="difficulty-options">
-      <button class="diff-btn" data-diff="easy">
-        <div class="diff-emoji">🙂</div>
-        <div class="diff-name">쉬움</div>
-        <div class="diff-desc">9조각 (3×3)</div>
-      </button>
-      <button class="diff-btn" data-diff="normal">
-        <div class="diff-emoji">😃</div>
-        <div class="diff-name">보통</div>
-        <div class="diff-desc">16조각 (4×4)</div>
-      </button>
-      <button class="diff-btn" data-diff="hard">
-        <div class="diff-emoji">🔥</div>
-        <div class="diff-name">어려움</div>
-        <div class="diff-desc">25조각 (5×5)</div>
-      </button>
-      <button class="diff-btn" data-diff="extreme">
-        <div class="diff-emoji">💀</div>
-        <div class="diff-name">매우어려움</div>
-        <div class="diff-desc">50조각 (5×10)</div>
-      </button>
+      <button class="diff-btn" data-diff="easy"><b>쉬움</b><small>9조각 (3×3)</small></button>
+      <button class="diff-btn" data-diff="normal"><b>보통</b><small>16조각 (4×4)</small></button>
+      <button class="diff-btn" data-diff="hard"><b>어려움</b><small>25조각 (5×5)</small></button>
+      <button class="diff-btn" data-diff="extreme"><b>매우어려움</b><small>50조각 (5×10)</small></button>
     </div>
     <div class="result-buttons">
       <button id="btn-diff-back" class="btn btn-ghost">← 그림 다시 고르기</button>

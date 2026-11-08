@@ -220,7 +220,7 @@
     // 위쪽에서 다른 외계인과 겹치지 않는 자리
     let x = 0.5, tries = 0;
     do { x = 0.1 + Math.random() * 0.8; tries++; } while (tries < 20 && live.some(a => a.y < r * 5 && Math.abs(a.x - x) * G.W < r * 4.2));
-    const a = { x, y: forceAns ? r * 2.8 : -r * 2.2, r, warp: forceAns ? 0.5 : 0, ph: Math.random() * 6, color: pick(ALIEN_COLORS), dead: false, wrong: 0, eyes: Math.random() < 0.4 ? 1 : 2, vy: G.speed * (0.85 + Math.random() * 0.3) };
+    const a = { x, y: forceAns ? r * 2.8 : -r * 2.2, r, ph: Math.random() * 6, color: pick(ALIEN_COLORS), dead: false, wrong: 0, eyes: Math.random() < 0.4 ? 1 : 2, vy: G.speed * (0.85 + Math.random() * 0.3) };
     if (MATH) {
       const hasAns = live.some(o => o.num === G.q.ans);
       const next = upcomingAns();
@@ -238,7 +238,7 @@
       a.word = w[0]; a.ko = w[1];
     }
     G.aliens.push(a);
-    if (forceAns) { burst(a.x * G.W, a.y, "#fde68a"); return; }
+    if (forceAns) return;
     G.spawnT = (MATH ? MUL_SPAWN : Math.max(1.0, 2.3 - G.kills * 0.06) * (LINK ? EL.by({ easy: 1.25, normal: 1, hard: 0.8 }) : 1)) * (0.8 + Math.random() * 0.4);
   }
 
@@ -389,7 +389,6 @@
       if (a.dead) return;
       a.y += a.vy * G.H * dt * (G.ending ? 0 : 1);
       if (a.wrong) a.wrong = Math.max(0.35, a.wrong - dt * 0.8);
-      if (a.warp) a.warp = Math.max(0, a.warp - dt);
       if (a.y + a.r >= sy && !G.ending) {
         a.dead = true;
         const [sx, sy2] = screenXY(a.x * G.W, sy);
@@ -489,7 +488,6 @@
     if (a.heart) { drawHeart(x, y, r, t); return; }
     ctx.save();
     if (a.wrong) ctx.globalAlpha = a.wrong;
-    else if (a.warp) ctx.globalAlpha = Math.max(0.15, 1 - a.warp * 1.7); // 바로 나타날 때 스르륵
     // 줄 + 단어 표지판
     const fs = signFont(a);
     ctx.font = "800 " + fs + "px Nunito, Pretendard, sans-serif";
@@ -614,7 +612,7 @@
     const back = $("#title-back");
     back.textContent = "← 게임 고르기";
     back.addEventListener("click", e => { e.preventDefault(); ML.back(); });
-    $("#btn-result-back").textContent = "게임 선택";
+    $("#btn-result-back").textContent = "← 게임 선택";
     $("#btn-again").textContent = "🔁 한 번 더 하기";
   }
 
@@ -652,5 +650,5 @@
     b.addEventListener("lostpointercapture", up);
   });
   // 영어 놀이 메뉴 팝업에서 고른 사용자 · 미션 · 난이도로 바로 시작해요
-  if (LINK) { $("#btn-result-back").textContent = "게임 선택"; enterAs(EL.user); if (GROUPS[EL.mode]) mode = EL.mode; choose(); }
+  if (LINK) { $("#btn-result-back").textContent = "← 게임 선택"; enterAs(EL.user); if (GROUPS[EL.mode]) mode = EL.mode; choose(); }
 })();

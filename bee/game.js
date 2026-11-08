@@ -155,8 +155,8 @@
       id: GUIDE_ID, title: MATH ? "구구단 꿀벌 비행" : "꿀벌 비행",
       pages: [
         { icon: "🐝", title: "꿀벌이 날아요", text: "꿀벌은 가만히 두면 <b>아래로 슝</b> 내려가요.<br>화면을 <b>톡</b>(또는 <b>스페이스바</b>)하면 <b>위로 파닥!</b>" },
-        { icon: "🌼", title: "꽃길이 다가와요", text: "꽃 기둥에 <b>위 · 가운데 · 아래</b> 세 길이 있어요.<br>길마다 " + (MATH ? "<b>숫자</b>" : "<b>그림</b>") + "이 하나씩 달려 있어요." },
-        { icon: MATH ? "🔢" : "🔤", title: "맞는 길로 쏙!", text: MATH ? "위에 나온 <b>구구단의 정답</b> 길로 지나가요.<br>예) 6 × 7 → <b>42</b> 길" : "위에 나온 <b>영어 단어</b>의 뜻에 맞는 <b>그림 길</b>로 지나가요.<br>예) Apple → <b>🍎</b> 길" },
+        { icon: "🌼", title: "꽃길이 다가와요", text: "꽃 기둥에 <b>위 · 가운데 · 아래</b> 세 길이 있어요.<br>길마다 " + (MATH ? "<b>숫자</b>" : "<b>한글 뜻</b>") + "이 하나씩 달려 있어요." },
+        { icon: MATH ? "🔢" : "🔤", title: "맞는 길로 쏙!", text: MATH ? "위에 나온 <b>구구단의 정답</b> 길로 지나가요.<br>예) 6 × 7 → <b>42</b> 길" : "위에 나온 <b>영어 단어</b>의 뜻에 맞는 <b>한글 길</b>로 지나가요.<br>예) Apple → <b>사과</b> 길" },
         { icon: "💎", title: "보석을 먹어요", text: "꽃길 사이에 <b>보석 💎</b>이 줄지어 떠 있어요. 꿀벌이 지나가며 먹으면 <b>점수</b>가 올라가요!<br>가끔 <b>⭐ 별</b>이 날아오고, <b>❤️</b>를 먹으면 하트가 다시 차요." },
         { icon: "💫", title: "틀리면 꽈당", text: "틀린 길로 가면 꽃잎에 부딪혀 ❤️ 하트가 하나 줄어요.<br>꽃길 <b>" + TOTAL + "개</b>를 지나면 <b>벌집</b> 도착!" }
       ],
@@ -172,11 +172,13 @@
 
   /* ---------- 문제 ---------- */
   function englishQuestions() {
-    const pics = picWords(grade.words);
-    return shuffle(pics.slice()).slice(0, TOTAL).map(w => {
-      const others = shuffle(pics.filter(o => o[1] !== w[1])).slice(0, 2);
-      return { word: cap(w[0]), sub: "뜻에 맞는 그림 꽃길로 날아가요!", ans: w[1], opts: shuffle([w[1]].concat(others.map(o => o[1]))), emojiOpts: true,
-        say: w[0], learn: { en: w[0], ko: w[2], emoji: w[1] }, reveal: w[1] + " " + w[2] };
+    // 꽃길 표지판에는 그림 대신 한글 뜻이 적혀 있어요
+    const words = grade.words.filter(w => w[2]);
+    return shuffle(words.slice()).slice(0, TOTAL).map(w => {
+      const others = [];
+      shuffle(words.filter(o => o[2] !== w[2])).forEach(o => { if (others.length < 2 && !others.includes(o[2])) others.push(o[2]); });
+      return { word: cap(w[0]), sub: "뜻에 맞는 한글 꽃길로 날아가요!", ans: w[2], opts: shuffle([w[2]].concat(others)), emojiOpts: false,
+        say: w[0], learn: { en: w[0], ko: w[2], emoji: w[1] }, reveal: w[2] };
     });
   }
   function mathQuestions() {
@@ -254,7 +256,7 @@
   }
   function flap() {
     if (!G.active || G.ending) return;
-    if (!G.started) { G.started = true; $("#flap-hint").classList.add("hide"); msg(MATH ? "정답 숫자 길로 날아가요!" : "뜻에 맞는 그림 길로 날아가요!"); }
+    if (!G.started) { G.started = true; $("#flap-hint").classList.add("hide"); msg(MATH ? "정답 숫자 길로 날아가요!" : "뜻에 맞는 한글 길로 날아가요!"); }
     G.vy = FLAP;
     sfx.flap();
   }
@@ -487,7 +489,14 @@
       ctx.strokeStyle = c.done && isAns ? "#22c55e" : LANE_COLORS[i]; ctx.stroke();
       ctx.textAlign = "center"; ctx.textBaseline = "middle";
       if (c.q.emojiOpts) { ctx.font = sz * 0.62 + "px " + EMOJI_FONT; ctx.fillStyle = "#000"; }
-      else { ctx.font = "800 " + sz * (v.length > 2 ? 0.36 : 0.46) + "px Nunito, Pretendard, sans-serif"; ctx.fillStyle = "#713f12"; }
+      else {
+        // 글자가 길면 표지판 안에 들어가게 줄여요 (한글 뜻 · 숫자)
+        let fs = sz * 0.46;
+        ctx.font = "800 " + fs + "px Pretendard, Nunito, sans-serif";
+        const tw = ctx.measureText(v).width;
+        if (tw > sz * 0.86) { fs *= sz * 0.86 / tw; ctx.font = "800 " + fs + "px Pretendard, Nunito, sans-serif"; }
+        ctx.fillStyle = "#713f12";
+      }
       ctx.fillText(v, x, cy + sz * 0.04);
     });
   }
@@ -575,7 +584,7 @@
     const back = $("#title-back");
     back.textContent = "← 게임 고르기";
     back.addEventListener("click", e => { e.preventDefault(); ML.back(); });
-    $("#btn-result-back").textContent = "게임 선택";
+    $("#btn-result-back").textContent = "← 게임 선택";
     $("#btn-again").textContent = "🔁 한 번 더 하기";
     $("#btn-say").style.display = "none";
   }
@@ -587,5 +596,5 @@
   });
   $("#field").addEventListener("pointerdown", e => { e.preventDefault(); flap(); });
   // 영어 놀이 메뉴 팝업에서 고른 사용자 · 학년 · 난이도로 바로 시작해요
-  if (LINK) { $("#btn-result-back").textContent = "게임 선택"; enterAs(EL.user); grade = GRADES[EL.grade - 1]; choose(); }
+  if (LINK) { $("#btn-result-back").textContent = "← 게임 선택"; enterAs(EL.user); grade = GRADES[EL.grade - 1]; choose(); }
 })();

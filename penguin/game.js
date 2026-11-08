@@ -289,6 +289,9 @@
     $('#runProgressText').textContent = `스테이지 ${stage + 1} / ${RUN_STAGES}  ·  ${state.i + 1} / ${state.total}`;
     run.speed = Z_SPAWN / (STAGE_TIME[stage] * (LINK ? EL.by({ easy: 1.3, normal: 1, hard: 0.8 }) : 1));
     run.gates.push({ z: Z_SPAWN, vals: wordChoices(w, 3), ans: w[0], done: false, pick: -1, ok: false });
+    // 이 허들 뒤(다음 허들 전)에 굴러올 통나무를 지금 미리 놓아요 → 허들 너머로 멀리서부터 보여요
+    const goalNext = (state.i + 1) % PER_STAGE === 0 || state.i + 1 >= state.total;
+    if (!goalNext) maybeLog(0.9, Z_SPAWN);
   }
 
   function judgeGate(gate) {
@@ -322,8 +325,6 @@
       $('#runMsg').textContent = `앗! ${w[1] ? w[1] + ' ' : ''}${w[2]} 은(는) ${ans} 이야!`;
       delay = 1700;
     }
-    const goalNext = (state.i + 1) % PER_STAGE === 0 || state.i + 1 >= state.total;
-    if (state.lives > 0 && !goalNext) maybeLog(delay / 1000);
     const tok = run.tok;
     setTimeout(() => {
       if (tok !== run.tok) return;
@@ -386,7 +387,9 @@
   // 스테이지가 올라갈수록 허들 사이에 통나무가 여러 개 굴러와요
   // 5스테이지부터는 가끔 두 칸을 차지하는 긴 통나무도 나와요
   // 8스테이지부터는 통나무 사이가 점프 시간보다 짧을 수 있어서, 그때는 서로 다른 칸에 짧은 통나무만 놓아요
-  function maybeLog(delaySec) {
+  // base: 통나무를 놓는 기준 거리 (허들이 있는 곳). 허들을 지난 뒤 ta 초 뒤에 펭귄에게 닿아요
+  function maybeLog(delaySec, base) {
+    base = base || 0;
     const LOG_GAP = run.stage >= 7 ? 0.55 : 0.75;
     if (Math.random() > (run.stage === 0 ? 0.85 : 1)) return;
     const T = Z_SPAWN / run.speed;
@@ -408,7 +411,7 @@
       let ok = close && prev ? opts.filter(o => !overlap(o, prev)) : opts;
       if (!ok.length) ok = LANE_X.map(x => ({ x, half: 0.27 })).filter(o => !(close && prev && overlap(o, prev)));
       const c = pick(ok);
-      const lg = { z: run.speed * ta, x: c.x, half: c.half, done: false, age: 0 };
+      const lg = { z: base + run.speed * ta, x: c.x, half: c.half, done: false, age: 0 };
       prev = lg;
       run.logs.push(lg);
     }
@@ -477,7 +480,7 @@
     if (dir) run.target = null;
     else if (run.target != null) {
       const d = run.target - run.px;
-      if (Math.abs(d) < 0.02) run.target = null;
+      if (Math.abs(d) < 0.02) { run.px = run.target; run.target = null; }
       else dir = Math.max(-1, Math.min(1, d * 8));
     }
     if (run.fallT > 0 || run.freezeT > 0 || (run.goal && run.goal.phase === 'wave')) dir = 0;
@@ -911,14 +914,16 @@
   let swipe = null;
   function aim(e) {
     const g = geo(), r = field.getBoundingClientRect();
-    run.target = Math.max(-0.82, Math.min(0.82, (e.clientX - r.left - g.cx) / g.R));
+    run.target = nearLane((e.clientX - r.left - g.cx) / g.R);
   }
   // dir 쪽으로 가장 가까운 다음 줄 (끝 줄이면 가장자리까지)
   function nextLane(dir) {
     const from = run.target != null ? run.target : run.px;
     const lanes = dir > 0 ? LANE_X.filter(x => x > from + 0.05) : LANE_X.filter(x => x < from - 0.05).reverse();
-    return lanes.length ? lanes[0] : dir * 0.82;
+    return lanes.length ? lanes[0] : LANE_X[dir > 0 ? 2 : 0];
   }
+  // 가장 가까운 줄 가운데
+  const nearLane = x => LANE_X.reduce((a, b) => Math.abs(b - x) < Math.abs(a - x) ? b : a);
   field.addEventListener('pointerdown', e => {
     if (e.target.closest('.run-pad')) return;
     try { field.setPointerCapture(e.pointerId); } catch (err) { /* 이미 끝난 터치 */ }
@@ -931,7 +936,7 @@
     if (!swipe) return;
     const dx = e.clientX - swipe.x;
     if (!swipe.moved && Math.abs(dx) > 14) swipe.moved = true;
-    if (swipe.moved) run.target = Math.max(-0.82, Math.min(0.82, swipe.px + dx * 1.6 / geo().R));
+    if (swipe.moved) run.target = nearLane(swipe.px + dx * 1.6 / geo().R);
   });
   field.addEventListener('pointerup', e => {
     if (!swipe) return;
@@ -953,7 +958,8 @@
       if (!run.active) return;
       run.target = nextLane(dir);
       clearTimeout(holdTimer);
-      holdTimer = setTimeout(() => { run.keys[k] = true; }, 250);
+      // 꾹 누르고 있으면 조금 뒤에 한 칸 더 (줄 가운데에서 멈춰요)
+      holdTimer = setTimeout(function again() { if (!run.active) return; run.target = nextLane(dir); holdTimer = setTimeout(again, 380); }, 380);
       try { pad.setPointerCapture(e.pointerId); } catch (err) { /* 이미 끝난 터치 */ }
     });
     const up = () => { clearTimeout(holdTimer); run.keys[k] = false; };
@@ -968,7 +974,9 @@
     // 안내 팝업이 떠 있으면 스페이스·엔터로도 확인
     if (run.active && (e.code === 'Space' || e.key === ' ' || e.key === 'ArrowUp' || e.key === 'w' || e.key === 'W')) { e.preventDefault(); if (!e.repeat) hop(); return; }
     if (!run.active || !RUN_KEYS[e.key]) return;
-    run.keys[RUN_KEYS[e.key]] = true; e.preventDefault();
+    e.preventDefault();
+    if (e.repeat) return;
+    run.target = nextLane(RUN_KEYS[e.key] === 'r' ? 1 : -1);   // 한 번 누르면 옆 줄 가운데로
   });
   document.addEventListener('keyup', e => {
     if (RUN_KEYS[e.key]) run.keys[RUN_KEYS[e.key]] = false;
@@ -1027,15 +1035,7 @@
     $('#resultCard').innerHTML = line +
       `점수 <b>${state.score}</b>점 ${isRecord && state.score > 0 ? '<span class="record">🎊 최고 기록!</span>' : ''}<br>` +
       `<small style="color:var(--muted)">${grade.grade}학년 최고 점수: ${Math.max(best, state.score)}점</small>` + (extra ? extra() : '');
-    const rv = $('#review'); rv.innerHTML = '';
-    if (state.wrong.length) {
-      rv.innerHTML = '<div class="label" style="text-align:center">📝 다시 보면 좋은 단어 (누르면 읽어줘요)</div><div class="chips"></div>';
-      state.wrong.forEach(w => {
-        const c = document.createElement('button'); c.className = 'chip'; c.textContent = (w[1] ? w[1] + ' ' : '') + w[0] + ' ' + w[2];
-        c.onclick = () => speakEn(w[0]);
-        rv.querySelector('.chips').appendChild(c);
-      });
-    } else rv.innerHTML = '<div class="label" style="text-align:center">💯 틀린 단어가 하나도 없어요!</div>';
+    $('#review').innerHTML = '';   // 다시 보면 좋은 단어 목록은 보여 주지 않아요
     $('#resultBuddy').textContent = emoji;
     show('#result');
     sfx.win();
@@ -1045,5 +1045,5 @@
   $('#homeBtn').onclick = () => { if (LINK) { EL.back(); return; } renderGrades(); show('#grade'); };
   renderSoundBtn();
   // 영어 놀이 메뉴 팝업에서 고른 사용자 · 학년으로 바로 시작해요
-  if (LINK) { $('#homeBtn').textContent = '게임 선택'; enterAs(EL.user); grade = GRADES[EL.grade - 1]; choose(); }
+  if (LINK) { $('#homeBtn').textContent = '← 게임 선택'; enterAs(EL.user); grade = GRADES[EL.grade - 1]; choose(); }
 })();

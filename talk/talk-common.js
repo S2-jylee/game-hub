@@ -32,6 +32,22 @@
       speechSynthesis.speak(u);
     } catch (e) { /* 음성을 못 쓰는 브라우저 */ }
   }
+  // 읽어 주고 나서 다음으로: 소리가 다 끝난 뒤(최소 minMs) cb 를 불러요. 음성이 없거나 안 끝나면 글 길이만큼 기다려요
+  function speakThen(text, cb, minMs) {
+    var t0 = Date.now(), done = false;
+    function go() { if (done) return; done = true; var wait = Math.max(0, (minMs || 0) - (Date.now() - t0)); setTimeout(cb, wait + 250); }
+    var guess = 900 + String(text || "").length * 85;   // 소리가 끝났다는 신호가 안 오면 이만큼 뒤에
+    setTimeout(go, Math.max(guess, minMs || 0) + 1500);
+    try {
+      if (!window.speechSynthesis || !text || (window.GuideBook && GuideBook.isOpen())) { setTimeout(go, Math.max(minMs || 0, guess * 0.6)); return; }
+      speechSynthesis.cancel();
+      var u = new SpeechSynthesisUtterance(text);
+      u.lang = "en-US"; u.rate = 0.88; u.pitch = 1.05;
+      if (voice) u.voice = voice;
+      u.onend = go; u.onerror = go;
+      speechSynthesis.speak(u);
+    } catch (e) { setTimeout(go, minMs || 900); }
+  }
   function stopSpeak() { try { if (window.speechSynthesis) speechSynthesis.cancel(); } catch (e) { /* ignore */ } }
 
   // ---- 소리 효과 ----
@@ -128,8 +144,8 @@
       '    <div id="result-stars" class="result-stars"></div>' +
       '    <div id="result-text" class="result-text"></div>' +
       '    <div class="row-buttons">' +
-      '      <button id="btn-again" class="btn btn-primary" type="button">🔁 다시 하기</button>' +
       '      <button id="btn-result-level" class="btn btn-ghost" type="button">← 난이도 고르기</button>' +
+      '      <button id="btn-again" class="btn btn-primary" type="button">🔁 한 번 더 하기</button>' +
       "    </div>" +
       "  </div>" +
       "</section>";
@@ -236,6 +252,7 @@
     esc: esc,
     shuffle: shuffle,
     speak: speak,
+    speakThen: speakThen,
     stopSpeak: stopSpeak,
     sfx: sfx,
     floatText: floatText,

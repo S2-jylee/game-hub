@@ -34,8 +34,10 @@
     return null;
   }
 
-  function addBack(h1, onClick) {
-    if (h1.querySelector(".gt-back")) return;
+  // outside: 제목 바깥(바로 앞)에 둬요. 타자연습 제목은 마우스를 올리면 커져서(transform),
+  // 안에 있으면 고정(fixed)된 버튼이 제목 옆으로 튀어요
+  function addBack(h1, onClick, outside) {
+    if (h1.querySelector(".gt-back") || (outside && h1.previousElementSibling && h1.previousElementSibling.classList.contains("gt-back"))) return;
     var btn = document.createElement("button");
     btn.type = "button";
     btn.className = "gt-back";
@@ -43,7 +45,7 @@
     btn.title = "뒤로";
     btn.textContent = "←";
     btn.addEventListener("click", function (e) { e.stopPropagation(); onClick(); });
-    h1.insertBefore(btn, h1.firstChild);
+    if (outside) h1.parentNode.insertBefore(btn, h1); else h1.insertBefore(btn, h1.firstChild);
   }
 
   // 구구단 놀이터에서 연 게임(?mul=1)은 제목도 구구단 이름으로 (스펠링 기차 → 구구단 기차 …)
@@ -71,9 +73,11 @@
     if (typing) {
       typing.classList.add("game-title-typing");
       addBack(typing, function () {
-        var home = document.getElementById("home-view");
+        var home = document.getElementById("home-view"), who = document.getElementById("user-screen");
+        // '누구인가요?' 화면이 떠 있으면 연습 홈이 아니라 허브로 돌아가요
+        if (who && who.classList.contains("show")) { goHubHome(); return; }
         if (home && !visible(home)) typing.click(); else goHubHome();
-      });
+      }, true);
     }
   }
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init); else init();

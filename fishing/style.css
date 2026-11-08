@@ -88,3 +88,9 @@ html, body { background: linear-gradient(#bdeeff, #fffaf0 70%); }
 .sp-fire { width: 70px; }
 .sp:active, .sp.on { background: rgba(255, 255, 255, 0.4); transform: scale(0.92); }
 @media (pointer: coarse), (max-width: 760px) { .shoot-pad { display: flex; } }
+
+/* 문제: [한글 뜻] M ? N K E Y */
+.q-row { display: flex; align-items: center; justify-content: center; gap: 12px; flex-wrap: wrap; }
+.q-ko { font-family: "Pretendard", "Gowun Dodum", sans-serif; font-weight: 800; font-size: 1.6rem; color: #0e7490; white-space: nowrap; }
+.q-ko:empty { display: none; }
+@media (max-width: 560px) { .q-row { gap: 8px; } .q-ko { font-size: 1.3rem; } }

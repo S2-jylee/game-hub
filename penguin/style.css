@@ -365,3 +365,8 @@ button{font-family:inherit;font-weight:inherit;color:inherit;cursor:pointer;bord
 .play-grid{grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:20px!important;width:min(1068px,calc(100vw - 32px))!important;max-width:none!important;margin-left:auto!important;margin-right:auto!important}
 @media (max-width:700px){.play-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}}
 @media (max-width:560px){.play-grid{gap:10px!important;width:calc(100vw - 20px)!important}}
+
+/* 문제 줄: 그림 · 한글 뜻 · = · ? 를 가운데 한 줄로 맞춰요 */
+.question.run-q { display: inline-flex; align-items: center; justify-content: center; gap: 6px; line-height: 1.15; }
+.question.run-q .ko { font-size: 0.62em; color: var(--ink, #3b2d5c); margin: 0 4px; }
+.question.run-q .x, .question.run-q .q-mark { line-height: 1; }

@@ -106,8 +106,7 @@
           if (at === r.correct) {
             Talk.good(p.left + p.width / 2, p.top);
             Talk.msg("👍 <b>" + Talk.esc(r.q[1]) + "</b> 자연스러워요!");
-            Talk.speak(r.q[1]);
-            setTimeout(next, 1500);
+            Talk.speakThen(r.q[1], next, 1300);   // 대답을 다 읽어 준 다음에 다음 문제
             return { correct: r.correct };
           }
           Talk.msg("앗! 이럴 땐 <b>" + Talk.esc(r.q[1]) + "</b> 💡 " + Talk.esc(r.q[4]));

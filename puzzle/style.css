@@ -647,3 +647,22 @@ html { background: #eefbea; }
   .diff-pick-title { font-size: 1.05rem; margin-bottom: 12px; }
 }
 .diff-card .result-buttons { display: flex; justify-content: center; }
+
+/* 난이도 팝업 버튼: 구구단 · 영어 놀이 난이도 팝업과 같은 모양 (큰 이름 + 작은 설명) */
+.diff-card { position: relative; max-width: 620px; }
+.diff-close { position: absolute; top: 12px; right: 12px; width: 40px; height: 40px; border: none; border-radius: 50%; background: #f4eefd; font-size: 1.1rem; cursor: pointer; }
+.diff-pick-title { margin: 0 40px; font-family: "CookieRun", "Jua", sans-serif; font-size: clamp(26px, 6.5vw, 36px); font-weight: 700; color: #d81b7a; line-height: 1.15; }
+.diff-pick-sub { margin: 6px 0 14px; text-align: center; font-size: 17px; font-weight: 700; color: var(--text-soft); }
+.diff-pick-sub:empty { display: none; }
+.diff-card .difficulty-options { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; margin: 0 0 12px; }
+.diff-card .diff-btn { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; min-height: 60px; padding: 8px 4px;
+  border: none; border-radius: 16px; background: #f1edff !important; color: var(--text-dark); line-height: 1.2; font-family: inherit; cursor: pointer; word-break: keep-all; transition: transform 0.1s; }
+.diff-card .diff-btn:hover { background: var(--yellow) !important; transform: none; }
+.diff-card .diff-btn:active { transform: translateY(2px); }
+.diff-card .diff-btn b { font-size: 18px; }
+.diff-card .diff-btn small { font-size: 13px; color: var(--text-soft); }
+@media (max-width: 560px) {
+  .diff-card .difficulty-options { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .diff-card .diff-btn b { font-size: 16px; }
+  .diff-card .diff-btn small { font-size: 12px; }
+}

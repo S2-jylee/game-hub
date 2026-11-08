@@ -762,5 +762,5 @@
   $('#homeBtn').onclick = () => { if (LINK) { EL.back(); return; } renderGrades(); show('#grade'); };
   renderSoundBtn();
   // 영어 놀이 메뉴 팝업에서 고른 사용자 · 학년으로 바로 시작해요
-  if (LINK) { $('#homeBtn').textContent = '게임 선택'; enterAs(EL.user); grade = GRADES[EL.grade - 1]; choose(); }
+  if (LINK) { $('#homeBtn').textContent = '← 게임 선택'; enterAs(EL.user); grade = GRADES[EL.grade - 1]; choose(); }
 })();

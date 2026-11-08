@@ -340,3 +340,12 @@ html, body {
 @media (max-width: 560px) {
   .hearts { display: flex; flex-wrap: nowrap; gap: 0; font-size: 0.8rem; letter-spacing: -1px; }
 }
+
+/* 문제: [한글 뜻] _ _ _ _  — 한글을 앞에 크게 (스펠링 기차) */
+.hint-main { display: flex; align-items: center; justify-content: center; gap: 12px; flex-wrap: wrap; }
+.hint-meaning { order: -1; margin: 0; font-family: "Pretendard", "Gowun Dodum", sans-serif; font-weight: 800; font-size: 1.6rem; color: #4d7c0f; white-space: nowrap; }
+.hint-meaning:empty { display: none; }
+@media (max-width: 560px) {
+  .hint-main { gap: 8px; flex-wrap: nowrap; }
+  .hint-meaning { font-size: 1.15rem; overflow: visible; flex: none; }
+}

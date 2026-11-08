@@ -640,7 +640,7 @@
     var back = $(".title-card .back-link");
     back.textContent = "← 게임 고르기";
     back.addEventListener("click", function (e) { e.preventDefault(); ML.back(); });
-    $("#btn-result-mode").textContent = "게임 선택";
+    $("#btn-result-mode").textContent = "← 게임 선택";
     $("#btn-again").textContent = "🔁 한 번 더 하기";
   }
 
@@ -674,7 +674,7 @@
 
   // 영어 놀이 메뉴 팝업에서 고른 사용자 · 놀이 · 학년 · 난이도로 바로 시작해요
   if (LINK) {
-    $("#btn-result-mode").textContent = "게임 선택";
+    $("#btn-result-mode").textContent = "← 게임 선택";
     enterAs(EL.user);
     mode = MODES.filter(function (m) { return m.id === EL.mode; })[0] || MODES[0];
     grade = GRADES[EL.grade - 1];

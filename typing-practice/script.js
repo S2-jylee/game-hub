@@ -809,6 +809,8 @@ const MODE_GUIDES = {
     { icon: '🚀', title: '레벨 업', text: '<b>쉬움 · 보통 · 어려움</b>을 고르고 <b>🎮 게임 시작</b>을 눌러요. 갈수록 빨라져요!' }] }
 };
 function openModeGuide(mode) {
+  // 방법 팝업은 타자게임에만 띄워요. 다른 연습은 바로 칠 수 있게 입력칸에 커서를 둬요
+  if (mode !== 'game') { if (mode !== 'position') setTimeout(() => el.typingPreview.focus(), 0); return; }
   const g = MODE_GUIDES[mode];
   if (!g || !window.GuideBook) return;
   GuideBook.intro({ id: 'typing_' + mode, title: g.title, icon: g.icon, pages: g.pages, startLabel: '확인',

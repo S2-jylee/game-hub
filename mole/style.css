@@ -37,3 +37,6 @@
 .result-pop .review .chip{font-size:1rem;padding:5px 12px;cursor:pointer}
 .row-buttons{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:16px}
 .row-buttons .btn-primary{padding:12px 26px;font-size:1.05rem}
+
+/* 두더지 팻말: 한글 뜻 (길면 작게, 줄바꿈 없이) */
+.m-num{font-family:'Pretendard','Gowun Dodum',sans-serif;font-weight:800;font-size:clamp(15px,4.4vw,26px);white-space:nowrap;max-width:118%}

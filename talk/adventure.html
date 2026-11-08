@@ -51,16 +51,22 @@
   .adv-opt.no { border-color: #ef4444; background: #fef2f2; color: #b91c1c; animation: advShake 0.35s ease; pointer-events: none; opacity: 0.75; }
   @keyframes advShake { 25%, 75% { transform: translateX(-5px); } 50% { transform: translateX(5px); } }
   @media (max-width: 560px) { .adv-line, .adv-opt { font-size: 0.86rem; } .adv-pad { width: 120px; height: 120px; } .adv-pad button { width: 40px; height: 40px; } .adv-pad .u, .adv-pad .d { left: 40px; } .adv-pad .l, .adv-pad .r { top: 40px; } }
-  /* 장소가 20곳이라 장소 고르기 카드를 작게: PC 5개 · 태블릿 3개 · 휴대폰 2개씩 */
+  /* 장소 고르기: 시계 놀이터 타일 구도(이모지 옆에 장소 이름) · 장소가 20곳이라 조금 작게
+     PC 한 줄에 4개(칸 200px 이상) · 휴대폰 2개씩 */
   #screen-level { justify-content: flex-start; overflow-y: auto; }
-  #level-grid { grid-template-columns: repeat(5, 1fr); gap: 10px; }
-  #level-grid .level-btn { padding: 14px 6px 12px; gap: 4px; border-radius: 18px; }
-  #level-grid .lv-emoji { font-size: 2.2rem; }
-  #level-grid .lv-name { font-size: 1.2rem; }
-  #level-grid .lv-desc { font-size: 0.74rem; min-height: 2.6em; text-align: center; }
-  #level-grid .lv-go { font-size: 0.8rem; padding: 4px 12px; }
-  @media (max-width: 760px) { #level-grid { grid-template-columns: repeat(3, 1fr); } }
-  @media (max-width: 480px) { #level-grid { grid-template-columns: repeat(2, 1fr); } }
+  html body #level-grid { grid-template-columns: repeat(4, minmax(0, 1fr)) !important; gap: 12px !important; }
+  @media (max-width: 900px) { html body #level-grid { grid-template-columns: repeat(3, minmax(0, 1fr)) !important; } }
+  html body #level-grid .level-btn { grid-template-columns: 48px minmax(0, 1fr); column-gap: 10px; padding: 12px; border-radius: 20px; }
+  html body #level-grid .lv-emoji { width: 48px; height: 48px; font-size: 1.6rem; }
+  html body #level-grid .lv-name { font-size: 1.1rem; }
+  html body #level-grid .lv-desc { font-size: 0.76rem; }
+  @media (max-width: 560px) {
+    html body #level-grid { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; gap: 8px !important; }
+    html body #level-grid .level-btn { grid-template-columns: 40px minmax(0, 1fr); column-gap: 8px; padding: 10px 8px; border-radius: 16px; }
+    html body #level-grid .lv-emoji { width: 40px; height: 40px; font-size: 1.35rem; }
+    html body #level-grid .lv-name { font-size: 1rem; }
+    html body #level-grid .lv-desc { font-size: 0.68rem; }
+  }
 </style>
 </head>
 <body>
@@ -94,7 +100,7 @@
   var W = 7, H = 8;
 
   Talk.mount({
-    id: "talk_adventure", title: "어떻게 말할까?", unit: "친구", goLabel: "출발 ▶", startLabel: "모험 시작! 🗺️",
+    id: "talk_adventure", title: "어떻게 말할까?", unit: "친구", goLabel: "출발 ▶", startLabel: "대화 시작! 💬",
     levels: window.ADV_LEVELS, // adventure-data.js: 장소 20곳
     guide: function () {
       return [
@@ -245,10 +251,9 @@
               opts.innerHTML = "";
               line("me", o);
               Talk.good(r.left + r.width / 2, r.top, missed ? 6 : 10);
-              Talk.speak(o);
+              // 내 대답을 다 읽어 준 다음에 다음 말이 나와요
               turn++;
-              if (turn >= p.turns.length) setTimeout(endTalk, 1300);
-              else setTimeout(showTurn, 1300);
+              Talk.speakThen(o, turn >= p.turns.length ? endTalk : showTurn, 1100);
             } else {
               missed = true;
               b.classList.add("no");

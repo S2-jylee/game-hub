@@ -786,6 +786,7 @@
   }
   function closeDiff() { diffModal.classList.remove("show"); }
   document.getElementById("btn-diff-back").addEventListener("click", closeDiff);
+  document.getElementById("btn-diff-x").addEventListener("click", closeDiff);
   diffModal.addEventListener("click", function (e) { if (e.target === diffModal) closeDiff(); });
 
   document.getElementById("btn-user-guest").addEventListener("click", function () {
