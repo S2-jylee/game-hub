@@ -311,3 +311,6 @@ html body .diff-btn:not(:has(.diff-emoji)) > * { grid-column: 1; }
 
 /* 게임이 끝나고 뜨는 팝업: '다시 보면 좋은 문제 · 단어' 목록은 보여 주지 않아요 */
 #review, #result-words { display: none !important; }
+
+/* ---- 첫 화면 타일 안 이모지는 움직이지 않아요 (말랑말랑 타자연습 홈 타일처럼) ---- */
+html body :is(.play-card, .arcade-game, .level-btn, .grade-btn, .diff-btn, .mode, .level-grid-btn, .tile) :is(.pc-emoji, .m-emoji, .lv-emoji, .gr-emoji, .diff-emoji, .tile-emoji) { animation: none !important; }

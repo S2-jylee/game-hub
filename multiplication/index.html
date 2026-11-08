@@ -222,7 +222,7 @@ button{font-family:inherit;font-weight:inherit;color:inherit;cursor:pointer;bord
 @media (max-width:560px){.setup-box{padding:20px 14px 14px}.diff b{font-size:16px}.diff small{font-size:12px}}
 
 /* 게임 카드 (영어 놀이와 같은 모양) */
-.app.menu{max-width:1100px}
+.app.menu{max-width:none}  /* 스크롤 막대가 영어 놀이처럼 창 오른쪽 끝에 생기게 (안쪽 내용 폭은 타일 줄이 정해요) */
 .home-title{font-family:"CookieRun","Jua",sans-serif;font-size:clamp(32px,7vw,44px);color:#d81b7a;margin:2px 0 8px;text-align:center}
 .top-panel{max-width:860px}
 .play-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:14px;width:100%;max-width:860px;margin:14px 0 20px}
@@ -1682,9 +1682,10 @@ button{font-family:inherit;font-weight:inherit;color:inherit;cursor:pointer;bord
     // 허들: 펭귄보다 먼 것 → 펭귄 → 지나간 것
     const far = run.gates.filter(gt => gt.z >= 0).sort((a, b) => b.z - a.z);
     const near = run.gates.filter(gt => gt.z < 0);
-    far.forEach(gt => drawGate(g, gt));
     if (run.goal) drawIgloo(g, run.goal.z, t);
-    run.logs.filter(lg => lg.z >= 0).sort((a, b) => b.z - a.z).forEach(lg => drawLog(g, lg));
+    // 먼 것부터 그려요: 허들 너머 통나무는 허들(정답 표지판) 뒤에 가려져요
+    far.map(gt => ({ z: gt.z, gt })).concat(run.logs.filter(lg => lg.z >= 0).map(lg => ({ z: lg.z, lg })))
+      .sort((p, q) => q.z - p.z).forEach(o => o.gt ? drawGate(g, o.gt) : drawLog(g, o.lg));
     run.fish.filter(fs => fs.z >= 0).forEach(fs => drawFish(g, fs));
     drawPenguin(g, t);
     run.logs.filter(lg => lg.z < 0).forEach(lg => drawLog(g, lg));

@@ -157,8 +157,25 @@
       if (!el.getClientRects().length) return;
       el.classList.toggle("gt-stuck", scroller(el).scrollTop > 4);
     });
+    // ← 뒤로 버튼은 제목 띠의 세로 가운데에 맞춰요 (제목이 위에 붙어도 띠 밖으로 넘어가지 않게)
+    Array.prototype.forEach.call(document.querySelectorAll(".gt-back"), function (btn) {
+      if (!btn.getClientRects().length) return;
+      var title = btn.closest("h1.game-title") || btn.nextElementSibling;
+      if (!title || !title.getClientRects().length) return;
+      var band = title.closest(".app-header") || title;
+      var tr = band.getBoundingClientRect(), br = btn.getBoundingClientRect(), h = btn.offsetHeight;
+      var want = Math.max(4 + h / 2, tr.top + tr.height / 2);
+      var cur = parseFloat(getComputedStyle(btn).top) || 0;
+      var next = Math.round(cur + want - (br.top + br.height / 2));
+      if (Math.abs(next - cur) >= 1) btn.style.top = next + "px";
+    });
   }
   function queue() { if (!queued) { queued = true; requestAnimationFrame(update); } }
   document.addEventListener("scroll", queue, true);
   window.addEventListener("resize", queue);
+  // 화면이 바뀔 때(버튼을 누른 뒤)나 처음 열 때도 다시 맞춰요
+  document.addEventListener("click", function () { queue(); setTimeout(queue, 350); }, true);
+  window.addEventListener("load", function () { queue(); setTimeout(queue, 600); });
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(queue);
+  queue(); setTimeout(queue, 300);
 })();
