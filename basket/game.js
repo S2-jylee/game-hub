@@ -33,6 +33,18 @@
 
   /* ---------- 소리 ---------- */
   let actx = null;
+
+  // 정답이 '?' 자리에 들어가도 문제 칸(흰 상자)이 커지지 않게 글자 크기를 줄여 맞춰요
+  function fitAns(qm, text, cls) {
+    const box = qm.parentElement, w0 = box.offsetWidth, h0 = box.offsetHeight;
+    qm.style.fontSize = ''; qm.style.verticalAlign = '';
+    qm.textContent = text; if (cls) qm.className = cls;
+    let f = 1;
+    while (f > 0.3 && (box.offsetWidth > w0 + 1 || box.offsetHeight > h0 + 1 || box.scrollWidth > box.clientWidth + 1)) { f -= 0.05; qm.style.fontSize = f + 'em'; }
+    if (f < 1) qm.style.verticalAlign = 'middle';
+  }
+  function resetAns(qm) { qm.style.fontSize = ''; qm.style.verticalAlign = ''; qm.textContent = '?'; qm.className = 'q-mark'; }
+
   function tone(freq, dur, type = 'sine', when = 0, vol = 0.15) {
     if (!state.sound) return;
     try {
@@ -272,7 +284,7 @@
     state.cur = { w, ans: w[1], wrongs: shuffle(picWords(grade.words).filter(o => o[1] !== w[1])).slice(0, 6).map(o => o[1]) };
     state.missedThis = false;
     $('#cqWord').textContent = cap(w[0]);
-    const qm = $('#cqans'); qm.textContent = '?'; qm.className = 'q-mark';
+    resetAns($('#cqans'));
     speakEn(w[0]);
   }
 
@@ -330,7 +342,7 @@
       bumpScore(gain);
       sfx.pop(); sfx.correct();
       burstAt(sx, sy); floatAt(sx, sy - 20, '+' + gain);
-      const qm = $('#cqans'); qm.textContent = ans; qm.className = 'q-mark ok';
+      fitAns($('#cqans'), ans, 'q-mark ok');
       cg.happyT = 0.4;
       cg.basket.push(it.color); if (cg.basket.length > 5) cg.basket.shift();
       $('#catchMsg').textContent = pick(PRAISE) + (state.combo >= 2 ? `  🔥 ${state.combo}콤보!` : '');

@@ -782,6 +782,7 @@
   function openDiff(i) {
     pendingLevel = i;
     document.getElementById("diff-pick-name").textContent = PD.LEVELS[i].name;
+    markDiff(state.difficulty);
     diffModal.classList.add("show");
   }
   function closeDiff() { diffModal.classList.remove("show"); }
@@ -811,13 +812,15 @@
   });
   document.getElementById("btn-user-back").addEventListener("click", function () { showScreen("title"); });
 
-  Array.prototype.forEach.call(document.querySelectorAll(".diff-btn"), function (btn) {
-    btn.addEventListener("click", function () {
-      state.difficulty = btn.dataset.diff;
-      closeDiff();
-      startLevel(pendingLevel);
-    });
+  // 난이도 칸을 눌러 고르고(노란색) '선택 완료'로 시작해요 (구구단 · 영어 놀이 설정 창과 같게)
+  function markDiff(d) {
+    Array.prototype.forEach.call(document.querySelectorAll(".pz-opt"), function (b) { b.classList.toggle("on", b.dataset.diff === d); });
+  }
+  Array.prototype.forEach.call(document.querySelectorAll(".pz-opt"), function (btn) {
+    btn.addEventListener("click", function () { state.difficulty = btn.dataset.diff; markDiff(state.difficulty); });
+    btn.addEventListener("dblclick", function () { closeDiff(); startLevel(pendingLevel); });
   });
+  document.getElementById("btn-diff-go").addEventListener("click", function () { closeDiff(); startLevel(pendingLevel); });
 
   document.getElementById("btn-levelselect-title").addEventListener("click", function () { showScreen("title"); });
 

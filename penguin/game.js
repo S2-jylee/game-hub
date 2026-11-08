@@ -33,6 +33,18 @@
 
   /* ---------- 소리 ---------- */
   let actx = null;
+
+  // 정답이 '?' 자리에 들어가도 문제 칸(흰 상자)이 커지지 않게 글자 크기를 줄여 맞춰요
+  function fitAns(qm, text, cls) {
+    const box = qm.parentElement, w0 = box.offsetWidth, h0 = box.offsetHeight;
+    qm.style.fontSize = ''; qm.style.verticalAlign = '';
+    qm.textContent = text; if (cls) qm.className = cls;
+    let f = 1;
+    while (f > 0.3 && (box.offsetWidth > w0 + 1 || box.offsetHeight > h0 + 1 || box.scrollWidth > box.clientWidth + 1)) { f -= 0.05; qm.style.fontSize = f + 'em'; }
+    if (f < 1) qm.style.verticalAlign = 'middle';
+  }
+  function resetAns(qm) { qm.style.fontSize = ''; qm.style.verticalAlign = ''; qm.textContent = '?'; qm.className = 'q-mark'; }
+
   function tone(freq, dur, type = 'sine', when = 0, vol = 0.15) {
     if (!state.sound) return;
     try {
@@ -300,7 +312,7 @@
     const { ans, w } = state.cur;
     gate.pick = lane;
     gate.ok = gate.vals[lane] === ans;
-    const qm = $('#rqans'); qm.textContent = ans;
+    const qm = $('#rqans'); fitAns(qm, ans);
     const g = geo(), p = proj(g, run.px, 0), r = canvas.getBoundingClientRect();
     const sx = r.left + p.x, sy = r.top + p.y - g.R * 0.25;
     let delay;
@@ -470,6 +482,7 @@
   // 모바일(좁은 화면 · 가로로 눕힌 폰): 이동 속도를 절반 아래로 줄여요
   const MOBILE = window.matchMedia('(max-width: 560px), (pointer: coarse) and (max-height: 500px)');
   const MOBILE_SPEED = 0.54; // 0.45에서 20% 빠르게
+  const LANE_SNAP = 7;        // 줄을 옮길 때 속도 (한 줄을 0.1초쯤에)
   function runFrame(now) {
     if (!run.active) return;
     const dt = Math.min(0.05, (now - run.last) / 1000);
@@ -480,12 +493,16 @@
     if (dir) run.target = null;
     else if (run.target != null) {
       const d = run.target - run.px;
-      if (Math.abs(d) < 0.02) { run.px = run.target; run.target = null; }
-      else dir = Math.max(-1, Math.min(1, d * 8));
+      if (Math.abs(d) < 0.01) { run.px = run.target; run.target = null; }
+      else dir = Math.sign(d);
     }
     if (run.fallT > 0 || run.freezeT > 0 || (run.goal && run.goal.phase === 'wave')) dir = 0;
     run.dir = dir;
-    run.px = Math.max(-0.82, Math.min(0.82, run.px + dir * (1.9 + run.stage * 0.15) * (MOBILE.matches ? MOBILE_SPEED : 1) * dt));
+    // 줄을 옮길 때는 슉! 빠르게 그 줄 가운데로 가서 딱 멈춰요 (모바일도 같아요)
+    const spd = run.target != null ? LANE_SNAP : (1.9 + run.stage * 0.15) * (MOBILE.matches ? MOBILE_SPEED : 1);
+    let nx = run.px + dir * spd * dt;
+    if (run.target != null && (nx - run.target) * (run.px - run.target) <= 0) { nx = run.target; run.target = null; }
+    run.px = Math.max(-0.82, Math.min(0.82, nx));
     run.lean += (dir * 0.22 - run.lean) * Math.min(1, dt * 10);
     $('#padL').classList.toggle('on', dir < -0.1);
     $('#padR').classList.toggle('on', dir > 0.1);
@@ -988,7 +1005,7 @@
   function setRunQ(w) {
     $('#rqEmoji').textContent = w ? wordPic(w) : '🐧';
     $('#rqKo').textContent = w ? w[2] : '';
-    const qm = $('#rqans'); qm.textContent = '?'; qm.className = 'q-mark';
+    resetAns($('#rqans'));
   }
   // 정답 + 같은 학년의 다른 단어 (길이가 비슷한 것부터)
   function wordChoices(w, n) {

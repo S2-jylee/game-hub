@@ -344,9 +344,11 @@
   const GEM = { e: "💎", pts: 3 }, CROWN = { e: "👑", pts: 15 }, HEART = { e: "❤️", heart: true }, STAR = { e: "⭐", pts: 10, big: true };
   // 꽃 기둥 하나가 나올 때, 그 기둥과 다음 기둥 사이에 보석 줄을 하나 놓아요
   function spawnArc(x0) {
-    const n = 5 + Math.floor(Math.random() * 3), gap = 0.07;
+    // 보석 간격은 보석 크기에 맞춰 촘촘하게 (시작점과 끝점이 너무 멀어지지 않게)
+    const gemPx = Math.max(32, Math.min(G.W, G.H) * 0.085) * 0.7;
+    const n = 5 + Math.floor(Math.random() * 2), gap = Math.min(0.05, gemPx * 1.2 / Math.max(1, G.W));
     const shape = ["arch", "arch", "valley", "line"][Math.floor(Math.random() * 4)];
-    const h = 0.12 + Math.random() * 0.12;
+    const h = 0.1 + Math.random() * 0.08;
     const base = shape === "valley" ? 0.2 + Math.random() * 0.25 : 0.45 + Math.random() * 0.3;
     const mid = Math.floor((n - 1) / 2);
     const withHeart = G.lives < LIVES && Math.random() < 0.45;

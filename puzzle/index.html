@@ -61,19 +61,20 @@
 
 <!-- 난이도 고르기 팝업: 그림을 고르면 떠요 -->
 <div id="diff-modal" class="diff-modal">
-  <div class="diff-card" role="dialog" aria-modal="true">
+  <div class="diff-card" role="dialog" aria-modal="true" aria-labelledby="diff-pick-title">
     <button class="diff-close" id="btn-diff-x" type="button" title="닫기">✕</button>
-    <h2 class="diff-pick-title">난이도를 골라주세요</h2>
+    <h2 class="diff-pick-title" id="diff-pick-title">난이도를 골라주세요</h2>
     <p class="diff-pick-sub" id="diff-pick-name"></p>
-    <div class="difficulty-options">
-      <button class="diff-btn" data-diff="easy"><b>쉬움</b><small>9조각 (3×3)</small></button>
-      <button class="diff-btn" data-diff="normal"><b>보통</b><small>16조각 (4×4)</small></button>
-      <button class="diff-btn" data-diff="hard"><b>어려움</b><small>25조각 (5×5)</small></button>
-      <button class="diff-btn" data-diff="extreme"><b>매우어려움</b><small>50조각 (5×10)</small></button>
+    <p class="diff-info">조각을 끌어다 제자리에 맞춰 그림을 완성해요.<br>조각이 많을수록 어려워요.</p>
+    <div class="diff-label">난이도</div>
+    <div class="pz-opts">
+      <button class="pz-opt" type="button" data-diff="easy"><b>쉬움</b><small>9조각 (3×3)</small></button>
+      <button class="pz-opt" type="button" data-diff="normal"><b>보통</b><small>16조각 (4×4)</small></button>
+      <button class="pz-opt" type="button" data-diff="hard"><b>어려움</b><small>25조각 (5×5)</small></button>
+      <button class="pz-opt" type="button" data-diff="extreme"><b>매우어려움</b><small>50조각 (5×10)</small></button>
     </div>
-    <div class="result-buttons">
-      <button id="btn-diff-back" class="btn btn-ghost">← 그림 다시 고르기</button>
-    </div>
+    <button class="diff-go" id="btn-diff-go" type="button">선택 완료</button>
+    <button id="btn-diff-back" class="diff-back" type="button">← 그림 다시 고르기</button>
   </div>
 </div>
 

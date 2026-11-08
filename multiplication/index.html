@@ -686,12 +686,12 @@ button{font-family:inherit;font-weight:inherit;color:inherit;cursor:pointer;bord
   // 게임 카드 목록: 새 게임은 여기에 한 줄 더하면 게임 선택 화면에 나와요 (href 가 있으면 다른 페이지에서 ?mul=1&d=난이도 로 열어요)
   // sub: 설정 창 부제목 · info: 설정 창 설명 · diffs: 느긋하게/알맞게/빠르게 아래 작은 글씨 · keys: 아래 조작키 안내
   const ARCADE = [
-    { mode: 'quiz', emoji: '🎈', name: '풍선 퀴즈', desc: '정답 풍선을 펑! 터뜨려요', bg: '#22c55e',
-      sub: '정답 풍선을 터뜨리며 구구단을 외워요', info: '문제를 보고 알맞은 정답 풍선을 눌러요.<br>느긋하게는 틀려도 힌트를 보고 다시 고를 수 있어요.',
-      diffs: ['시간 제한 없음', '한 문제 10초', '한 문제 6초'], keys: [['1~4', '풍선 고르기']] },
     { mode: 'penguin', emoji: '🐧', name: '펭귄 달리기', desc: '정답 허들로 쌩쌩! 통나무는 점프!', bg: '#3b82f6',
       sub: '정답 허들을 지나 이글루까지 달려요', info: '펭귄이 얼음길을 달려요. 정답이 적힌 허들로 가고,<br>굴러오는 통나무는 뛰어넘어요. ' + RUN_TOTAL + '문제를 지나면 도착!',
       diffs: ['천천히 달려요', '보통 속도', '쌩쌩 빨라요'], keys: [['← →', '이동'], ['Space', '점프']] },
+    { mode: 'quiz', emoji: '🎈', name: '풍선 퀴즈', desc: '정답 풍선을 펑! 터뜨려요', bg: '#22c55e',
+      sub: '정답 풍선을 터뜨리며 구구단을 외워요', info: '문제를 보고 알맞은 정답 풍선을 눌러요.<br>느긋하게는 틀려도 힌트를 보고 다시 고를 수 있어요.',
+      diffs: ['시간 제한 없음', '한 문제 10초', '한 문제 6초'], keys: [['1~4', '풍선 고르기']] },
     { mode: 'catch', emoji: '🧺', name: '바구니', desc: '떨어지는 정답 열매를 쏙! 💣 폭탄 조심', bg: '#f59e0b',
       sub: '떨어지는 정답 열매를 바구니로 받아요', info: '정답 열매만 받고 틀린 열매와 폭탄은 피해요.<br>정답 ' + CATCH_GOAL + '개를 받으면 끝!',
       diffs: ['천천히 떨어져요', '보통 속도', '빨리 떨어져요'], keys: [['← →', '이동'], ['마우스', '바구니 따라오기']] },
@@ -701,12 +701,12 @@ button{font-family:inherit;font-weight:inherit;color:inherit;cursor:pointer;bord
     { mode: 'train', emoji: '🚂', name: '구구단 기차', desc: '단의 답을 차례대로 먹고 기차를 길게!', bg: '#84cc16', href: '../spelling/index.html',
       sub: '단의 답을 차례대로 먹고 기차를 길게', info: '7단이면 7, 14, 21 … 처럼 작은 답부터 차례대로 먹어요.<br>틀린 숫자나 벽에 부딪히지 않게 조심!',
       diffs: ['다음 숫자가 반짝', '방해 숫자 3개', '방해 숫자 6개'], keys: [['← ↑ → ↓', '방향 바꾸기']] },
-    { mode: 'frog', emoji: '🐸', name: '구구단 징검다리', desc: '정답 숫자 연잎으로 폴짝! 강 건너기', bg: '#14b8a6', href: '../frog/index.html',
-      sub: '정답 숫자 연잎으로 폴짝! 강을 건너요', info: '연잎 3개 중 정답 숫자 연잎으로 점프해요.<br>틀린 연잎은 가라앉아요. 연잎 10줄을 건너면 도착!',
-      diffs: ['시간 제한 없음', '한 줄 10초', '한 줄 6초'], keys: [['← →', '연잎 고르기'], ['Space', '점프']] },
     { mode: 'bee', emoji: '🐝', name: '꿀벌 비행', desc: '톡톡 날갯짓! 정답 꽃길로 쏙!', bg: '#eab308', href: '../bee/index.html',
       sub: '날갯짓으로 정답 꽃길을 지나가요', info: '꿀벌은 가만히 두면 아래로 내려가요.<br>톡톡 날갯짓해서 정답 숫자 길로 쏙 지나가요.',
       diffs: ['천천히 날아요', '보통 속도', '쌩쌩 빨라요'], keys: [['Space', '날갯짓'], ['터치', '날갯짓']] },
+    { mode: 'frog', emoji: '🐸', name: '구구단 징검다리', desc: '정답 숫자 연잎으로 폴짝! 강 건너기', bg: '#14b8a6', href: '../frog/index.html',
+      sub: '정답 숫자 연잎으로 폴짝! 강을 건너요', info: '연잎 3개 중 정답 숫자 연잎으로 점프해요.<br>틀린 연잎은 가라앉아요. 연잎 10줄을 건너면 도착!',
+      diffs: ['시간 제한 없음', '한 줄 10초', '한 줄 6초'], keys: [['← →', '연잎 고르기'], ['Space', '점프']] },
     { mode: 'fishing', emoji: '🎣', name: '구구단 낚시', desc: '빈칸 숫자 물고기를 낚아요!', bg: '#0ea5e9', href: '../fishing/index.html',
       sub: '빈칸에 들어갈 숫자 물고기를 낚아요', info: '3 × _ = 12 처럼 빈칸이 있는 구구단이 나와요.<br>빈칸에 맞는 숫자 물고기를 낚아요.',
       diffs: ['천천히 헤엄쳐요', '보통 속도', '빨리 헤엄쳐요'], keys: [['← →', '배 옮기기'], ['Space', '낚싯줄 내리기']] },
@@ -1556,7 +1556,7 @@ button{font-family:inherit;font-weight:inherit;color:inherit;cursor:pointer;bord
     if (dir) run.target = null;
     else if (run.target != null) {
       const d = run.target - run.px;
-      if (Math.abs(d) < 0.02) run.target = null;
+      if (Math.abs(d) < 0.02) { run.px = run.target; run.target = null; }
       else dir = Math.max(-1, Math.min(1, d * 8));
     }
     if (run.fallT > 0 || run.freezeT > 0 || (run.goal && run.goal.phase === 'wave')) dir = 0;
@@ -1994,8 +1994,8 @@ button{font-family:inherit;font-weight:inherit;color:inherit;cursor:pointer;bord
   let swipe = null;
   function aim(e) {
     const g = geo(), r = field.getBoundingClientRect();
-    run.target = Math.max(-0.82, Math.min(0.82, (e.clientX - r.left - g.cx) / g.R));
-    run.snap = false;
+    run.target = nearLane((e.clientX - r.left - g.cx) / g.R);
+    run.snap = true;
   }
   // dir 쪽으로 가장 가까운 다음 줄 가운데 (끝 줄이면 그 줄 가운데에 그대로)
   const LANE_SNAP = 7;   // 줄을 옮길 때 속도 (한 줄을 0.1초쯤에)
@@ -2004,6 +2004,8 @@ button{font-family:inherit;font-weight:inherit;color:inherit;cursor:pointer;bord
     const lanes = dir > 0 ? LANE_X.filter(x => x > from + 0.05) : LANE_X.filter(x => x < from - 0.05).reverse();
     return lanes.length ? lanes[0] : LANE_X[dir > 0 ? 2 : 0];
   }
+  // 가장 가까운 줄 가운데
+  const nearLane = x => LANE_X.reduce((a, b) => Math.abs(b - x) < Math.abs(a - x) ? b : a);
   function laneStep(dir) {
     if (!run.active) return;
     run.target = nextLane(dir);
@@ -2021,7 +2023,7 @@ button{font-family:inherit;font-weight:inherit;color:inherit;cursor:pointer;bord
     if (!swipe) return;
     const dx = e.clientX - swipe.x;
     if (!swipe.moved && Math.abs(dx) > 14) swipe.moved = true;
-    if (swipe.moved) { run.target = Math.max(-0.82, Math.min(0.82, swipe.px + dx * 1.6 / geo().R)); run.snap = false; }
+    if (swipe.moved) { run.target = nearLane(swipe.px + dx * 1.6 / geo().R); run.snap = true; }
   });
   field.addEventListener('pointerup', e => {
     if (!swipe) return;
@@ -2029,7 +2031,7 @@ button{font-family:inherit;font-weight:inherit;color:inherit;cursor:pointer;bord
     if (!swipe.moved) hop();
     else if (quick && Math.abs(dx) > 30) {
       const lane = nextLane(Math.sign(dx));
-      if (Math.sign(dx) * (lane - run.target) > 0) run.target = lane;
+      if (Math.sign(dx) * (lane - run.target) > 0) { run.target = lane; run.snap = true; }
     }
     swipe = null;
   });

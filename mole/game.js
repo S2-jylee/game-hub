@@ -28,6 +28,18 @@
 
   /* ---------- 소리 ---------- */
   let actx = null;
+
+  // 정답이 '?' 자리에 들어가도 문제 칸(흰 상자)이 커지지 않게 글자 크기를 줄여 맞춰요
+  function fitAns(qm, text, cls) {
+    const box = qm.parentElement, w0 = box.offsetWidth, h0 = box.offsetHeight;
+    qm.style.fontSize = ''; qm.style.verticalAlign = '';
+    qm.textContent = text; if (cls) qm.className = cls;
+    let f = 1;
+    while (f > 0.3 && (box.offsetWidth > w0 + 1 || box.offsetHeight > h0 + 1 || box.scrollWidth > box.clientWidth + 1)) { f -= 0.05; qm.style.fontSize = f + 'em'; }
+    if (f < 1) qm.style.verticalAlign = 'middle';
+  }
+  function resetAns(qm) { qm.style.fontSize = ''; qm.style.verticalAlign = ''; qm.textContent = '?'; qm.className = 'q-mark'; }
+
   function tone(freq, dur, type = 'sine', when = 0, vol = 0.15) {
     if (!state.sound) return;
     try {
@@ -179,7 +191,7 @@
     state.cur = { w, ans: w[2], wrongs: others };
     state.missedThis = false;
     $('#mqWord').textContent = cap(w[0]);
-    const qm = $('#mqans'); qm.textContent = '?'; qm.className = 'q-mark';
+    resetAns($('#mqans'));
     $('#moleProgress').style.width = (state.i / TOTAL * 100) + '%';
     $('#moleProgressText').textContent = `${grade.grade}학년 · ${EL.diffName || ''}  ·  ${state.i + 1} / ${TOTAL}`;
     speakEn(w[0]);
@@ -228,7 +240,7 @@
       bumpScore(gain);
       tone(1500, 0.06, 'square', 0, 0.06); tone(2100, 0.1, 'triangle', 0.05, 0.1); sfx.correct();
       burstAt(x, y); floatAt(x, y - 30, '뿅! +' + gain);
-      const qm = $('#mqans'); qm.textContent = ans; qm.className = 'q-mark ok';
+      fitAns($('#mqans'), ans, 'q-mark ok');
       $('#moleMsg').textContent = `${cap(w[0])} = ${ans} 정답! ` + pick(PRAISE) + (state.combo >= 2 ? `  🔥 ${state.combo}연속!` : '');
       mg.holes.forEach(o => { if (o !== h && o.st === 'up') moleDown(o, true); });
       state.i++;
