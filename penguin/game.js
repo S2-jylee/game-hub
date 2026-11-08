@@ -290,6 +290,9 @@
     if (run.active || $('#run').classList.contains('hidden')) return;
     run.active = true;
     loadJump();   // 점프 소리를 미리 불러 둬요
+    // 조작 방법 (영어 놀이 설정 창에서 고른 것): 한손 조작이면 ◀ ▶ 를 오른쪽 아래에
+    let hand = 'two'; try { hand = localStorage.getItem('penguin_hand') === 'one' ? 'one' : 'two'; } catch (e) { /* 기본: 양손 */ }
+    document.body.classList.toggle('hand-one', hand === 'one');
     if (state.sound) { bgm.currentTime = BGM_START; bgm.play().catch(() => {}); }
     $('#runMsg').textContent = '◀ ▶ 로 정답 허들로! 🪵 통나무는 스페이스(화면 톡)로 점프!';
     nextRunQuestion();
@@ -491,6 +494,8 @@
   }
   const jumpSnd = new Audio('../penguin/jump.wav');   // 미리 불러 두기 전에 뛰면 이걸로
   jumpSnd.preload = 'auto'; jumpSnd.volume = JUMP_VOL;
+  // 조작 방법은 페이지를 열 때 바로 적용해요 (방법 팝업 뒤로도 버튼 자리가 맞게)
+  try { document.body.classList.toggle('hand-one', localStorage.getItem('penguin_hand') === 'one'); } catch (e) { /* 기본: 양손 */ }
   function playJump() {
     if (!state.sound) return;
     try {

@@ -204,6 +204,7 @@ button{font-family:inherit;font-weight:inherit;color:inherit;cursor:pointer;bord
 .sel-btn{background:#e8f4ff}
 @media (max-width:560px){.tool-row{grid-template-columns:repeat(2,1fr)}}
 .diff-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.diff-grid.hand-grid{grid-template-columns:repeat(2,1fr)}
 .diff{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;min-height:60px;border-radius:16px;padding:8px 4px;
   background:#f1edff;line-height:1.2;transition:transform .1s}
 .diff b{font-size:18px}
@@ -407,7 +408,7 @@ button{font-family:inherit;font-weight:inherit;color:inherit;cursor:pointer;bord
 #run .run-pad.left{left:32px}
 #run .run-pad.right{right:32px}
 /* 휴대폰: ◀ ▶ 버튼을 오른쪽 아래에 붙여서 한 손(엄지)으로도 조작해요 (태블릿 · PC 는 그대로 양끝) */
-@media (max-width:560px),(pointer:coarse) and (max-height:500px){#run .run-pad.right{right:14px;left:auto}#run .run-pad.left{right:calc(14px + 56px + 10px);left:auto}}
+@media (max-width:560px),(pointer:coarse) and (max-height:500px){body.hand-one #run .run-pad.right{right:14px;left:auto}body.hand-one #run .run-pad.left{right:calc(14px + 56px + 10px);left:auto}}
 /* 물고기 게이지: 비어 있어도 칸이 잘 보이게 */
 .energy-bar{height:12px;background:#d6e8fd;border:2px solid #93c5fd;box-sizing:content-box}
 #energyFill{background:linear-gradient(90deg,#2563eb,#3b82f6,#60a5fa)}
@@ -619,6 +620,7 @@ button{font-family:inherit;font-weight:inherit;color:inherit;cursor:pointer;bord
     </div>
     <div class="setup-label">난이도</div>
     <div class="diff-grid" id="diffGrid"></div>
+    <div id="handWrap" class="hidden"><div class="setup-label">조작 방법 (휴대폰)</div><div class="diff-grid hand-grid" id="handGrid"></div></div>
     <button class="setup-go" id="setupGo">선택 완료</button>
     <div class="key-hints" id="keyHints"></div>
   </div>
@@ -875,13 +877,28 @@ button{font-family:inherit;font-weight:inherit;color:inherit;cursor:pointer;bord
       g.appendChild(b);
     });
   }
+
+  // 펭귄 달리기 조작 방법 (휴대폰): 한손 = ◀ ▶ 오른쪽 아래에 나란히 / 양손 = 화면 양쪽 끝에 (기본)
+  function getHand() { try { return localStorage.getItem('penguin_hand') === 'one' ? 'one' : 'two'; } catch (e) { return 'two'; } }
+  function setHand(v) { try { localStorage.setItem('penguin_hand', v); } catch (e) { /* 저장 못 해도 괜찮아요 */ } }
+  function renderHand() {
+    $('#handWrap').classList.toggle('hidden', setupGame.mode !== 'penguin');
+    const g = $('#handGrid'); g.innerHTML = '';
+    [['two', '양손 조작', '◀ ▶ 버튼이 양쪽 끝에'], ['one', '한손 조작', '◀ ▶ 버튼이 오른쪽 아래에']].forEach(([v, name, desc]) => {
+      const b = document.createElement('button');
+      b.className = 'diff' + (getHand() === v ? ' on' : '');
+      b.innerHTML = `<b>${name}</b><small>${desc}</small>`;
+      b.onclick = () => { setHand(v); renderHand(); };
+      g.appendChild(b);
+    });
+  }
   function openSetup(game) {
     setupGame = game;
     $('#setupTitle').textContent = game.name;
     $('#setupSub').textContent = game.sub;
     $('#setupInfo').innerHTML = game.info;
     $('#keyHints').innerHTML = game.keys.map(([k, t]) => `<span><kbd>${k}</kbd>${t}</span>`).join('');
-    renderDanGrid(); renderDiffs(); renderSoundBtn();
+    renderDanGrid(); renderDiffs(); renderHand(); renderSoundBtn();
     $('#setupModal').classList.remove('hidden');
   }
   const setupOpen = () => !$('#setupModal').classList.contains('hidden');
@@ -1362,6 +1379,7 @@ button{font-family:inherit;font-weight:inherit;color:inherit;cursor:pointer;bord
     $('#runIntro').classList.add('hidden');
     run.active = true;
     loadJump();   // 점프 소리를 미리 불러 둬요
+    document.body.classList.toggle('hand-one', getHand() === 'one');   // 한손 조작이면 ◀ ▶ 를 오른쪽 아래에
     if (state.sound) { bgm.currentTime = BGM_START; bgm.play().catch(() => {}); }
     $('#runMsg').textContent = '◀ ▶ 로 정답 허들로! 🪵 통나무는 스페이스(화면 톡)로 점프!';
     nextRunQuestion();
