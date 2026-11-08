@@ -11,7 +11,7 @@
 
   var ROUNDS = 15, PER_STAGE = 3, LIVES = 3;
   // 스테이지(3문제씩)마다 고를 시간(초): 갈수록 줄어들어요
-  var TIMES = { easy: [9, 8, 7, 6, 5], normal: [7, 6, 5, 4.5, 4], hard: [5.5, 5, 4.5, 4, 3.5] };
+  var TIMES = { easy: [6, 5.5, 5, 4.5, 4], normal: [5, 4.5, 4, 3.5, 3], hard: [4, 3.5, 3, 2.8, 2.5] };
   var DIFF = MATH ? ML.diff : LINK ? EL.diff : "normal";
   var DIFF_NAME = MATH ? ML.diffName : LINK ? EL.diffName : "알맞게";
   var STAGE_TIMES = TIMES[DIFF] || TIMES.normal;
