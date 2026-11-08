@@ -314,3 +314,33 @@ html body .diff-btn:not(:has(.diff-emoji)) > * { grid-column: 1; }
 
 /* ---- 첫 화면 타일 안 이모지는 움직이지 않아요 (말랑말랑 타자연습 홈 타일처럼) ---- */
 html body :is(.play-card, .arcade-game, .level-btn, .grade-btn, .diff-btn, .mode, .level-grid-btn, .tile) :is(.pc-emoji, .m-emoji, .lv-emoji, .gr-emoji, .diff-emoji, .tile-emoji) { animation: none !important; }
+
+/* ---- 태블릿(561~1099px): 첫 화면 타일 영역의 좌우 여백과 타일 가로 크기를 시계 놀이터와 똑같이 ----
+   시계 놀이터: 영역 폭 = min(94vw, 900px) - 8px, 가운데 정렬, 간격 16px,
+   한 줄에 3개 (폭이 722px 보다 좁으면 2개) */
+@media (min-width: 561px) and (max-width: 1099px) {
+  html body { --tab-w: calc(min(94vw, 900px) - 8px); }
+  html body .play-grid, html body #tile-grid, html body .mode-grid, html body .level-grid,
+  html body #screen-difficulty .difficulty-options {
+    width: var(--tab-w) !important; max-width: none !important;
+    /* 부모 상자가 더 좁아도 화면 가운데에 오게 (넘치는 만큼 양쪽으로 똑같이) */
+    margin-left: calc((100% - var(--tab-w)) / 2) !important; margin-right: calc((100% - var(--tab-w)) / 2) !important;
+    box-sizing: border-box; padding-left: 0 !important; padding-right: 0 !important;
+  }
+  /* 큰 타일 메뉴(놀이 고르기)는 줄당 개수 · 간격까지 같게 */
+  html body .play-grid, html body #tile-grid, html body .mode-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important; gap: 16px !important;
+  }
+  /* 타일이 2개뿐인 칠교놀이도 타일 한 개 폭은 시계 놀이터와 같게, 가운데로 */
+  html body #screen-difficulty .difficulty-options:not(:has(> :nth-child(3))) {
+    grid-template-columns: repeat(2, calc((var(--tab-w) - 32px) / 3)) !important; gap: 16px !important; justify-content: center;
+  }
+}
+@media (min-width: 561px) and (max-width: 776px) {
+  html body .play-grid, html body #tile-grid, html body .mode-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+  html body #screen-difficulty .difficulty-options:not(:has(> :nth-child(3))) {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+}

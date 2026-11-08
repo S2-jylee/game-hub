@@ -225,7 +225,7 @@ button{font-family:inherit;font-weight:inherit;color:inherit;cursor:pointer;bord
 .app.menu{max-width:none}  /* 스크롤 막대가 영어 놀이처럼 창 오른쪽 끝에 생기게 (안쪽 내용 폭은 타일 줄이 정해요) */
 .home-title{font-family:"CookieRun","Jua",sans-serif;font-size:clamp(32px,7vw,44px);color:#d81b7a;margin:2px 0 8px;text-align:center}
 .top-panel{max-width:860px}
-.play-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:14px;width:100%;max-width:860px;margin:14px 0 20px}
+.play-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:14px;width:100%;max-width:860px;margin:14px 0 0}  /* 아래 여백은 #home 의 padding(20px) 만: 영어 놀이와 같은 높이 */
 /* 카드 높이: 영어 놀이 파닉스 카드와 같아요 (english/index.html 과 함께 고쳐요) */
 .play-card{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;min-height:212px;border-radius:24px;padding:18px 12px 16px;color:#fff;background:var(--bg);box-shadow:0 8px 20px rgba(36,27,58,.12);transition:transform .15s ease;line-height:1.25;word-break:keep-all}
 .play-card:hover{transform:translateY(-5px)}
@@ -1288,7 +1288,7 @@ button{font-family:inherit;font-weight:inherit;color:inherit;cursor:pointer;bord
     W: 0, H: 0, raf: 0, last: 0, active: false, tok: 0,
     dist: 0, speed: 8, px: 0, lean: 0, dir: 0, target: null,
     keys: { l: false, r: false }, gates: [], jumpT: 0, fallT: 0,
-    fish: [], fishT: 0, goal: null, gulpT: 0, logs: [], freezeT: 0, energy: 0, hopT: 0
+    fish: [], fishT: 0, flags: [], flagT: 2, goal: null, gulpT: 0, logs: [], freezeT: 0, energy: 0, hopT: 0
   };
   const FISH_FLY = 1.6;     // 물고기가 옆에서 튀어나와 길 위에 떨어지기까지 걸리는 시간(초)
   const FISH_PER_HALF = 3;  // 물고기 3마리 = 게이지 가득 = 하트 반 개
@@ -1344,7 +1344,7 @@ button{font-family:inherit;font-weight:inherit;color:inherit;cursor:pointer;bord
     show('#run');
     resizeRun();
     Object.assign(run, { active: false, dist: 0, px: 0, lean: 0, dir: 0, target: null, gates: [], jumpT: 0, fallT: 0, snap: false, stage: RUN_LEVEL[state.diff], banner: null,
-      fish: [], fishT: 4, goal: null, gulpT: 0, logs: [], freezeT: 0, energy: 0, hopT: 0 });
+      fish: [], fishT: 4, flags: [], flagT: 2, goal: null, gulpT: 0, logs: [], freezeT: 0, energy: 0, hopT: 0 });
     renderEnergy();
     run.keys.l = run.keys.r = false;
     run.tok++;
@@ -1405,7 +1405,6 @@ button{font-family:inherit;font-weight:inherit;color:inherit;cursor:pointer;bord
       burstAt(sx, sy); floatAt(sx, sy - 30, '+' + gain);
       bumpScore(gain);
       qm.className = 'q-mark ok';
-      run.jumpT = 0.55;
       $('#runMsg').textContent = pick(PRAISE) + (state.combo >= 2 ? `  🔥 ${state.combo}연속!` : '');
       delay = 900;
     } else {
@@ -1477,6 +1476,60 @@ button{font-family:inherit;font-weight:inherit;color:inherit;cursor:pointer;bord
     }
   }
 
+  /* ---------- 깃발: 달리다가 길 위의 파란 깃발을 먹으면 점수가 올라요 ---------- */
+  const FLAG_POINTS = 5;
+  function spawnFlag() {
+    run.flagT = 2.5 + Math.random() * 2.5;   // 2.5~5초에 한 번
+    const z = Z_SPAWN;
+    // 허들 · 통나무와 겹치지 않게 놓아요
+    if (run.gates.some(gt => !gt.done && Math.abs(gt.z - z) < run.speed * 0.8)) { run.flagT = 0.5; return; }
+    const lanes = LANE_X.filter(x => !run.logs.some(lg => Math.abs(lg.z - z) < run.speed * 0.5 && Math.abs(lg.x - x) < (lg.half || 0.27) + 0.1));
+    if (!lanes.length) { run.flagT = 0.5; return; }
+    run.flags.push({ z, x: pick(lanes), done: false, got: 0 });
+  }
+  function catchFlag(fl) {
+    fl.got = 0.001;
+    const g = geo(), p = proj(g, run.px, 0), r = canvas.getBoundingClientRect();
+    const sx = r.left + p.x, sy = r.top + p.y - g.R * 0.35;
+    sfx.pop(); tone(990, 0.08, 'triangle', 0.05, 0.12);   // 물고기 먹을 때와 같은 소리
+    floatAt(sx, sy, '🚩 +' + FLAG_POINTS);
+    bumpScore(FLAG_POINTS);
+  }
+  function updateFlags(dt) {
+    run.flags.forEach(fl => {
+      fl.z -= run.speed * dt;
+      if (fl.got) fl.got += dt;
+      if (!fl.done && fl.z <= 0) {
+        fl.done = true;
+        if (Math.abs(run.px - fl.x) < 0.3) catchFlag(fl);
+      }
+    });
+    run.flags = run.flags.filter(fl => (fl.got ? fl.got < 0.3 : fl.z > -CAM * 0.6));
+  }
+  function drawFlag(g, fl) {
+    const b = proj(g, fl.x, fl.z), top = proj(g, fl.x, fl.z, 0.42);
+    if (b.s <= 0) return;
+    const h = b.y - top.y, w = h * 0.55;
+    ctx.save();
+    if (fl.got) { ctx.globalAlpha = Math.max(0, 1 - fl.got / 0.3); ctx.translate(0, -fl.got * h * 2); }
+    // 그림자 · 깃대
+    ctx.fillStyle = 'rgba(91,127,166,.22)';
+    ctx.beginPath(); ctx.ellipse(b.x, b.y, w * 0.45, w * 0.12, 0, 0, Math.PI * 2); ctx.fill();
+    ctx.strokeStyle = '#1e3a8a'; ctx.lineWidth = Math.max(1.5, h * 0.06); ctx.lineCap = 'round';
+    ctx.beginPath(); ctx.moveTo(b.x, b.y); ctx.lineTo(top.x, top.y); ctx.stroke();
+    // 파란 깃발
+    ctx.fillStyle = '#2563eb';
+    ctx.beginPath(); ctx.moveTo(top.x, top.y); ctx.lineTo(top.x + w, top.y + h * 0.08); ctx.lineTo(top.x + w * 0.9, top.y + h * 0.4); ctx.lineTo(top.x, top.y + h * 0.36); ctx.closePath(); ctx.fill();
+    ctx.restore();
+  }
+  // 점프 효과음 (남극 탐험2.mp3 의 11.7초 '띠롱!')
+  const jumpSnd = new Audio('../penguin/jump.wav');
+  jumpSnd.volume = 0.8;
+  function playJump() {
+    if (!state.sound) return;
+    try { jumpSnd.currentTime = 0; jumpSnd.play().catch(() => {}); } catch (e) { /* 소리를 못 내는 브라우저 */ }
+  }
+
   /* ---------- 통나무: 걸리면 하트 반 개 + 1초 동안 꽁꽁, 점프로 피해요 ---------- */
   // 허들을 지나면 거의 매번 다음 허들 전에 통나무가 굴러와요.
   // 다음 허들까지 1.5초 넘게 남는 때에만 놓아서, 얼었다 풀려도 정답 칸으로 갈 수 있어요.
@@ -1526,6 +1579,7 @@ button{font-family:inherit;font-weight:inherit;color:inherit;cursor:pointer;bord
   function hop() {
     if (!run.active || run.goal || run.hopT > 0 || run.freezeT > 0 || run.fallT > 0) return;
     run.hopT = HOP;
+    playJump();
   }
 
   /* ---------- 스테이지 끝 이글루 ---------- */
@@ -1535,6 +1589,7 @@ button{font-family:inherit;font-weight:inherit;color:inherit;cursor:pointer;bord
     run.goal.vz = (run.goal.z - 4.2) / GOAL_APPROACH;
     playGoalSong();
     run.fish = [];
+    run.flags = [];
     run.logs = [];
     $('#runMsg').textContent = '🏠 저기 이글루가 보여요! 조금만 더!';
   }
@@ -1600,6 +1655,7 @@ button{font-family:inherit;font-weight:inherit;color:inherit;cursor:pointer;bord
       run.dist += run.speed * dt;
       // 옆에서 물고기가 튀어나와요
       if ((run.fishT -= dt) <= 0) spawnFish();
+      if ((run.flagT -= dt) <= 0) spawnFlag();
     }
     run.fish.forEach(fs => {
       fs.z -= run.speed * dt;
@@ -1609,6 +1665,7 @@ button{font-family:inherit;font-weight:inherit;color:inherit;cursor:pointer;bord
       }
     });
     run.fish = run.fish.filter(fs => !fs.caught && fs.z > -CAM * 0.6);
+    updateFlags(dt);
     run.gulpT = Math.max(0, run.gulpT - dt);
     run.logs.forEach(lg => {
       lg.z -= run.speed * dt;
@@ -1712,9 +1769,11 @@ button{font-family:inherit;font-weight:inherit;color:inherit;cursor:pointer;bord
       lg.dim = lg.z > gateZ ? 0.45 : 1;
       drawLog(g, lg);
     });
+    run.flags.filter(fl => fl.z >= 0).sort((a, b) => b.z - a.z).forEach(fl => drawFlag(g, fl));
     run.fish.filter(fs => fs.z >= 0).forEach(fs => drawFish(g, fs));
     drawPenguin(g, t);
     run.logs.filter(lg => lg.z < 0).forEach(lg => drawLog(g, lg));
+    run.flags.filter(fl => fl.z < 0).forEach(fl => drawFlag(g, fl));
     run.fish.filter(fs => fs.z < 0).forEach(fs => drawFish(g, fs));
     near.forEach(gt => drawGate(g, gt));
     if (run.banner) drawBanner(g, run.banner);
