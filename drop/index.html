@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<link rel="icon" type="image/png" sizes="48x48" href="../icons/favicon-48.png"><link rel="icon" type="image/png" sizes="32x32" href="../icons/favicon-32.png"><link rel="apple-touch-icon" href="../icons/apple-touch-icon.png"><link rel="manifest" href="../manifest.webmanifest">
+<title>발판 서바이벌</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Jua&family=Gowun+Dodum&family=Nunito:wght@400;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css">
+<link rel="stylesheet" href="../spelling/style.css">
+<link rel="stylesheet" href="../spelling/guidebook.css">
+<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="../shared/game-title.css">
+</head>
+<body>
+
+<div class="scene" aria-hidden="true">
+  <span class="sc-bit" style="--x:6%;--s:34px;--dur:21s;--d:-4s">🟥</span>
+  <span class="sc-bit" style="--x:22%;--s:28px;--dur:25s;--d:-13s">🟦</span>
+  <span class="sc-bit" style="--x:40%;--s:36px;--dur:23s;--d:-8s">⏱️</span>
+  <span class="sc-bit" style="--x:58%;--s:30px;--dur:27s;--d:-17s">🟨</span>
+  <span class="sc-bit" style="--x:76%;--s:28px;--dur:26s;--d:-11s">🟩</span>
+  <span class="sc-bit" style="--x:90%;--s:34px;--dur:24s;--d:-20s">🪙</span>
+</div>
+
+<!-- 영어 놀이 · 구구단 놀이터의 설정 팝업을 거치지 않고 열었을 때 -->
+<section id="screen-intro" class="screen">
+  <div class="card">
+    <h2>발판 서바이벌</h2>
+    <p>영어 놀이나 구구단 놀이터에서 이름 · 학년 · 난이도를 고르고 시작해요.</p>
+    <div class="row-buttons">
+      <a class="btn btn-primary" href="../english/index.html" style="text-decoration:none">영어 놀이로 가기</a>
+      <a class="btn btn-ghost" href="../multiplication/index.html" style="text-decoration:none">구구단 놀이터로 가기</a>
+    </div>
+  </div>
+</section>
+
+<!-- 게임 화면 -->
+<section id="screen-game" class="screen">
+  <div class="hud">
+    <button id="btn-quit" class="btn btn-ghost btn-small">← 나가기</button>
+    <div id="hearts" class="hearts"></div>
+    <div class="hud-item"><span class="hud-label">스테이지</span><span id="hud-stage" class="hud-value">1</span></div>
+    <div class="hud-item"><span class="hud-label">문제</span><span id="hud-q" class="hud-value">1 / 15</span></div>
+    <div class="hud-item hud-score" id="hud-score-box"><span class="hud-label">코인</span><span id="hud-score" class="hud-value">0</span></div>
+  </div>
+  <div class="q-card" id="q-card">
+    <div id="q-emoji" class="q-emoji">🍎</div>
+    <div class="q-main">
+      <div id="q-text" class="q-text">Apple = ?</div>
+      <div id="q-sub" class="q-sub">정답 발판으로 뛰어가요!</div>
+    </div>
+    <button id="q-say" class="q-say" type="button" title="다시 듣기">🔊</button>
+  </div>
+  <div class="time-row"><span class="time-sec" id="time-sec">⏱️ 7초</span><div class="time-bar"><div id="time-fill"></div></div></div>
+  <div id="game-msg" class="game-msg"></div>
+  <div id="arena" class="arena">
+    <canvas id="arena-canvas"></canvas>
+  </div>
+</section>
+
+<!-- 결과 화면 -->
+<section id="screen-result" class="screen">
+  <div class="card">
+    <h2 id="result-title">참 잘했어요!</h2>
+    <div id="result-stars" class="result-stars"></div>
+    <div id="result-text" class="result-text"></div>
+    <div id="result-words" class="result-words"></div>
+    <div class="row-buttons">
+      <button id="btn-result-back" class="btn btn-ghost">← 게임 선택</button>
+      <button id="btn-again" class="btn btn-primary">🔁 한 번 더 하기</button>
+    </div>
+  </div>
+</section>
+
+<script src="../spelling/words-data.js"></script>
+<script src="../spelling/guidebook.js"></script>
+<script src="../shared/mul-link.js"></script>
+<script src="../shared/eng-link.js"></script>
+<script src="game.js"></script>
+<script src="../shared/game-title.js"></script>
+</body>
+</html>

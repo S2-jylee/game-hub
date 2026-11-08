@@ -160,6 +160,11 @@
       <span class="pc-name">외계인 디펜스</span>
       <span class="pc-desc">미션에 맞는 단어 외계인만 쏴요! 💖 하트도</span>
     </a>
+    <a class="play-card" href="../drop/index.html" style="--bg:#4f46e5">
+      <span class="pc-emoji">🟥</span>
+      <span class="pc-name">발판 서바이벌</span>
+      <span class="pc-desc">0초가 되면 쾅! 정답 뜻 발판에서 살아남아요</span>
+    </a>
   </div>
 </section>
 
@@ -225,7 +230,10 @@
     alien: { href: "../alien/index.html", sub: "미션에 맞는 단어 외계인만 쏴요",
       info: "외계인들이 영어 단어를 달고 내려와요.<br>미션에 맞는 단어만 쏘고, 나머지는 그냥 둬요.",
       diffs: ["천천히 내려와요", "보통 속도", "빨리 내려와요"], keys: [["← →", "대포 옮기기"], ["Space", "쏘기"]],
-      modes: ALIEN_MODES, gradeFor: [] }
+      modes: ALIEN_MODES, gradeFor: [] },
+    drop: { href: "../drop/index.html", sub: "시간 안에 정답 발판으로 뛰어가요",
+      info: "영어 단어를 보고 그 뜻이 적힌 발판으로 달려가요.<br>0초가 되면 오답 발판이 꺼져요. 갈수록 시간이 줄어요.",
+      diffs: ["9초부터 시작", "7초부터 시작", "5.5초부터 시작"], keys: [["← ↑ → ↓", "이동"], ["끌기", "조이스틱"]] }
   };
   // 고른 값 기억하기
   var cur = null, gameId = null, pick = store.get("eng_pick", { grade: 1, diff: "normal", modes: {} });
