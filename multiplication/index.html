@@ -1446,6 +1446,7 @@ button{font-family:inherit;font-weight:inherit;color:inherit;cursor:pointer;bord
     setTimeout(() => {
       if (tok !== run.tok) return;
       state.i++;
+      $('#runProgress').style.width = (state.i / state.total * 100) + '%';
       // 마지막 문제를 지나면 이글루까지 달려가요
       if (state.lives > 0 && state.i >= state.total) startGoal();
       else nextRunQuestion();

@@ -363,6 +363,7 @@
     setTimeout(() => {
       if (tok !== run.tok) return;
       state.i++;
+      $('#runProgress').style.width = (state.i / state.total * 100) + '%';
       // 스테이지 마지막 문제를 지나면 이글루까지 달려가요
       if (state.lives > 0 && state.i % PER_STAGE === 0) startGoal();
       else nextRunQuestion();
@@ -596,7 +597,7 @@
         if (gl.last) { confetti(30); speak('도착! 다 해냈어요!'); }
         else speak('도착!');
         $('#runMsg').textContent = gl.last ? '🎉 마지막 이글루 도착! 다 해냈어요!' : `🏠 이글루 도착! 스테이지 ${stage}${eul(stage)} 통과했어요!`;
-        run.banner = { text: gl.last ? '🎉 모든 스테이지 도착!' : `🏠 스테이지 ${stage} 도착!`, t: 1.8 };
+        run.banner = { text: gl.last ? '🎉 이글루 도착!' : `🏠 스테이지 ${stage} 도착!`, t: 1.8 };
       }
     } else if (gl.t > GOAL_WAVE) {
       run.goal = null;
