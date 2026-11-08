@@ -68,6 +68,10 @@
   .key-card .key-cancel { background: #f3f0fa; color: #6b5b95; }
   .key-card .key-shake { animation: keyShake 0.35s ease; }
   @keyframes keyShake { 25%, 75% { transform: translateX(-6px); } 50% { transform: translateX(6px); } }
+/* 타일 폭: 말랑말랑 타자연습 홈 타일과 같게 (최대 1068px · 한 줄에 3개 · 간격 20px / 700px 이하 2개) */
+.play-grid{grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:20px!important;width:min(1068px,calc(100vw - 32px))!important;max-width:none!important;margin-left:auto!important;margin-right:auto!important}
+@media (max-width:700px){.play-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}}
+@media (max-width:560px){.play-grid{gap:10px!important;width:calc(100vw - 20px)!important}}
 </style>
 <link rel="stylesheet" href="../shared/game-title.css">
 <link rel="stylesheet" href="../shared/english-bg.css">
