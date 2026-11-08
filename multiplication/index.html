@@ -406,6 +406,8 @@ button{font-family:inherit;font-weight:inherit;color:inherit;cursor:pointer;bord
 #run .run-pad.right,#catch .run-pad.right{right:8px;left:auto}
 #run .run-pad.left{left:32px}
 #run .run-pad.right{right:32px}
+/* 휴대폰: ◀ ▶ 버튼을 오른쪽 아래에 붙여서 한 손(엄지)으로도 조작해요 (태블릿 · PC 는 그대로 양끝) */
+@media (max-width:560px),(pointer:coarse) and (max-height:500px){#run .run-pad.right{right:14px;left:auto}#run .run-pad.left{right:calc(14px + 56px + 10px);left:auto}}
 /* 물고기 게이지: 비어 있어도 칸이 잘 보이게 */
 .energy-bar{height:12px;background:#d6e8fd;border:2px solid #93c5fd;box-sizing:content-box}
 #energyFill{background:linear-gradient(90deg,#2563eb,#3b82f6,#60a5fa)}

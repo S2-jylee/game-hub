@@ -370,3 +370,9 @@ button{font-family:inherit;font-weight:inherit;color:inherit;cursor:pointer;bord
 .question.run-q { display: inline-flex; align-items: center; justify-content: center; gap: 6px; line-height: 1.15; }
 .question.run-q .ko { font-size: 0.62em; color: var(--ink, #3b2d5c); margin: 0 4px; }
 .question.run-q .x, .question.run-q .q-mark { line-height: 1; }
+
+/* ---- 휴대폰: ◀ ▶ 버튼을 오른쪽 아래에 붙여서 한 손(엄지)으로도 조작해요 (태블릿 · PC 는 그대로 양끝) ---- */
+@media (max-width: 560px), (pointer: coarse) and (max-height: 500px) {
+  #run .run-pad.right { right: 14px; left: auto; }
+  #run .run-pad.left { right: calc(14px + 56px + 10px); left: auto; }
+}
