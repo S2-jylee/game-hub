@@ -377,3 +377,17 @@ html body :is(.play-card, .arcade-game, .level-btn, .grade-btn, .diff-btn, .mode
     box-sizing: border-box; padding-left: 0 !important; padding-right: 0 !important;
   }
 }
+
+/* ---- 태블릿 · 휴대폰 폭(1099px 이하): 세로 스크롤 막대는 숨겨요 (스크롤은 그대로 돼요)
+   내용이 길어 스크롤 막대가 생기는 페이지만 막대 폭(약 15px)만큼 타일이 좁아지고 한쪽으로 쏠려서,
+   막대가 없는 시계 놀이터와 좌우 여백 · 타일 폭이 달라 보였어요 ---- */
+@media (max-width: 1099px) {
+  html, body, html body * { scrollbar-width: none; }
+  html::-webkit-scrollbar, body::-webkit-scrollbar, html body *::-webkit-scrollbar { width: 0; height: 0; background: transparent; }
+}
+@media (max-width: 560px) {
+  /* 코딩 · 칠교 놀이 고르기 타일도 시계 놀이터처럼: 폭이 되면 2개, 좁으면 1개 (타일 최소 230px, 간격 16px) */
+  html body .mode-grid, html body #screen-difficulty .difficulty-options {
+    grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)) !important; gap: 16px !important;
+  }
+}

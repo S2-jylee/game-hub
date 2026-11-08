@@ -363,3 +363,9 @@ header, main {
   .tile-title { font-size: 19px; }
   .tile-desc { font-size: 12px; }
 }
+
+/* ---- 태블릿 · 휴대폰 폭(1099px 이하): 세로 스크롤 막대는 숨겨요 (스크롤은 그대로) — 다른 놀이 첫 화면과 타일 폭 · 여백이 같게 ---- */
+@media (max-width: 1099px) {
+  html, body, html body * { scrollbar-width: none; }
+  html::-webkit-scrollbar, body::-webkit-scrollbar, html body *::-webkit-scrollbar { width: 0; height: 0; background: transparent; }
+}
