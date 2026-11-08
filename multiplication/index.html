@@ -1386,6 +1386,9 @@ button{font-family:inherit;font-weight:inherit;color:inherit;cursor:pointer;bord
     $('#runProgressText').textContent = `${DIFF_NAME[state.diff]}  ·  ${state.i + 1} / ${state.total}`;
     run.speed = Z_SPAWN / RUN_TIME[state.diff];
     run.gates.push({ z: Z_SPAWN, vals: makeChoices(a, b, 3), ans: a * b, done: false, pick: -1, ok: false });
+    run.flags = run.flags.filter(fl => Math.abs(fl.z - Z_SPAWN) > run.speed * 1.0);   // 정답 허들 자리의 깃발은 치워요
+    // 이 허들 뒤(다음 허들 전)에 굴러올 통나무를 지금 미리 놓아요 → 정답 허들 너머로 멀리서부터 보여요
+    if (state.i + 1 < state.total) maybeLog(0.9, Z_SPAWN);
   }
 
   function judgeGate(gate) {
@@ -1418,8 +1421,6 @@ button{font-family:inherit;font-weight:inherit;color:inherit;cursor:pointer;bord
       $('#runMsg').textContent = `앗! ${a} × ${b} = ${ans} 이야!`;
       delay = 1700;
     }
-    const goalNext = state.i + 1 >= state.total;
-    if (state.lives > 0 && !goalNext) maybeLog(delay / 1000);
     const tok = run.tok;
     setTimeout(() => {
       if (tok !== run.tok) return;
@@ -1482,7 +1483,7 @@ button{font-family:inherit;font-weight:inherit;color:inherit;cursor:pointer;bord
     run.flagT = 2.5 + Math.random() * 2.5;   // 2.5~5초에 한 번
     const z = Z_SPAWN;
     // 허들 · 통나무와 겹치지 않게 놓아요
-    if (run.gates.some(gt => !gt.done && Math.abs(gt.z - z) < run.speed * 0.8)) { run.flagT = 0.5; return; }
+    if (run.gates.some(gt => !gt.done && Math.abs(gt.z - z) < run.speed * 1.0)) { run.flagT = 0.5; return; }
     const lanes = LANE_X.filter(x => !run.logs.some(lg => Math.abs(lg.z - z) < run.speed * 0.5 && Math.abs(lg.x - x) < (lg.half || 0.27) + 0.1));
     if (!lanes.length) { run.flagT = 0.5; return; }
     run.flags.push({ z, x: pick(lanes), done: false, got: 0 });
@@ -1507,9 +1508,9 @@ button{font-family:inherit;font-weight:inherit;color:inherit;cursor:pointer;bord
     run.flags = run.flags.filter(fl => (fl.got ? fl.got < 0.3 : fl.z > -CAM * 0.6));
   }
   function drawFlag(g, fl) {
-    const b = proj(g, fl.x, fl.z), top = proj(g, fl.x, fl.z, 0.42);
+    const b = proj(g, fl.x, fl.z), top = proj(g, fl.x, fl.z, 0.16);
     if (b.s <= 0) return;
-    const h = b.y - top.y, w = h * 0.55;
+    const h = b.y - top.y, w = h * 0.75;
     ctx.save();
     if (fl.got) { ctx.globalAlpha = Math.max(0, 1 - fl.got / 0.3); ctx.translate(0, -fl.got * h * 2); }
     // 그림자 · 깃대
@@ -1522,12 +1523,28 @@ button{font-family:inherit;font-weight:inherit;color:inherit;cursor:pointer;bord
     ctx.beginPath(); ctx.moveTo(top.x, top.y); ctx.lineTo(top.x + w, top.y + h * 0.08); ctx.lineTo(top.x + w * 0.9, top.y + h * 0.4); ctx.lineTo(top.x, top.y + h * 0.36); ctx.closePath(); ctx.fill();
     ctx.restore();
   }
-  // 점프 효과음 (남극 탐험2.mp3 의 11.7초 '띠롱!')
-  const jumpSnd = new Audio('../penguin/jump.wav');
-  jumpSnd.volume = 0.8;
+  // 점프 효과음 '뛰용~': 음이 쭉 올라갔다가 살짝 흔들리며 내려와요 (용수철 소리처럼)
   function playJump() {
     if (!state.sound) return;
-    try { jumpSnd.currentTime = 0; jumpSnd.play().catch(() => {}); } catch (e) { /* 소리를 못 내는 브라우저 */ }
+    try {
+      actx = actx || new (window.AudioContext || window.webkitAudioContext)();
+      const t = actx.currentTime;
+      const o = actx.createOscillator(), g = actx.createGain();
+      const lfo = actx.createOscillator(), lg = actx.createGain();
+      o.type = 'triangle';
+      o.frequency.setValueAtTime(260, t);
+      o.frequency.exponentialRampToValueAtTime(820, t + 0.13);   // 뛰~
+      o.frequency.exponentialRampToValueAtTime(640, t + 0.34);   // 용~
+      lfo.frequency.setValueAtTime(14, t); lg.gain.setValueAtTime(0, t);
+      lg.gain.linearRampToValueAtTime(38, t + 0.16);              // 끝에서 '용~' 하고 떨려요
+      lfo.connect(lg).connect(o.frequency);
+      g.gain.setValueAtTime(0.0001, t);
+      g.gain.exponentialRampToValueAtTime(0.2, t + 0.02);
+      g.gain.setValueAtTime(0.2, t + 0.16);
+      g.gain.exponentialRampToValueAtTime(0.001, t + 0.38);
+      o.connect(g).connect(actx.destination);
+      o.start(t); lfo.start(t); o.stop(t + 0.4); lfo.stop(t + 0.4);
+    } catch (e) { /* 소리를 못 내는 브라우저 */ }
   }
 
   /* ---------- 통나무: 걸리면 하트 반 개 + 1초 동안 꽁꽁, 점프로 피해요 ---------- */
@@ -1536,7 +1553,8 @@ button{font-family:inherit;font-weight:inherit;color:inherit;cursor:pointer;bord
   // 스테이지가 올라갈수록 허들 사이에 통나무가 여러 개 굴러와요
   // 5스테이지부터는 가끔 두 칸을 차지하는 긴 통나무도 나와요
   // 8스테이지부터는 통나무 사이가 점프 시간보다 짧을 수 있어서, 그때는 서로 다른 칸에 짧은 통나무만 놓아요
-  function maybeLog(delaySec) {
+  function maybeLog(delaySec, base) {
+    base = base || 0;
     const LOG_GAP = run.stage >= 7 ? 0.55 : 0.75;
     if (Math.random() > (run.stage === 0 ? 0.85 : 1)) return;
     const T = Z_SPAWN / run.speed;
@@ -1558,9 +1576,10 @@ button{font-family:inherit;font-weight:inherit;color:inherit;cursor:pointer;bord
       let ok = close && prev ? opts.filter(o => !overlap(o, prev)) : opts;
       if (!ok.length) ok = LANE_X.map(x => ({ x, half: 0.27 })).filter(o => !(close && prev && overlap(o, prev)));
       const c = pick(ok);
-      const lg = { z: run.speed * ta, x: c.x, half: c.half, done: false, age: 0 };
+      const lg = { z: base + run.speed * ta, x: c.x, half: c.half, done: false, age: 0 };
       prev = lg;
       run.logs.push(lg);
+      run.flags = run.flags.filter(fl => !(Math.abs(fl.z - lg.z) < run.speed * 0.45 && Math.abs(fl.x - lg.x) < lg.half + 0.2));
     }
   }
 
@@ -1763,13 +1782,14 @@ button{font-family:inherit;font-weight:inherit;color:inherit;cursor:pointer;bord
     if (run.goal) drawIgloo(g, run.goal.z, t);
     // 허들(정답 표지판)을 먼저 그리고 통나무를 그 위에: 허들 너머 통나무도 멀리서부터 보이게 하되,
     // 아직 허들 뒤에 있는 통나무는 반투명으로 그려서 정답 글자를 가리지 않아요
-    far.forEach(gt => drawGate(g, gt));
     const gateZ = far.length ? Math.min(...far.map(gt => gt.z)) : Infinity;
+    run.flags.filter(fl => fl.z >= 0 && fl.z > gateZ).sort((a, b) => b.z - a.z).forEach(fl => drawFlag(g, fl));
+    far.forEach(gt => drawGate(g, gt));
     run.logs.filter(lg => lg.z >= 0).sort((p, q) => q.z - p.z).forEach(lg => {
-      lg.dim = lg.z > gateZ ? 0.45 : 1;
+      lg.dim = lg.z > gateZ ? 0.6 : 1;
       drawLog(g, lg);
     });
-    run.flags.filter(fl => fl.z >= 0).sort((a, b) => b.z - a.z).forEach(fl => drawFlag(g, fl));
+    run.flags.filter(fl => fl.z >= 0 && !(fl.z > gateZ)).sort((a, b) => b.z - a.z).forEach(fl => drawFlag(g, fl));
     run.fish.filter(fs => fs.z >= 0).forEach(fs => drawFish(g, fs));
     drawPenguin(g, t);
     run.logs.filter(lg => lg.z < 0).forEach(lg => drawLog(g, lg));
