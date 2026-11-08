@@ -227,11 +227,28 @@
   const FREEZE = 1.0;       // 통나무를 밟으면 이만큼(초) 꽁꽁 얼어서 못 움직여요
 
   // 음원 끝 약 5초가 무음이라, 소리가 끝나는 지점에서 곡 처음으로 바로 돌아가요
-  const BGM_START = 0.23, BGM_END = 175.8;
+  // 남극 탐험.mp3: 6.75초부터 1:49.2까지가 배경곡(반복), 1:50.7 ~ 1:56.3 은 이글루 도착 곡이에요
+  const BGM_START = 6.75, BGM_END = 109.2;
+  const GOAL_START = 110.7, GOAL_END = 116.3;
+  const GOAL_APPROACH = 3.4, GOAL_WAVE = 2.6;   // 이글루가 보이기 시작해서 도착 + 손 흔들기 = 6초
   const bgm = new Audio('../multiplication/penguin-bgm.mp3');
   bgm.loop = true; bgm.volume = 0.35;
   function loopBgm() { if (bgm.currentTime >= BGM_END) bgm.currentTime = BGM_START; }
   bgm.addEventListener('timeupdate', loopBgm);
+  // 이글루 도착 곡: 같은 음원의 다른 부분이라 따로 하나 더 만들어요
+  const goalSong = new Audio(bgm.src);
+  goalSong.volume = 0.45;
+  goalSong.addEventListener('timeupdate', () => { if (goalSong.currentTime >= GOAL_END) goalSong.pause(); });
+  function playGoalSong() {
+    bgm.pause(); goalSong.pause();
+    if (!state.sound) return;
+    try { goalSong.currentTime = GOAL_START; } catch (e) { /* 아직 못 불러왔어요 */ }
+    goalSong.play().catch(() => {});
+  }
+  function resumeBgm() {
+    goalSong.pause();
+    if (state.sound && run.active) bgm.play().catch(() => {});
+  }
 
   function resizeRun() {
     const r = $('#runField').getBoundingClientRect();
@@ -282,7 +299,7 @@
     GuideBook.close(false);
     run.active = false; run.tok++;
     cancelAnimationFrame(run.raf);
-    bgm.pause();
+    bgm.pause(); goalSong.pause();
   }
 
   function nextRunQuestion() {
@@ -449,6 +466,9 @@
   /* ---------- 스테이지 끝 이글루 ---------- */
   function startGoal() {
     run.goal = { z: Math.max(30, run.speed * 3.2), phase: 'approach', t: 0, last: state.i >= state.total };
+    // 멀리서 이글루가 보이기 시작하면 도착 곡이 나와요. 도착까지 GOAL_APPROACH 초에 맞춰 달려요
+    run.goal.vz = (run.goal.z - 4.2) / GOAL_APPROACH;
+    playGoalSong();
     run.fish = [];
     run.logs = [];
     $('#runMsg').textContent = '🏠 저기 이글루가 보여요! 조금만 더!';
@@ -458,8 +478,8 @@
     const gl = run.goal;
     gl.t += dt;
     if (gl.phase === 'approach') {
-      gl.z -= run.speed * dt;
-      run.dist += run.speed * dt;
+      gl.z -= gl.vz * dt;
+      run.dist += gl.vz * dt;
       run.target = 0;
       if (gl.z <= 4.2) {
         gl.z = 4.2; gl.phase = 'wave'; gl.t = 0;
@@ -472,8 +492,9 @@
         $('#runMsg').textContent = gl.last ? '🎉 마지막 이글루 도착! 다 해냈어요!' : `🏠 이글루 도착! 스테이지 ${stage}${eul(stage)} 통과했어요!`;
         run.banner = { text: gl.last ? '🎉 모든 스테이지 도착!' : `🏠 스테이지 ${stage} 도착!`, t: 1.8 };
       }
-    } else if (gl.t > (gl.last ? 3.2 : 2.6)) {
+    } else if (gl.t > GOAL_WAVE) {
       run.goal = null;
+      if (!gl.last) resumeBgm();
       if (gl.last) finish();
       else nextRunQuestion();
     }

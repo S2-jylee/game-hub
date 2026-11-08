@@ -45,8 +45,26 @@
   @keyframes dot { 50% { opacity: .2; } }
 
   .dock { flex: none; background: rgba(255,255,255,.92); border-radius: 22px 22px 0 0; padding: 10px 12px calc(12px + env(safe-area-inset-bottom)); box-shadow: 0 -4px 16px rgba(36,27,58,.08); display: flex; flex-direction: column; gap: 8px; }
-  .hint { display: flex; align-items: center; gap: 8px; font-size: .82rem; color: var(--text-dark); min-height: 1.2em; }
-  .hint .ex { font-family: "Nunito", "Pretendard", sans-serif; font-weight: 800; color: #7c3aed; }
+  /* 힌트: '힌트 보기'를 누르면 한글 / 영어 두 줄로 나와요 */
+  .hint { display: flex; align-items: center; justify-content: center; gap: 8px; min-height: 1.2em; }
+  .hint:empty { display: none; }
+  .hint-btn { border: none; border-radius: 999px; padding: 6px 14px; font-size: .85rem; font-weight: 800; cursor: pointer; background: #fef3c7; color: #92400e; font-family: inherit; }
+  .hint-box { flex: 1; display: flex; align-items: center; gap: 10px; background: #fffbeb; border-radius: 14px; padding: 7px 12px; }
+  .hint-box .hb-ico { font-size: 1.2rem; flex: none; }
+  .hint-box .hb-lines { flex: 1; min-width: 0; line-height: 1.35; }
+  .hint-box .hb-ko { font-size: .85rem; color: var(--text-dark); font-weight: 700; }
+  .hint-box .hb-en { font-family: "Nunito", "Pretendard", sans-serif; font-weight: 800; color: #7c3aed; font-size: 1rem; }
+  .retry-tag { display: inline-block; font-size: .7rem; font-weight: 800; color: #b45309; background: #fef3c7; border-radius: 999px; padding: 1px 7px; margin-left: 4px; }
+  .brief { text-align: left; background: #f5f3ff; border-radius: 16px; padding: 12px 14px; margin: 8px 0 10px; font-size: .92rem; line-height: 1.6; color: var(--text-dark); white-space: pre-line; }
+  .brief-play { margin: 0 auto 6px; display: inline-flex; align-items: center; gap: 6px; }
+  .brief-play.on { animation: micPulse 1.2s ease-in-out infinite; }
+  .brief-msg { font-size: .78rem; color: var(--text-soft); min-height: 1em; margin-bottom: 6px; }
+  .wrap-h { text-align: left; font-weight: 800; color: #7c3aed; font-size: .9rem; margin: 10px 2px 4px; }
+  .fixes { display: flex; flex-direction: column; gap: 6px; margin-bottom: 6px; }
+  .fixrow { text-align: left; background: #fff7ed; border-radius: 12px; padding: 8px 10px; font-size: .82rem; color: #7c2d12; }
+  .fixrow .said { text-decoration: line-through; opacity: .7; }
+  .fixrow .better { font-family: "Nunito", "Pretendard", sans-serif; font-weight: 800; color: #c2410c; font-size: .95rem; }
+  #wrap { max-height: 100%; overflow-y: auto; }
   .live { min-height: 1.4em; text-align: center; font-family: "Nunito", "Pretendard", sans-serif; font-weight: 800; color: #166534; font-size: 1rem; }
   .mic-row { display: flex; align-items: center; gap: 10px; justify-content: center; }
   .mic-big { width: 78px; height: 78px; border-radius: 50%; border: none; cursor: pointer; font-size: 2rem; color: #fff;
@@ -94,7 +112,7 @@
     <div class="center-card" id="intro">
       <div class="big">🎭</div>
       <h2>오늘의 상황극</h2>
-      <p>AI 선생님이 매일 새로운 상황극을 내 줘요.<br>🎤 를 누르고 <b>영어로 직접 말해요!</b><br><small>틀리면 바른 영어와 한국어로 다시 알려 줘요</small></p>
+      <p>AI 선생님이 매일 새로운 상황극을 내 줘요.<br>🎤 를 누르고 <b>영어로 직접 말해요!</b><br><small>대화가 끝나면 선생님이 오늘 대화를 정리해서 들려줘요</small></p>
       <button class="go-btn" id="btn-start" type="button">시작하기 ▶</button>
     </div>
 
@@ -107,7 +125,12 @@
     <div class="center-card hidden" id="wrap">
       <div class="big">🏆</div>
       <h2>오늘의 상황극 끝!</h2>
-      <p id="wrap-summary"></p>
+      <button class="go-btn brief-play" id="btn-brief" type="button">🔊 선생님 브리핑 듣기</button>
+      <div class="brief-msg" id="brief-msg"></div>
+      <div class="brief" id="wrap-summary"></div>
+      <div class="wrap-h" id="fixes-h">🔁 이렇게 말하면 더 좋아요</div>
+      <div class="fixes" id="wrap-fixes"></div>
+      <div class="wrap-h">⭐ 오늘의 표현</div>
       <div class="phrases" id="wrap-phrases"></div>
       <div class="key-row" style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap">
         <button class="go-btn ghost" id="btn-review" type="button">대화 다시 보기</button>
@@ -194,7 +217,7 @@
   function addAi(turn) {
     var d = document.createElement("div");
     d.className = "msg ai";
-    d.innerHTML = '<div class="who">' + esc((S.scene.emoji || "🤖") + " " + (S.scene.role || "AI")) + '</div><div class="en">' + esc(turn.say) + '</div><div class="ko">' + esc(turn.ko || "") + "</div>";
+    d.innerHTML = '<div class="who">' + esc((S.scene.emoji || "🤖") + " " + (S.scene.role || "AI")) + (turn.retry ? '<span class="retry-tag">🔁 다시 대답해 볼까요?</span>' : "") + '</div><div class="en">' + esc(turn.say) + '</div><div class="ko">' + esc(turn.ko || "") + "</div>";
     var tools = document.createElement("div"); tools.className = "tools";
     tools.appendChild(sayBtn(turn.say));
     if (turn.ko) {
@@ -211,8 +234,8 @@
     d.innerHTML = '<div class="en">' + esc(text) + "</div>";
     chat.appendChild(d);
   }
+  // (예전에 저장된 대화에만 있는 '이렇게 말해요' 상자 — 지금은 대화 중에 한국어 설명 없이 영어로만 이어가요)
   function addFix(turn) {
-    if (turn.praise) { var p = document.createElement("div"); p.className = "praise"; p.textContent = turn.praise; chat.appendChild(p); }
     if (turn.fix) {
       var f = document.createElement("div");
       f.className = "fix";
@@ -224,14 +247,21 @@
       chat.appendChild(f);
     }
   }
+  // 힌트는 '💡 힌트 보기'를 눌렀을 때만: 한글 뜻 위, 영어 문장 아래 두 줄
   function setHint(turn) {
     var h = $("hint");
     h.innerHTML = "";
-    if (!turn || turn.end) return;
-    if (turn.hint || turn.example) {
-      h.innerHTML = "💡 " + esc(turn.hint || "") + (turn.example ? ' <span class="ex">' + esc(turn.example) + "</span>" : "");
-      if (turn.example) h.appendChild(sayBtn(turn.example));
-    }
+    if (!turn || turn.end || !turn.example) return;
+    var b = document.createElement("button");
+    b.type = "button"; b.className = "hint-btn"; b.textContent = "💡 힌트 보기";
+    b.addEventListener("click", function () {
+      h.innerHTML = "";
+      var box = document.createElement("div"); box.className = "hint-box";
+      box.innerHTML = '<span class="hb-ico">💡</span><div class="hb-lines"><div class="hb-ko">' + esc(turn.example_ko || turn.hint || "") + '</div><div class="hb-en">' + esc(turn.example) + "</div></div>";
+      box.appendChild(sayBtn(turn.example));
+      h.appendChild(box);
+    });
+    h.appendChild(b);
   }
   function typing(on) {
     var t = $("typing-dots");
@@ -314,8 +344,8 @@
       S.turns.push({ ai: t, fixFor: true });
       save(STORE, S);
       addFix(t); addAi(t); setHint(t); scrollDown();
-      // 알맞은 대답이면 영어로만 이어가고, 틀렸으면 바른 영어 → 한국어로 다시 → 다음 말
-      speakSeq(t.fix ? [[t.fix, false], [t.fix_ko, true], [t.say, false]] : [[t.say, false]]);
+      // 대화 중에는 영어로만 이어가요 (알맞지 않은 대답이면 AI 가 영어로 다시 물어봐요)
+      speak(t.say);
       $("mic-label").textContent = "🎤 를 누르고 영어로 말해요";
       if (t.end) setTimeout(finish, 2200);
     });
@@ -329,15 +359,24 @@
     setBusy(true);
     TalkAI.call({ action: "wrapup", password: pw(), history: S.history, level: S.level || level() }).then(function (r) {
       setBusy(false);
-      S.wrap = r.wrap || { summary: "오늘도 영어로 이야기 나눠서 정말 멋졌어요! 👏", phrases: [] };
+      S.wrap = r.wrap || { briefing: "오늘도 영어로 이야기 나눠서 정말 멋졌어요!", phrases: [], fixes: [] };
       save(STORE, S);
       showWrap();
+      playBrief();
     });
   }
   function showWrap() {
     show("scene", false); show("chat", false); show("dock", false); show("intro", false);
     show("wrap", true);
-    $("wrap-summary").textContent = S.wrap.summary;
+    $("wrap-summary").textContent = S.wrap.briefing || S.wrap.summary || "";
+    var fx = $("wrap-fixes"); fx.innerHTML = "";
+    (S.wrap.fixes || []).forEach(function (f) {
+      var d = document.createElement("div"); d.className = "fixrow";
+      d.innerHTML = (f.said ? '<div class="said">' + esc(f.said) + "</div>" : "") + '<div class="better">' + esc(f.better) + "</div><div>" + esc(f.ko) + "</div>";
+      d.appendChild(sayBtn(f.better));
+      fx.appendChild(d);
+    });
+    show("fixes-h", (S.wrap.fixes || []).length > 0);
     var box = $("wrap-phrases"); box.innerHTML = "";
     (S.wrap.phrases || []).forEach(function (p) {
       var d = document.createElement("div"); d.className = "phrase";
@@ -346,6 +385,45 @@
       box.appendChild(d);
     });
   }
+
+  // ---- 선생님 브리핑: Gemini 목소리로 읽어 줘요 (한 번 받은 소리는 다시 들을 때 그대로 써요) ----
+  var briefAudio = null, briefUrl = "", briefFor = "", briefLoading = false;
+  function pcmToWav(b64, mime) {
+    // 이미 wav · mp3 같은 파일로 오면 그대로 (L16 · pcm 처럼 소리 값만 오면 wav 머리말을 붙여요)
+    if (!/l16|pcm/i.test(mime || "")) {
+      var raw = atob(b64), arr = new Uint8Array(raw.length);
+      for (var q = 0; q < raw.length; q++) arr[q] = raw.charCodeAt(q);
+      return new Blob([arr], { type: (mime || "audio/wav").split(";")[0] });
+    }
+    var rate = +((/rate=(\d+)/.exec(mime || "") || [])[1] || 24000);
+    var bin = atob(b64), n = bin.length, buf = new ArrayBuffer(44 + n), v = new DataView(buf), i;
+    function str(o, t) { for (var k = 0; k < t.length; k++) v.setUint8(o + k, t.charCodeAt(k)); }
+    str(0, "RIFF"); v.setUint32(4, 36 + n, true); str(8, "WAVE"); str(12, "fmt "); v.setUint32(16, 16, true);
+    v.setUint16(20, 1, true); v.setUint16(22, 1, true); v.setUint32(24, rate, true); v.setUint32(28, rate * 2, true);
+    v.setUint16(32, 2, true); v.setUint16(34, 16, true); str(36, "data"); v.setUint32(40, n, true);
+    for (i = 0; i < n; i++) v.setUint8(44 + i, bin.charCodeAt(i));
+    return new Blob([buf], { type: "audio/wav" });
+  }
+  function briefState(on, msg) { $("btn-brief").classList.toggle("on", on); $("btn-brief").textContent = on ? "⏸ 듣는 중… (누르면 멈춰요)" : "🔊 선생님 브리핑 듣기"; $("brief-msg").textContent = msg || ""; }
+  function playBrief() {
+    var text = S && S.wrap && (S.wrap.briefing || S.wrap.summary);
+    if (!text || briefLoading) return;
+    try { speechSynthesis.cancel(); } catch (e) { /* ignore */ }
+    if (briefAudio && !briefAudio.paused) { briefAudio.pause(); briefState(false); return; }
+    if (briefAudio && briefFor === text) { briefAudio.currentTime = 0; briefAudio.play().then(function () { briefState(true); }, function () { briefState(false, "🔊 를 눌러서 들어요"); }); return; }
+    briefLoading = true;
+    briefState(false, "선생님 목소리를 준비하고 있어요…");
+    TalkAI.call({ action: "tts", password: pw(), text: text }).then(function (r) {
+      briefLoading = false;
+      if (!r.audio) { briefState(false, "목소리를 불러오지 못했어요. 잠시 뒤 🔊 를 다시 눌러 주세요."); return; }
+      if (briefUrl) URL.revokeObjectURL(briefUrl);
+      briefUrl = URL.createObjectURL(pcmToWav(r.audio, r.mime));
+      briefAudio = new Audio(briefUrl); briefFor = text;
+      briefAudio.onended = function () { briefState(false); };
+      briefAudio.play().then(function () { briefState(true); }, function () { briefState(false, "🔊 를 눌러서 들어요"); });
+    });
+  }
+  $("btn-brief").addEventListener("click", playBrief);
 
   // ---- 🎤 말하기: 말하는 동안 글자가 보이고, 끝나면 바로 AI 에게 보내요 ----
   var rec = null;
@@ -385,7 +463,7 @@
   $("type-input").addEventListener("keydown", function (e) { if (e.key === "Enter" && !e.isComposing) sendTyped(); });
   $("btn-end").addEventListener("click", function () { if (!busy && S && confirm("오늘 상황극을 여기서 마칠까요?")) finish(); });
   $("btn-start").addEventListener("click", start);
-  $("btn-more").addEventListener("click", start);
+  $("btn-more").addEventListener("click", function () { if (briefAudio) { briefAudio.pause(); briefState(false); } start(); });
   $("btn-review").addEventListener("click", function () { show("wrap", false); show("scene", true); show("chat", true); renderAll(); var b = $("btn-back-wrap"); if (!b) { b = document.createElement("button"); b.id = "btn-back-wrap"; b.className = "go-btn ghost"; b.style.alignSelf = "center"; b.textContent = "← 정리 화면으로"; b.addEventListener("click", function () { b.remove(); showWrap(); }); } chat.appendChild(b); scrollDown(); });
 
   // 오늘 하던 상황극이 있으면 이어서 (날짜가 바뀌면 새 상황극)
