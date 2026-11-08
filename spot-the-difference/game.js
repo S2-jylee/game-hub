@@ -4,7 +4,6 @@
   var FD = window.FindData;
   var SVG_NS = "http://www.w3.org/2000/svg";
   var START_TIME = 120;
-  var GAUGE_MAX = 150;
   var CLEAR_BONUS = 15;
   var FIND_BONUS = 1;     // 다른 곳 하나 찾을 때마다 +1초
   var MISS_PENALTY = 5;
@@ -171,7 +170,9 @@
   }
 
   function updateFuse() {
-    var ratio = Math.max(0, Math.min(1, state.timeLeft / GAUGE_MAX));
+    // 게이지는 시작 시간(가득)을 기준으로, 보너스로 그보다 늘면 그만큼 늘려서 그려요
+    state.gaugeMax = Math.max(state.gaugeMax || START_TIME, state.timeLeft);
+    var ratio = Math.max(0, Math.min(1, state.timeLeft / state.gaugeMax));
     var burntPct = (1 - ratio) * 100;
     fuseBurnt.style.width = burntPct + "%";
     fuseSpark.style.left = burntPct + "%";
@@ -559,6 +560,7 @@
     state.hintsUsed = 0;
     state.totalMistakes = 0;
     state.timeLeft = START_TIME;
+    state.gaugeMax = START_TIME;   // 새 판은 게이지 가득에서 시작
     state.locked = false;
     state.playing = true;
     fuseBomb.textContent = "💣";
