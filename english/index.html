@@ -54,7 +54,7 @@
   .setup-title { margin: 0 40px; text-align: center; font-family: "CookieRun", "Jua", sans-serif; font-size: clamp(26px, 6.5vw, 36px); font-weight: 700; color: #d81b7a; line-height: 1.15; }
   .setup-sub { margin: 6px 0 0; text-align: center; font-size: 17px; font-weight: 700; color: var(--text-soft); }
   .setup-info { margin: 10px 0 0; padding: 10px 14px; border-radius: 16px; background: #f7f3fe; text-align: center; font-size: 15px; line-height: 1.6; color: #6b5f86; }
-  .setup-info:empty { display: none; }
+  .setup-info { display: none !important; }  /* 게임 설명 칸은 보여주지 않아요 */
   .setup-label { font-size: 16px; font-weight: 700; color: var(--text-soft); margin: 14px 2px 6px; }
   .opt-grid { display: grid; gap: 8px; }
   .opt-grid.g6 { grid-template-columns: repeat(6, 1fr); }
@@ -123,7 +123,7 @@
       <span class="pc-name">풍선 퀴즈</span>
       <span class="pc-desc">알파벳 풍선을 순서대로 펑펑! 단어 완성</span>
     </a>
-    <a class="play-card" href="../basket/index.html" style="--bg:#f59e0b">
+    <a class="play-card" href="../basket/index.html" style="--bg:#ea580c">
       <span class="pc-emoji">🧺</span>
       <span class="pc-name">바구니</span>
       <span class="pc-desc">영어 단어를 보고 맞는 그림 열매를 쏙!</span>

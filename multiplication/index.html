@@ -191,7 +191,7 @@ button{font-family:inherit;font-weight:inherit;color:inherit;cursor:pointer;bord
 .setup-title{margin:0 40px;text-align:center;font-family:"CookieRun","Jua",sans-serif;font-size:clamp(28px,6.5vw,38px);font-weight:700;color:#d81b7a;line-height:1.15}
 .setup-sub{margin:6px 0 0;text-align:center;font-size:17px;color:var(--muted)}
 .setup-info{margin:10px 0 0;padding:10px 14px;border-radius:16px;background:#f7f3fe;text-align:center;font-size:15px;line-height:1.6;color:#6b5f86;font-weight:400}
-.setup-info:empty{display:none}
+.setup-info{display:none!important}  /* 게임 설명 칸은 보여주지 않아요 */
 .setup-label{font-size:16px;color:var(--muted);margin:14px 2px 6px}
 .setup-label.warn{color:#e11d48;font-weight:800}
 .setup-box .dan-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:8px;margin:0}
@@ -689,10 +689,10 @@ button{font-family:inherit;font-weight:inherit;color:inherit;cursor:pointer;bord
     { mode: 'penguin', emoji: '🐧', name: '펭귄 달리기', desc: '정답 허들로 쌩쌩! 통나무는 점프!', bg: '#3b82f6',
       sub: '정답 허들을 지나 이글루까지 달려요', info: '펭귄이 얼음길을 달려요. 정답이 적힌 허들로 가고,<br>굴러오는 통나무는 뛰어넘어요. ' + RUN_TOTAL + '문제를 지나면 도착!',
       diffs: ['천천히 달려요', '보통 속도', '쌩쌩 빨라요'], keys: [['← →', '이동'], ['Space', '점프']] },
-    { mode: 'quiz', emoji: '🎈', name: '풍선 퀴즈', desc: '정답 풍선을 펑! 터뜨려요', bg: '#22c55e',
+    { mode: 'quiz', emoji: '🎈', name: '풍선 퀴즈', desc: '정답 풍선을 펑! 터뜨려요', bg: '#ec4899',
       sub: '정답 풍선을 터뜨리며 구구단을 외워요', info: '문제를 보고 알맞은 정답 풍선을 눌러요.<br>느긋하게는 틀려도 힌트를 보고 다시 고를 수 있어요.',
       diffs: ['시간 제한 없음', '한 문제 10초', '한 문제 6초'], keys: [['1~4', '풍선 고르기']] },
-    { mode: 'catch', emoji: '🧺', name: '바구니', desc: '떨어지는 정답 열매를 쏙! 💣 폭탄 조심', bg: '#f59e0b',
+    { mode: 'catch', emoji: '🧺', name: '바구니', desc: '떨어지는 정답 열매를 쏙! 💣 폭탄 조심', bg: '#ea580c',
       sub: '떨어지는 정답 열매를 바구니로 받아요', info: '정답 열매만 받고 틀린 열매와 폭탄은 피해요.<br>정답 ' + CATCH_GOAL + '개를 받으면 끝!',
       diffs: ['천천히 떨어져요', '보통 속도', '빨리 떨어져요'], keys: [['← →', '이동'], ['마우스', '바구니 따라오기']] },
     { mode: 'mole', emoji: '🔨', name: '두더지 잡기', desc: '정답 숫자 두더지만 뿅! 잡아요', bg: '#a16207',
@@ -1704,9 +1704,14 @@ button{font-family:inherit;font-weight:inherit;color:inherit;cursor:pointer;bord
     const far = run.gates.filter(gt => gt.z >= 0).sort((a, b) => b.z - a.z);
     const near = run.gates.filter(gt => gt.z < 0);
     if (run.goal) drawIgloo(g, run.goal.z, t);
-    // 먼 것부터 그려요: 허들 너머 통나무는 허들(정답 표지판) 뒤에 가려져요
-    far.map(gt => ({ z: gt.z, gt })).concat(run.logs.filter(lg => lg.z >= 0).map(lg => ({ z: lg.z, lg })))
-      .sort((p, q) => q.z - p.z).forEach(o => o.gt ? drawGate(g, o.gt) : drawLog(g, o.lg));
+    // 허들(정답 표지판)을 먼저 그리고 통나무를 그 위에: 허들 너머 통나무도 멀리서부터 보이게 하되,
+    // 아직 허들 뒤에 있는 통나무는 반투명으로 그려서 정답 글자를 가리지 않아요
+    far.forEach(gt => drawGate(g, gt));
+    const gateZ = far.length ? Math.min(...far.map(gt => gt.z)) : Infinity;
+    run.logs.filter(lg => lg.z >= 0).sort((p, q) => q.z - p.z).forEach(lg => {
+      lg.dim = lg.z > gateZ ? 0.45 : 1;
+      drawLog(g, lg);
+    });
     run.fish.filter(fs => fs.z >= 0).forEach(fs => drawFish(g, fs));
     drawPenguin(g, t);
     run.logs.filter(lg => lg.z < 0).forEach(lg => drawLog(g, lg));
@@ -1809,7 +1814,7 @@ button{font-family:inherit;font-weight:inherit;color:inherit;cursor:pointer;bord
     if (base.s <= 0) return;
     const r = Math.max(2, rad * g.R * base.s);
     ctx.save();
-    ctx.globalAlpha = Math.min(1, lg.age / 0.25);
+    ctx.globalAlpha = (lg.dim || 1) * Math.min(1, lg.age / 0.25);
     // 그림자
     ctx.fillStyle = 'rgba(91,127,166,.22)';
     ctx.beginPath(); ctx.ellipse(base.x, base.y, (Rr.x - L.x) / 2 + r, r * 0.45, 0, 0, Math.PI * 2); ctx.fill();

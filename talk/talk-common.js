@@ -14,26 +14,68 @@
   function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); }
 
   // ---- 음성: 영어 문장을 읽어줘요 ----
-  var voice = null;
+  var voice = null, voices = { m: [], f: [], all: [] };
+  // 목소리 이름으로 남자 / 여자를 가려요 (윈도우 · 맥 · 안드로이드 · 크롬 목소리 이름)
+  var MALE_RE = /\b(male|man|david|mark|guy|davis|tony|jason|eric|roger|steffan|christopher|andrew|brian|ryan|thomas|alex|fred|daniel|aaron|arthur|oliver|rishi|gordon|lee|reed|rocko|grandpa|eddy|ralph|junior)\b|en-us-x-(iom|iol|tpd)/i;
+  var FEMALE_RE = /\b(female|woman|zira|aria|jenny|michelle|ana|emma|ava|sara|nancy|jane|amber|ashley|cora|elizabeth|monica|libby|sonia|samantha|victoria|karen|moira|tessa|fiona|allison|susan|serena|kate|nicky|zoe|joelle|flo|sandy|shelley|grandma|catherine|hazel|susan|google us english)\b|en-us-x-(sfg|tpf|tpc)/i;
   function pickVoice() {
     if (!window.speechSynthesis) return;
     var vs = speechSynthesis.getVoices();
-    voice = vs.filter(function (v) { return /^en[-_]US/i.test(v.lang); })[0] || vs.filter(function (v) { return /^en/i.test(v.lang); })[0] || null;
+    var en = vs.filter(function (v) { return /^en[-_]US/i.test(v.lang); });
+    if (!en.length) en = vs.filter(function (v) { return /^en/i.test(v.lang); });
+    voice = en[0] || null;
+    // 자연스러운(Natural · Online · Google) 목소리를 먼저
+    var good = function (v) { return /natural|online|neural|google|enhanced|premium/i.test(v.name) ? 0 : 1; };
+    en = en.slice().sort(function (a, b) { return good(a) - good(b); });
+    voices.all = en;
+    voices.m = en.filter(function (v) { return MALE_RE.test(v.name) && !FEMALE_RE.test(v.name.replace(/google us english/i, "")); });
+    voices.f = en.filter(function (v) { return FEMALE_RE.test(v.name) && !MALE_RE.test(v.name); });
+  }
+  // 그림(이모지)과 이름으로 남자 · 여자를 정해요. 모르면 이름으로 늘 같은 쪽을 골라요
+  function genderOf(emoji, name) {
+    var e = String(emoji || ""), n = String(name || "");
+    if (/♀|👩|👧|👵|🤱|💁(?!‍♂)|👸|🧕|🙋‍♀|💃/.test(e)) return "f";
+    if (/♂|👨|👦|👴|🧔|🤵|👮(?!‍♀)|🎅|🤴|🕺/.test(e)) return "m";
+    if (/엄마|언니|누나|할머니|아주머니|이모|고모|여자|아기 엄마|여동생|공주/.test(n)) return "f";
+    if (/아빠|형|오빠|할아버지|아저씨|삼촌|남자|남동생|왕자/.test(n)) return "m";
+    var h = 0; for (var i = 0; i < n.length; i++) h = (h * 31 + n.charCodeAt(i)) | 0;
+    return (h & 1) ? "f" : "m";
+  }
+  // who: "m" · "f" (상대방) / "me" (내가 고른 대답: 상대방과 다른 목소리, 조금 높게 아이처럼)
+  var lastNpc = "f";
+  function voiceFor(who) {
+    var g = who === "me" ? (lastNpc === "m" ? "f" : "m") : who;
+    if (who === "m" || who === "f") lastNpc = who;
+    var list = voices[g] && voices[g].length ? voices[g] : voices.all;
+    var v = list[0] || voice;
+    // 내 목소리: 상대방과 같은 목소리가 걸리면 다른 목소리로
+    if (who === "me") {
+      var npcV = (voices[lastNpc] && voices[lastNpc][0]) || voice;
+      if (v === npcV) v = voices.all.filter(function (x) { return x !== npcV; })[0] || v;
+    }
+    // 같은 성별 목소리가 없으면 높낮이로 구분해요
+    var hasG = !!(voices[g] && voices[g].length);
+    var pitch = who === "me" ? 1.35 : g === "m" ? (hasG ? 0.95 : 0.7) : (hasG ? 1.1 : 1.3);
+    return { v: v, pitch: pitch };
+  }
+  function makeUtter(text, who) {
+    var u = new SpeechSynthesisUtterance(text);
+    u.lang = "en-US"; u.rate = who === "me" ? 0.95 : 0.88; u.pitch = 1.05;
+    if (who) { var vf = voiceFor(who); if (vf.v) u.voice = vf.v; u.pitch = vf.pitch; }
+    else if (voice) u.voice = voice;
+    return u;
   }
   if (window.speechSynthesis) { pickVoice(); speechSynthesis.onvoiceschanged = pickVoice; }
-  function speak(text) {
+  function speak(text, who) {
     try {
       if (!window.speechSynthesis || !text) return;
       if (window.GuideBook && GuideBook.isOpen()) return;
       speechSynthesis.cancel();
-      var u = new SpeechSynthesisUtterance(text);
-      u.lang = "en-US"; u.rate = 0.88; u.pitch = 1.05;
-      if (voice) u.voice = voice;
-      speechSynthesis.speak(u);
+      speechSynthesis.speak(makeUtter(text, who));
     } catch (e) { /* 음성을 못 쓰는 브라우저 */ }
   }
   // 읽어 주고 나서 다음으로: 소리가 다 끝난 뒤(최소 minMs) cb 를 불러요. 음성이 없거나 안 끝나면 글 길이만큼 기다려요
-  function speakThen(text, cb, minMs) {
+  function speakThen(text, cb, minMs, who) {
     var t0 = Date.now(), done = false;
     function go() { if (done) return; done = true; var wait = Math.max(0, (minMs || 0) - (Date.now() - t0)); setTimeout(cb, wait + 250); }
     var guess = 900 + String(text || "").length * 85;   // 소리가 끝났다는 신호가 안 오면 이만큼 뒤에
@@ -41,9 +83,7 @@
     try {
       if (!window.speechSynthesis || !text || (window.GuideBook && GuideBook.isOpen())) { setTimeout(go, Math.max(minMs || 0, guess * 0.6)); return; }
       speechSynthesis.cancel();
-      var u = new SpeechSynthesisUtterance(text);
-      u.lang = "en-US"; u.rate = 0.88; u.pitch = 1.05;
-      if (voice) u.voice = voice;
+      var u = makeUtter(text, who);
       u.onend = go; u.onerror = go;
       speechSynthesis.speak(u);
     } catch (e) { setTimeout(go, minMs || 900); }
@@ -253,6 +293,7 @@
     shuffle: shuffle,
     speak: speak,
     speakThen: speakThen,
+    genderOf: genderOf,
     stopSpeak: stopSpeak,
     sfx: sfx,
     floatText: floatText,
@@ -282,13 +323,13 @@
     // 게임 위쪽 안내 한 줄
     msg: function (html) { var m = $("#talk-msg"); if (m) m.innerHTML = html; },
     // 회화 문장을 읽어주는 🔊 버튼
-    sayButton: function (getText) {
+    sayButton: function (getText, who) {
       var b = document.createElement("button");
       b.type = "button";
       b.className = "talk-say";
       b.title = "다시 듣기";
       b.textContent = "🔊";
-      b.addEventListener("click", function (e) { e.stopPropagation(); speak(getText()); });
+      b.addEventListener("click", function (e) { e.stopPropagation(); speak(getText(), typeof who === "function" ? who() : who); });
       return b;
     },
     // 🎤 말해서 대답하기 버튼 — getOptions(): 지금 고를 수 있는 보기 글자들, onPick(i, 들은 말): 알아들은 보기 번호

@@ -111,8 +111,8 @@
     <!-- 시작 / 끝 / 오류 안내 -->
     <div class="center-card" id="intro">
       <div class="big">🎭</div>
-      <h2>오늘의 상황극</h2>
-      <p>AI 선생님이 매일 새로운 상황극을 내 줘요.<br>🎤 를 누르고 <b>영어로 직접 말해요!</b><br><small>대화가 끝나면 선생님이 오늘 대화를 정리해서 들려줘요</small></p>
+      <h2>오늘의 영어 대화</h2>
+      <p>AI 선생님이 매일 새로운 이야기로 말을 걸어요.<br>🎤 를 누르고 <b>영어로 직접 말해요!</b><br><small>대화가 끝나면 선생님이 오늘 대화를 정리해서 들려줘요</small></p>
       <button class="go-btn" id="btn-start" type="button">시작하기 ▶</button>
     </div>
 
@@ -124,7 +124,7 @@
 
     <div class="center-card hidden" id="wrap">
       <div class="big">🏆</div>
-      <h2>오늘의 상황극 끝!</h2>
+      <h2>오늘의 대화 끝!</h2>
       <button class="go-btn brief-play" id="btn-brief" type="button">🔊 선생님 브리핑 듣기</button>
       <div class="brief-msg" id="brief-msg"></div>
       <div class="brief" id="wrap-summary"></div>
@@ -134,7 +134,7 @@
       <div class="phrases" id="wrap-phrases"></div>
       <div class="key-row" style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap">
         <button class="go-btn ghost" id="btn-review" type="button">대화 다시 보기</button>
-        <button class="go-btn" id="btn-more" type="button">새 상황극 하나 더 ▶</button>
+        <button class="go-btn" id="btn-more" type="button">새 대화 하나 더 ▶</button>
       </div>
     </div>
   </div>
@@ -274,7 +274,7 @@
   function renderAll() {
     chat.innerHTML = "";
     $("sc-emoji").textContent = S.scene.emoji || "🎭";
-    $("sc-title").innerHTML = esc(S.scene.title || "오늘의 상황극") + ' <span class="lv">Lv.' + (S.level || level()) + "</span>";
+    $("sc-title").innerHTML = esc(S.scene.title || "오늘의 영어 대화") + ' <span class="lv">Lv.' + (S.level || level()) + "</span>";
     $("sc-text").textContent = S.scene.scene || "";
     S.turns.forEach(function (t) { if (t.me) addMe(t.me); else { if (t.fixFor) addFix(t.ai); addAi(t.ai); } });
     var lastAi = null;
@@ -306,7 +306,7 @@
     show("intro", false); show("wrap", false);
     show("scene", true); show("chat", true); show("dock", true);
     chat.innerHTML = "";
-    $("sc-title").textContent = "AI 가 오늘의 상황을 고르는 중…"; $("sc-text").textContent = ""; $("sc-emoji").textContent = "🎲";
+    $("sc-title").textContent = "오늘 이야기할 주제를 고르는 중…"; $("sc-text").textContent = ""; $("sc-emoji").textContent = "🎲";
     setBusy(true);
     TalkAI.call({ action: "start", password: pw(), date: today(), recent: load(RECENT, []), level: level() }).then(function (r) {
       if (!r.turn) return fail(r);
@@ -461,7 +461,7 @@
   function sendTyped() { var v = $("type-input").value; if (v.trim()) { $("type-input").value = ""; send(v); } }
   $("btn-send").addEventListener("click", sendTyped);
   $("type-input").addEventListener("keydown", function (e) { if (e.key === "Enter" && !e.isComposing) sendTyped(); });
-  $("btn-end").addEventListener("click", function () { if (!busy && S && confirm("오늘 상황극을 여기서 마칠까요?")) finish(); });
+  $("btn-end").addEventListener("click", function () { if (!busy && S && confirm("오늘 대화를 여기서 마칠까요?")) finish(); });
   $("btn-start").addEventListener("click", start);
   $("btn-more").addEventListener("click", function () { if (briefAudio) { briefAudio.pause(); briefState(false); } start(); });
   $("btn-review").addEventListener("click", function () { show("wrap", false); show("scene", true); show("chat", true); renderAll(); var b = $("btn-back-wrap"); if (!b) { b = document.createElement("button"); b.id = "btn-back-wrap"; b.className = "go-btn ghost"; b.style.alignSelf = "center"; b.textContent = "← 정리 화면으로"; b.addEventListener("click", function () { b.remove(); showWrap(); }); } chat.appendChild(b); scrollDown(); });

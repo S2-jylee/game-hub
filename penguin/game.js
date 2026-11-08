@@ -640,9 +640,14 @@
     const far = run.gates.filter(gt => gt.z >= 0).sort((a, b) => b.z - a.z);
     const near = run.gates.filter(gt => gt.z < 0);
     if (run.goal) drawIgloo(g, run.goal.z, t);
-    // 먼 것부터 그려요: 허들 너머 통나무는 허들(정답 표지판) 뒤에 가려져요
-    far.map(gt => ({ z: gt.z, gt })).concat(run.logs.filter(lg => lg.z >= 0).map(lg => ({ z: lg.z, lg })))
-      .sort((p, q) => q.z - p.z).forEach(o => o.gt ? drawGate(g, o.gt) : drawLog(g, o.lg));
+    // 허들(정답 표지판)을 먼저 그리고 통나무를 그 위에: 허들 너머 통나무도 멀리서부터 보이게 하되,
+    // 아직 허들 뒤에 있는 통나무는 반투명으로 그려서 정답 글자를 가리지 않아요
+    far.forEach(gt => drawGate(g, gt));
+    const gateZ = far.length ? Math.min(...far.map(gt => gt.z)) : Infinity;
+    run.logs.filter(lg => lg.z >= 0).sort((p, q) => q.z - p.z).forEach(lg => {
+      lg.dim = lg.z > gateZ ? 0.45 : 1;
+      drawLog(g, lg);
+    });
     run.fish.filter(fs => fs.z >= 0).forEach(fs => drawFish(g, fs));
     drawPenguin(g, t);
     run.logs.filter(lg => lg.z < 0).forEach(lg => drawLog(g, lg));
@@ -746,7 +751,7 @@
     if (base.s <= 0) return;
     const r = Math.max(2, rad * g.R * base.s);
     ctx.save();
-    ctx.globalAlpha = Math.min(1, lg.age / 0.25);
+    ctx.globalAlpha = (lg.dim || 1) * Math.min(1, lg.age / 0.25);
     // 그림자
     ctx.fillStyle = 'rgba(91,127,166,.22)';
     ctx.beginPath(); ctx.ellipse(base.x, base.y, (Rr.x - L.x) / 2 + r, r * 0.45, 0, 0, Math.PI * 2); ctx.fill();

@@ -344,23 +344,38 @@
   const GEM = { e: "💎", pts: 3 }, CROWN = { e: "👑", pts: 15 }, HEART = { e: "❤️", heart: true }, STAR = { e: "⭐", pts: 10, big: true };
   // 꽃 기둥 하나가 나올 때, 그 기둥과 다음 기둥 사이에 보석 줄을 하나 놓아요
   function spawnArc(x0) {
-    // 보석 간격은 보석 크기에 맞춰 촘촘하게 (시작점과 끝점이 너무 멀어지지 않게)
-    const gemPx = Math.max(32, Math.min(G.W, G.H) * 0.085) * 0.7;
-    const n = 5 + Math.floor(Math.random() * 2), gap = Math.min(0.05, gemPx * 1.2 / Math.max(1, G.W));
+    // 보석은 곡선을 따라 같은 간격으로 놓아요 (아치 · 골짜기 · 일자 모두 보석 사이 거리가 같게)
+    const W = Math.max(1, G.W), H = Math.max(1, G.H);
+    const gemPx = Math.max(32, Math.min(W, H) * 0.085) * 0.7;
+    const n = 5 + Math.floor(Math.random() * 2), d = gemPx * 1.25, total = (n - 1) * d;
     const shape = ["arch", "arch", "valley", "line"][Math.floor(Math.random() * 4)];
-    const h = 0.1 + Math.random() * 0.08;
+    const sign = shape === "arch" ? -1 : shape === "valley" ? 1 : 0;
+    const hPx = sign ? Math.min((0.1 + Math.random() * 0.08) * H, total * 0.3) : 0;
     const base = shape === "valley" ? 0.2 + Math.random() * 0.25 : 0.45 + Math.random() * 0.3;
+    // 곡선 길이가 total 이 되도록 가로 폭 L 을 맞춰요
+    const curve = (L, t) => [t * L, sign * hPx * 4 * t * (1 - t)];
+    const lenOf = L => { let len = 0, prev = curve(L, 0); for (let i = 1; i <= 80; i++) { const c = curve(L, i / 80); len += Math.hypot(c[0] - prev[0], c[1] - prev[1]); prev = c; } return len; };
+    let L = total;
+    for (let it = 0; it < 8; it++) L *= total / Math.max(1, lenOf(L));
+    // 곡선을 잘게 나눠 길이 k*d 인 곳마다 하나씩
+    const pts = [], STEPS = 240;
+    let acc = 0, prev = curve(L, 0), want = 0;
+    pts.push(prev);
+    for (let i = 1; i <= STEPS && pts.length < n; i++) {
+      const c = curve(L, i / STEPS), seg = Math.hypot(c[0] - prev[0], c[1] - prev[1]);
+      acc += seg; prev = c;
+      if (acc >= (want + d) - 0.5) { want += d; pts.push(c); }
+    }
+    while (pts.length < n) pts.push(curve(L, 1));
     const mid = Math.floor((n - 1) / 2);
     const withHeart = G.lives < LIVES && Math.random() < 0.45;
     const withCrown = !withHeart && Math.random() < 0.15;
-    for (let k = 0; k < n; k++) {
-      const t = n === 1 ? 0.5 : k / (n - 1), bump = 4 * t * (1 - t);
-      const y = shape === "arch" ? base - h * bump : shape === "valley" ? base + h * bump : base;
+    pts.forEach((pt, k) => {
       let kind = GEM;
       if (k === mid && withHeart) kind = HEART;
       else if (k === mid && withCrown) kind = CROWN;
-      G.gems.push({ kind, x: x0 + k * gap, y: Math.max(0.08, Math.min(0.82, y)), fly: false, spin: k * 0.7, got: 0 });
-    }
+      G.gems.push({ kind, x: x0 + pt[0] / W, y: Math.max(0.08, Math.min(0.82, base + pt[1] / H)), fly: false, spin: k * 0.7, got: 0 });
+    });
   }
   function spawnStar() {
     G.gems.push({ kind: STAR, x: 1.05, y: 0.84 + Math.random() * 0.06, fly: true,

@@ -44,41 +44,39 @@ const LEVELS: Record<number, string> = {
   5: "Level 5: natural but still child-friendly English, 1-2 sentences, present/past/future (I will ~). Encourage longer answers with because. Example answers of 5-12 words.",
 };
 
+// 아이 이름 (영어로 부를 때 / 한국어 브리핑에서)
+const CHILD_EN = "Iji", CHILD_KO = "이지";
+
+// 대화 방식: 부모님이 녹화해 둔 대화(공원 이야기)와 같게
+//  - 친구 같은 선생님이 아이 이름을 부르며 그날의 일상 주제로 말을 걸어요
+//  - 아이가 한 말을 받아 짧게 맞장구치고, 고를 수 있는 보기를 붙여 다음 질문을 해요
+//  - 대화 중에는 고치지 않고 영어로만 이어가다가, 끝나면 한국어로 선생님 브리핑
 function systemFor(level: number) {
-  return `You are a warm, playful English conversation partner and teacher for a Korean elementary-school child (2nd grade, about 8 years old). Every day you run a NEW role-play situation, and the child talks to you through a microphone. Speech recognition turns the child's voice into text, so expect missing punctuation and small recognition mistakes — guess the intended meaning generously and never comment on spelling or punctuation.
+  return `You are a warm, cheerful English-speaking friend and teacher talking with ${CHILD_EN}, a Korean 2nd-grade child (about 8 years old), through a microphone. Speech recognition turns the child's voice into text, so expect missing punctuation, recognition mistakes, Korean-accented spellings and Korean words mixed in (e.g. "아이 고투더 파 with family" means "I go to the park with family") — understand the meaning generously and never comment on spelling or punctuation.
 
 Today's difficulty — follow it closely:
 ${LEVELS[level] ?? LEVELS[1]}
-Within one scene you may get a little harder toward the end if the child is doing well, but never jump far above today's level.
 
-During the role-play you speak ONLY ENGLISH in "say" — never Korean, never explanations in Korean, never stop to teach. Just keep the conversation flowing naturally like a real friend in the scene.
-
-Make it a real conversation (most important):
-- Do NOT ask questions that can only be answered with "yes", "no", "please" or "thank you". Prefer open questions the child can answer in their own way: What ...? Which ...? Where ...? How many ...? What do you like ...? Tell me about ... . Why ...? (At level 1 a simple choice question like "Red or blue?" is fine now and then.)
-- React to what the child actually said with interest (repeat a word they used, add a small fun detail), then move the story forward with something new happening (a surprise, a problem to solve, a new person or thing, a choice to make).
-- Vary your questions — never ask the same kind of question twice in a row.
-
-When the child answers:
-- If the answer fits your question and the scene (short answers are fine at low levels): set "retry" false and continue the role-play in "say".
-- If the answer does not fit your question, is unclear, unrelated, or in Korean: set "retry" true and, in English only, say kindly that the answer doesn't seem to fit and ask again, e.g. "Hmm, I don't think that answers my question. Can you answer one more time?" then repeat your question in simpler words. Do not move the story forward.
-- If you already used "retry" on the same question once, do not ask a third time: say in English "You can say, '...'." with a simple good answer, set "retry" false, and continue.
-
-Role-play rules:
-- You play a friendly character in a simple, familiar, cheerful scene a young child knows (ice cream shop, fruit market, pet shop, toy store, playground, birthday party, zoo, bakery, picnic, rainy day at home, classroom, doctor, bus, beach, space trip, camping, etc.). The child plays the other role.
-- Keep "say" short for today's level and end each line with ONE clear question.
-- Aim for about 10-12 exchanges, then say a kind goodbye (set "end" to true on that line).
-- "ko" is a natural Korean translation of your "say" line (shown only if the child taps a button; it is never spoken).
-- "example" is one natural English sentence the child could say next (matching today's level, and not just "Yes, please"); "example_ko" is its Korean meaning. Both empty when "end" is true.
-- Content must always be safe and kind for young children. If the child says something unkind, unsafe or off-topic, gently steer back to the scene.`;
+How the conversation goes (follow this style exactly):
+- Each day pick ONE everyday topic a child knows (the park, the playground, favorite food, ice cream, school, the weekend, pets, toys, the weather, a birthday, family, summer vacation, the zoo, the beach, snow, drawing, books, sports, etc.). It is a friendly chat about the child's own life and likes — not an acted shop scene.
+- First line: greet the child by name and open the topic simply, e.g. "Hi, ${CHILD_EN}! It's a nice day today. Do you like the park?"
+- Every next line has the same shape: (1) a short, happy reaction that repeats the child's own word ("Oh, swing!", "Wow, with mom, and grandma too!"), (2) one short friendly comment of your own ("I like swing too. It goes up and down, so fun!"), (3) ONE follow-up question that offers 2-3 easy choices the child can pick from or copy ("What do you like to do there? Do you like to walk, or play?", "What do you play at the park? Like, soccer, or swing?", "Who goes with you? Mom, dad, or a sister or brother?").
+- Keep every line short and simple, like talking to a young child. Use the child's name now and then.
+- Speak ONLY ENGLISH in "say". Never explain or correct in Korean during the chat, never stop to teach grammar — accept imperfect answers ("I like swing", "with mom and grandma") and keep the conversation going. Save all corrections for the briefing at the end.
+- Only if the answer has nothing to do with your question (or is all Korean): set "retry" true and kindly ask again in English, e.g. "Hmm, I don't think that answers my question. Can you answer one more time?" and repeat your question with its choices. If you already asked again once for the same question, say "You can say, '...'." and continue.
+- After about 5-6 answers from the child, close warmly in English and set "end" true, e.g. "Okay, ${CHILD_EN}, I have to go home now. Thank you for playing with me. Bye!"
+- "ko" is a natural Korean translation of your "say" line (shown only if the child taps a button; never spoken).
+- "example" is one natural English sentence the child could answer with (at today's level); "example_ko" is its Korean meaning. Both empty when "end" is true.
+- Content must always be safe and kind for young children. If the child says something unkind, unsafe or off-topic, gently steer back to the topic.`;
 }
 
 const TURN_SCHEMA = {
   type: "object",
   properties: {
-    title: { type: "string", description: "Korean title of today's scene (start only, else empty)" },
-    scene: { type: "string", description: "1-2 Korean sentences telling the child the situation and who they are (start only, else empty)" },
-    emoji: { type: "string", description: "one emoji for your character (start only, else empty)" },
-    role: { type: "string", description: "your character's short English name, e.g. Zookeeper Sam (start only, else empty)" },
+    title: { type: "string", description: "short Korean title of today's topic, e.g. 공원 이야기 (start only, else empty)" },
+    scene: { type: "string", description: "1 Korean sentence telling the child what you will talk about today (start only, else empty)" },
+    emoji: { type: "string", description: "one emoji for today's topic (start only, else empty)" },
+    role: { type: "string", description: "your short English name as the child's friend-teacher, e.g. Teacher Amy (start only, else empty)" },
     say: { type: "string", description: "your line, English only" },
     ko: { type: "string", description: "Korean translation of say" },
     example: { type: "string", description: "an English sentence the child could say next" },
@@ -119,7 +117,9 @@ const WRAP_SCHEMA = {
   additionalProperties: false,
 };
 
-const WRAP_NOTE = `(The role-play is over. Now step out of character and become the child's kind TEACHER. Write "briefing": a spoken briefing in natural, warm Korean for an 8-year-old, about 6-9 short sentences, that will be read aloud by a voice. Recap what happened in today's conversation, praise one or two specific things the child said well, then go over the moments where the child's answer did not fit (say the better English sentence, then what it means in Korean), teach the 2-3 most useful expressions from today, and finish with an encouraging line. English sentences may appear inside the Korean. Plain sentences only: no emojis, no lists, no markdown. Also fill "phrases" and "fixes" (fixes may be empty if every answer fit).)`;
+const WRAP_NOTE = `(The chat is over. Now become ${CHILD_KO}'s kind TEACHER and write "briefing": a spoken briefing in warm, natural Korean that will be read aloud, in exactly this shape:
+"자, 이번 대화도 마무리할게요. 한국어로 설명해 드릴게요." → "먼저 정말 잘했어요, ${CHILD_KO}!" plus one or two specific things the child did well → "고칠 부분은 N가지예요." then "첫째, ... 둘째, ..." — for each, quote what the child said and the better English ("'I like swing'은 'I like the swing'이나 'I like to swing'이 더 자연스러워요.") with a very short, easy reason (e.g. 그네는 하나씩 있는 물건이라 앞에 the를 붙여요 / my를 넣어 주세요 / 문장으로 말하면 더 완벽해요). Use 1-3 points, only real ones; if everything was good, say so. → "오늘의 핵심 문장은 '...'예요. 다음에 한 번 더 해 볼까요?"
+Plain sentences only: no emojis, no lists, no markdown. Also fill "fixes" with the same corrections (said / better / Korean meaning) and "phrases" with 2-4 key sentences from today (the key sentence first).)`;
 
 type Msg = { role: "user" | "assistant"; content: string };
 
@@ -147,10 +147,13 @@ async function ask(messages: Msg[], schema: unknown, level: number) {
     });
     if (res.status === 400) { lastErr = await res.text(); console.warn("gemini 400, retrying simpler config:", lastErr.slice(0, 300)); vi++; continue; }
     if (res.status === 429 || res.status === 503 || res.status === 500) {
-      console.warn("gemini busy", models[mi], res.status);
+      const errText = (await res.text()).slice(0, 600);
+      console.warn("gemini busy", models[mi], res.status, errText.replace(/\s+/g, " ").slice(0, 400));
+      // 오늘 쓸 수 있는 양을 다 쓴 경우(quota)는 기다려도 소용없으니 바로 다른 모델로
+      const quota = res.status === 429 && /quota|PerDay|RESOURCE_EXHAUSTED/i.test(errText);
       busyTries++;
-      if (busyTries % 2 === 1) { await new Promise((r) => setTimeout(r, 1200)); continue; }
-      if (mi + 1 < models.length) { mi++; continue; }
+      if (!quota && busyTries % 2 === 1) { await new Promise((r) => setTimeout(r, 1200)); continue; }
+      if (mi + 1 < models.length) { mi++; busyTries = 0; continue; }
       throw Object.assign(new Error("busy"), { status: 429 });
     }
     if (!res.ok) throw Object.assign(new Error("gemini " + res.status + " " + (await res.text()).slice(0, 300)), { status: res.status });
@@ -259,9 +262,9 @@ Deno.serve(async (req) => {
   try {
     if (body.action === "start") {
       const kickoff =
-        `Today is ${today}. Choose today's role-play scene yourself — simple, familiar and fun, at today's level.` +
-        (recent.length ? ` Do NOT repeat these recent scenes: ${recent.map((t) => t.slice(0, 60)).join(" / ")}.` : "") +
-        ` Fill title, scene, emoji and role, then say your first line in character.`;
+        `Today is ${today}. Choose today's everyday topic yourself — simple, familiar and fun, at today's level.` +
+        (recent.length ? ` Do NOT repeat these recent topics: ${recent.map((t) => t.slice(0, 60)).join(" / ")}.` : "") +
+        ` Fill title, scene, emoji and role, then say your first line (greet ${CHILD_EN} by name).`;
       const out = await ask([{ role: "user", content: kickoff }], TURN_SCHEMA, level);
       if (!out) return json({ error: "refused" }, 200, origin);
       return json({ turn: fillTurn(out), kickoff }, 200, origin);
