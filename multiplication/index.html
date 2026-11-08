@@ -884,12 +884,16 @@ button{font-family:inherit;font-weight:inherit;color:inherit;cursor:pointer;bord
   }
 
   // 펭귄 달리기 조작 방법 (휴대폰): 한손 = ◀ ▶ 오른쪽 아래에 나란히 / 양손 = 화면 양쪽 끝에 (기본)
-  function getHand() { try { return localStorage.getItem('penguin_hand') === 'one' ? 'one' : 'two'; } catch (e) { return 'two'; } }
-  function setHand(v) { try { localStorage.setItem('penguin_hand', v); } catch (e) { /* 저장 못 해도 괜찮아요 */ } }
+  // 외계인 디펜스도 같은 방법으로 골라요 (양손 = ◀ ▶ 양쪽 끝 + 옆에 쏘기 버튼 / 한손 = 가운데에 ◀ 쏘기 ▶)
+  const handKey = () => setupGame.mode === 'alien' ? 'alien_hand' : 'penguin_hand';
+  function getHand() { try { return localStorage.getItem(handKey()) === 'one' ? 'one' : 'two'; } catch (e) { return 'two'; } }
+  function setHand(v) { try { localStorage.setItem(handKey(), v); } catch (e) { /* 저장 못 해도 괜찮아요 */ } }
   function renderHand() {
-    $('#handWrap').classList.toggle('hidden', setupGame.mode !== 'penguin');
+    $('#handWrap').classList.toggle('hidden', setupGame.mode !== 'penguin' && setupGame.mode !== 'alien');
     const g = $('#handGrid'); g.innerHTML = '';
-    [['two', '양손 조작', '◀ ▶ 버튼이 양쪽 끝에'], ['one', '한손 조작', '◀ ▶ 버튼이 오른쪽 아래에']].forEach(([v, name, desc]) => {
+    (setupGame.mode === 'alien'
+      ? [['two', '양손 조작', '◀ ▶ 양쪽 끝, 옆에 쏘기'], ['one', '한손 조작', '가운데에 ◀ 쏘기 ▶']]
+      : [['two', '양손 조작', '◀ ▶ 버튼이 양쪽 끝에'], ['one', '한손 조작', '◀ ▶ 버튼이 오른쪽 아래에']]).forEach(([v, name, desc]) => {
       const b = document.createElement('button');
       b.className = 'diff' + (getHand() === v ? ' on' : '');
       b.innerHTML = `<b>${name}</b><small>${desc}</small>`;

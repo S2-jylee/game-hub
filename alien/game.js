@@ -1,6 +1,6 @@
 // 👾 외계인 단어 디펜스: 단어를 머리 위에 단 외계인들이 천천히 내려와요.
 // 미션에 맞는 단어(예: 동사)를 단 외계인만 대포로 쏴요. 다른 외계인은 방어벽이 흡수해요.
-// ← → 로 대포를 옮기고 스페이스·엔터로 쏴요. 태블릿은 화면을 톡 누르면 그곳으로 가서 쏴요.
+// ← → 로 대포를 옮기고 스페이스·엔터로 쏴요. 태블릿·휴대폰은 화면 아래 ◀ ▶ · 쏘기 버튼으로만 움직여요.
 // 구구단 놀이터에서 열면(?mul=1) 위에 나온 구구단의 정답 숫자를 단 외계인을 쏴요.
 // 하트가 줄어 있으면 가끔 💖 하트 풍선이 내려와요. 쏘면 하트 +1!
 (function () {
@@ -155,7 +155,7 @@
       pages: [
         { icon: "👾", title: "외계인이 내려와요", text: MATH ? "외계인들이 <b>숫자</b>를 머리 위에 달고<br>천천히 내려와요." : "귀여운 외계인들이 <b>영어 단어</b>를 머리 위에 달고<br>천천히 내려와요." },
         { icon: "🎯", title: "미션을 봐요", text: MATH ? "위에 나온 <b>구구단의 정답</b> 숫자를 단 외계인만 쏴요!<br>예) 6 × 7 → <b>42</b>" : "위에 나온 <b>미션</b>에 맞는 단어만 쏴요!<br>예) 동사 미션 → <b>run, jump</b> 는 쏘고, <b>book</b> 은 그냥 둬요." },
-        { icon: "⬅️➡️", title: "대포 쏘기", text: "<b>← →</b> 로 대포를 옮기고 <b>스페이스바</b>(또는 엔터)로 쏴요.<br>태블릿은 외계인을 <b>톡</b> 누르면 그쪽으로 가서 쏴요." },
+        { icon: "⬅️➡️", title: "대포 쏘기", text: "<b>← →</b> 로 대포를 옮기고 <b>스페이스바</b>(또는 엔터)로 쏴요.<br>태블릿·휴대폰은 화면 아래 <b>◀ ▶</b> 버튼으로 옮기고 <b>🔥 쏘기</b> 버튼으로 쏴요." },
         { icon: "🛡️", title: "방어벽", text: "다른 외계인은 쏘지 말고 두면 <b>방어벽</b>이 흡수해요.<br>잘못 쏘거나, 맞는 외계인을 놓치면 ❤️ 하트가 하나 줄어요." },
         { icon: "💖", title: "하트 풍선", text: "하트가 줄어 있으면 가끔 <b>💖 하트 풍선</b>이 내려와요.<br>쏘면 <b>❤️ 하트 +1</b>!" },
         { icon: "🏆", title: GOAL + "마리 물리치기", text: "맞는 외계인을 <b>" + GOAL + "마리</b> 물리치면 지구를 지켜요!<br>한 마리에 <b>+10점</b>, 연속이면 더!" }
@@ -625,15 +625,11 @@
   });
   document.addEventListener("keyup", e => { if (KEYS[e.key]) G.keys[KEYS[e.key]] = false; });
   window.addEventListener("blur", () => { G.keys.l = G.keys.r = false; });
-  // 화면을 톡: 그 자리로 대포가 가서 쏴요 (외계인을 누르면 그 외계인 쪽으로)
-  $("#field").addEventListener("pointerdown", e => {
-    if (!G.active || e.target.closest(".shoot-pad")) return;
-    const r = canvas.getBoundingClientRect(), px = e.clientX - r.left, py = e.clientY - r.top;
-    let tx = px;
-    G.aliens.forEach(a => { if (!a.dead && Math.abs((a.drawX || a.x * G.W) - px) < a.r * 1.4 && py > a.y - a.r * 3 && py < a.y + a.r * 1.2) tx = a.drawX || a.x * G.W; });
-    G.target = Math.max(0.05, Math.min(0.95, tx / G.W));
-    G.autoFire = true;
-  });
+  // 대포는 ◀ ▶ 버튼(방향키)으로만 움직여요. 화면을 눌러도 움직이지 않아요
+  // 조작 방법: 설정 창에서 고른 한손 · 양손 (기본 양손)
+  const applyHand = () => { try { document.body.classList.toggle("hand-one", localStorage.getItem("alien_hand") === "one"); } catch (e) { /* 기본: 양손 */ } };
+  applyHand();
+  window.addEventListener("pageshow", applyHand);
   document.querySelectorAll(".sp").forEach(b => {
     const act = b.dataset.act;
     b.addEventListener("pointerdown", e => {

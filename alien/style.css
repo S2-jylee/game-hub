@@ -55,3 +55,14 @@ html, body { background: linear-gradient(#e9e3ff, #fff8fb 70%); }
 
 /* 방향(발사) 버튼: 게임판 아래 가운데로 */
 .shoot-pad { right: auto; left: 50%; transform: translateX(-50%); }
+
+/* ---- 조작 방법 (설정 창에서 고름) ----
+   양손(기본): ◀ 는 왼쪽 끝, ▶ 는 오른쪽 끝 (펭귄 달리기와 같은 자리), 쏘기 버튼은 양쪽 방향키 옆에 하나씩
+   한손: 가운데 아래에 ◀ 쏘기 ▶ 나란히 */
+.shoot-pad .sp-fire-l, .shoot-pad .sp-fire-r { display: none; }
+body:not(.hand-one) .shoot-pad { left: 32px; right: 32px; transform: none; justify-content: space-between; }
+body:not(.hand-one) .shoot-pad .sp-fire-c { display: none; }
+body:not(.hand-one) .shoot-pad .sp-fire-l, body:not(.hand-one) .shoot-pad .sp-fire-r { display: flex; }
+body:not(.hand-one) .shoot-pad .sp-fire-r { margin-left: auto; }
+@media (max-width: 380px) { body:not(.hand-one) .shoot-pad { left: 12px; right: 12px; } }
+.field { cursor: default; }
