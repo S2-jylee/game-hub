@@ -1,0 +1,13 @@
+{
+  "name": "게임 플레이 존",
+  "short_name": "게임허브",
+  "start_url": "./",
+  "scope": "./",
+  "display": "browser",
+  "background_color": "#fffdf5",
+  "theme_color": "#7c3aed",
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png" }
+  ]
+}

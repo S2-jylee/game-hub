@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-<link rel="icon" href="data:,">
+<link rel="icon" type="image/png" sizes="48x48" href="../icons/favicon-48.png"><link rel="icon" type="image/png" sizes="32x32" href="../icons/favicon-32.png"><link rel="apple-touch-icon" href="../icons/apple-touch-icon.png"><link rel="manifest" href="../manifest.webmanifest">
 <title>구구단 놀이터</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -1391,7 +1391,7 @@ button{font-family:inherit;font-weight:inherit;color:inherit;cursor:pointer;bord
     run.gates.push({ z: Z_SPAWN, vals: makeChoices(a, b, 3), ans: a * b, done: false, pick: -1, ok: false });
     run.flags = run.flags.filter(fl => Math.abs(fl.z - Z_SPAWN) > run.speed * 1.0);   // 정답 허들 자리의 깃발은 치워요
     // 이 허들 뒤(다음 허들 전)에 굴러올 통나무를 지금 미리 놓아요 → 정답 허들 너머로 멀리서부터 보여요
-    if (state.i + 1 < state.total) maybeLog(0.9, Z_SPAWN);
+    if (state.i + 1 < state.total) { maybeLog(0.9, Z_SPAWN); placeFlags(Z_SPAWN); }
   }
 
   function judgeGate(gate) {
@@ -1481,23 +1481,40 @@ button{font-family:inherit;font-weight:inherit;color:inherit;cursor:pointer;bord
   }
 
   /* ---------- 깃발: 달리다가 길 위의 파란 깃발을 먹으면 점수가 올라요 ---------- */
-  const FLAG_POINTS = 5;
-  function spawnFlag() {
-    run.flagT = 2.5 + Math.random() * 2.5;   // 2.5~5초에 한 번
-    const z = Z_SPAWN;
-    // 허들 · 통나무와 겹치지 않게 놓아요
-    if (run.gates.some(gt => !gt.done && Math.abs(gt.z - z) < run.speed * 1.0)) { run.flagT = 0.5; return; }
-    const lanes = LANE_X.filter(x => !run.logs.some(lg => Math.abs(lg.z - z) < run.speed * 0.5 && Math.abs(lg.x - x) < (lg.half || 0.27) + 0.1));
-    if (!lanes.length) { run.flagT = 0.5; return; }
-    run.flags.push({ z, x: pick(lanes), done: false, got: 0 });
+  // 정답 허들이 나올 때 그 허들 뒤(다음 허들 전) 길에 깃발을 1~3개 놓아요
+  // 색깔마다 점수가 달라요: 파랑 +3 (자주) · 초록 +5 · 빨강 +10 (가끔)
+  const FLAG_KINDS = [
+    { color: '#2563eb', pole: '#1e3a8a', pts: 3, w: 0.5 },
+    { color: '#16a34a', pole: '#14532d', pts: 5, w: 0.33 },
+    { color: '#ef4444', pole: '#7f1d1d', pts: 10, w: 0.17 }
+  ];
+  function pickFlagKind() {
+    let r = Math.random();
+    for (const k of FLAG_KINDS) { if ((r -= k.w) < 0) return k; }
+    return FLAG_KINDS[0];
+  }
+  function placeFlags(base) {
+    const T = Z_SPAWN / run.speed;
+    const tMin = 0.55, tMax = T - 0.25;          // 이번 허들 바로 뒤 ~ 다음 허들 조금 앞
+    if (tMax <= tMin) return;
+    const n = 1 + Math.floor(Math.random() * 3);   // 1~3개
+    const seg = (tMax - tMin) / n;
+    for (let k = 0; k < n; k++) {
+      const z = base + run.speed * (tMin + seg * (k + 0.2 + Math.random() * 0.6));
+      // 통나무와 겹치지 않는 줄에만
+      const lanes = LANE_X.filter(x => !run.logs.some(lg => Math.abs(lg.z - z) < run.speed * 0.45 && Math.abs(lg.x - x) < (lg.half || 0.27) + 0.2));
+      if (!lanes.length) continue;
+      const kind = pickFlagKind();
+      run.flags.push({ z, x: pick(lanes), done: false, got: 0, color: kind.color, pole: kind.pole, pts: kind.pts });
+    }
   }
   function catchFlag(fl) {
     fl.got = 0.001;
     const g = geo(), p = proj(g, run.px, 0), r = canvas.getBoundingClientRect();
     const sx = r.left + p.x, sy = r.top + p.y - g.R * 0.35;
     sfx.pop(); tone(990, 0.08, 'triangle', 0.05, 0.12);   // 물고기 먹을 때와 같은 소리
-    floatAt(sx, sy, '🚩 +' + FLAG_POINTS);
-    bumpScore(FLAG_POINTS);
+    floatAt(sx, sy, '🚩 +' + (fl.pts || 3));
+    bumpScore(fl.pts || 3);
   }
   function updateFlags(dt) {
     run.flags.forEach(fl => {
@@ -1519,10 +1536,10 @@ button{font-family:inherit;font-weight:inherit;color:inherit;cursor:pointer;bord
     // 그림자 · 깃대
     ctx.fillStyle = 'rgba(91,127,166,.22)';
     ctx.beginPath(); ctx.ellipse(b.x, b.y, w * 0.45, w * 0.12, 0, 0, Math.PI * 2); ctx.fill();
-    ctx.strokeStyle = '#1e3a8a'; ctx.lineWidth = Math.max(1.5, h * 0.06); ctx.lineCap = 'round';
+    ctx.strokeStyle = fl.pole || '#1e3a8a'; ctx.lineWidth = Math.max(1.5, h * 0.06); ctx.lineCap = 'round';
     ctx.beginPath(); ctx.moveTo(b.x, b.y); ctx.lineTo(top.x, top.y); ctx.stroke();
     // 파란 깃발
-    ctx.fillStyle = '#2563eb';
+    ctx.fillStyle = fl.color || '#2563eb';
     ctx.beginPath(); ctx.moveTo(top.x, top.y); ctx.lineTo(top.x + w, top.y + h * 0.08); ctx.lineTo(top.x + w * 0.9, top.y + h * 0.4); ctx.lineTo(top.x, top.y + h * 0.36); ctx.closePath(); ctx.fill();
     ctx.restore();
   }
@@ -1686,7 +1703,6 @@ button{font-family:inherit;font-weight:inherit;color:inherit;cursor:pointer;bord
       run.dist += run.speed * dt;
       // 옆에서 물고기가 튀어나와요
       if ((run.fishT -= dt) <= 0) spawnFish();
-      if ((run.flagT -= dt) <= 0) spawnFlag();
     }
     run.fish.forEach(fs => {
       fs.z -= run.speed * dt;
