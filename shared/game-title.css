@@ -344,3 +344,25 @@ html body :is(.play-card, .arcade-game, .level-btn, .grade-btn, .diff-btn, .mode
     grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
   }
 }
+
+/* ---- PC(1100px 이상): 시계 · 코딩 · 칠교 · 카드 짝맞추기 첫 화면 타일 영역도 영어 놀이(파닉스)와 같은 폭으로
+   영어 놀이: 폭 = min(1068px, 100vw - 32px), 한 줄에 3개, 간격 20px ---- */
+@media (min-width: 1100px) {
+  html body { --pc-w: min(1068px, calc(100vw - 32px)); }
+  html body .mode-grid, html body .level-grid, html body #screen-difficulty .difficulty-options {
+    width: var(--pc-w) !important; max-width: none !important;
+    margin-left: calc((100% - var(--pc-w)) / 2) !important; margin-right: calc((100% - var(--pc-w)) / 2) !important;
+    box-sizing: border-box; padding-left: 0 !important; padding-right: 0 !important;
+  }
+  html body .mode-grid { grid-template-columns: repeat(3, minmax(0, 1fr)) !important; gap: 20px !important; }
+  /* 타일이 2개뿐인 칠교놀이: 타일 한 개 폭은 영어 놀이 타일과 같게, 가운데로 */
+  html body #screen-difficulty .difficulty-options:not(:has(> :nth-child(3))) {
+    grid-template-columns: repeat(2, calc((var(--pc-w) - 40px) / 3)) !important; gap: 20px !important; justify-content: center;
+  }
+}
+@media (min-width: 1100px) {
+  /* 타일을 감싼 상자(최대 900px · 넘치면 잘림)가 넓어진 타일 영역을 자르지 않게 */
+  html body .menu-plain:has(.mode-grid, .level-grid, .difficulty-options), html body .card:has(> .mode-grid, > .level-grid) {
+    max-width: none !important; width: 100% !important; overflow-x: visible;
+  }
+}

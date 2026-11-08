@@ -86,7 +86,7 @@
 /* ---- 제목과 그 다음 버튼·타일의 세로 위치를 말랑말랑 타자연습과 같게 맞춰요 ----
    타자연습 기준(직접 잰 값): 휴대폰(폭 560 이하) 제목 위 14px · 다음 줄 55px / 그보다 넓으면 37px · 105px */
 (function () {
-  function target() { return window.innerWidth <= 560 ? { top: 14, next: 55 } : { top: 37, next: 105 }; }
+  function target() { return window.innerWidth <= 560 ? { top: 14, next: 55 } : { top: 15, next: 83 }; }   // PC: 제목 위 15px
   function shown(el) { return !!el && el.getClientRects().length > 0; }
   function nextBelow(t) {
     var r = t.getBoundingClientRect(), best = null;

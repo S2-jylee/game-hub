@@ -529,7 +529,7 @@
 
   function updateHud() {
     hudStageVal.textContent = (state.levelIndex + 1) + " / " + TD.LEVELS.length;
-    hudLevelName.textContent = currentLevel().name;
+    hudLevelName.textContent = "Stage " + String(state.levelIndex + 1).padStart(3, "0");   // 예: Stage 001
     progressFill.style.width = ((state.levelIndex) / TD.LEVELS.length * 100) + "%";
   }
 

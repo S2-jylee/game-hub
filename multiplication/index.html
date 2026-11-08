@@ -1780,15 +1780,14 @@ button{font-family:inherit;font-weight:inherit;color:inherit;cursor:pointer;bord
     const far = run.gates.filter(gt => gt.z >= 0).sort((a, b) => b.z - a.z);
     const near = run.gates.filter(gt => gt.z < 0);
     if (run.goal) drawIgloo(g, run.goal.z, t);
-    // 허들(정답 표지판)을 먼저 그리고 통나무를 그 위에: 허들 너머 통나무도 멀리서부터 보이게 하되,
-    // 아직 허들 뒤에 있는 통나무는 반투명으로 그려서 정답 글자를 가리지 않아요
+    // 먼 것부터 차례로 그려요 (투명하게 비치지 않아요):
+    // 허들 너머의 통나무 · 깃발은 정답 표지판 뒤에 가려지고, 허들이 가까워져 뒤쪽 길이 넓게 보이면 미리 보여요
     const gateZ = far.length ? Math.min(...far.map(gt => gt.z)) : Infinity;
-    run.flags.filter(fl => fl.z >= 0 && fl.z > gateZ).sort((a, b) => b.z - a.z).forEach(fl => drawFlag(g, fl));
-    far.forEach(gt => drawGate(g, gt));
-    run.logs.filter(lg => lg.z >= 0).sort((p, q) => q.z - p.z).forEach(lg => {
-      lg.dim = lg.z > gateZ ? 0.6 : 1;
-      drawLog(g, lg);
-    });
+    far.map(gt => ({ z: gt.z, k: 0, o: gt }))
+      .concat(run.logs.filter(lg => lg.z >= 0).map(lg => ({ z: lg.z, k: 1, o: lg })))
+      .concat(run.flags.filter(fl => fl.z >= 0 && fl.z > gateZ).map(fl => ({ z: fl.z, k: 2, o: fl })))
+      .sort((p, q) => q.z - p.z)
+      .forEach(it => { if (it.k === 0) drawGate(g, it.o); else if (it.k === 1) { it.o.dim = 1; drawLog(g, it.o); } else drawFlag(g, it.o); });
     run.flags.filter(fl => fl.z >= 0 && !(fl.z > gateZ)).sort((a, b) => b.z - a.z).forEach(fl => drawFlag(g, fl));
     run.fish.filter(fs => fs.z >= 0).forEach(fs => drawFish(g, fs));
     drawPenguin(g, t);

@@ -18,16 +18,17 @@
   // 목소리 이름으로 남자 / 여자를 가려요 (윈도우 · 맥 · 안드로이드 · 크롬 목소리 이름)
   var MALE_RE = /\b(male|man|david|mark|guy|davis|tony|jason|eric|roger|steffan|christopher|andrew|brian|ryan|thomas|alex|fred|daniel|aaron|arthur|oliver|rishi|gordon|lee|reed|rocko|grandpa|eddy|ralph|junior)\b|en-us-x-(iom|iol|tpd)/i;
   var FEMALE_RE = /\b(female|woman|zira|aria|jenny|michelle|ana|emma|ava|sara|nancy|jane|amber|ashley|cora|elizabeth|monica|libby|sonia|samantha|victoria|karen|moira|tessa|fiona|allison|susan|serena|kate|nicky|zoe|joelle|flo|sandy|shelley|grandma|catherine|hazel|susan|google us english)\b|en-us-x-(sfg|tpf|tpc)/i;
+  // 아이폰 · 맥의 장난감 같은 목소리(종소리, 속삭임 등)는 빼요
+  var NOVELTY_RE = /albert|bad news|bahh|bells|boing|bubbles|cellos|good news|jester|organ|superstar|trinoids|whisper|wobble|zarvox|deranged|hysterical|pipe organ/i;
   function pickVoice() {
     if (!window.speechSynthesis) return;
-    var vs = speechSynthesis.getVoices();
-    var en = vs.filter(function (v) { return /^en[-_]US/i.test(v.lang); });
-    if (!en.length) en = vs.filter(function (v) { return /^en/i.test(v.lang); });
+    var vs = speechSynthesis.getVoices().filter(function (v) { return /^en/i.test(v.lang) && !NOVELTY_RE.test(v.name); });
+    // 미국 영어 먼저, 그다음 자연스러운(Natural · Online · Google) 목소리 먼저
+    var rank = function (v) { return (/^en[-_]US/i.test(v.lang) ? 0 : 2) + (/natural|online|neural|google|enhanced|premium/i.test(v.name) ? 0 : 1); };
+    var en = vs.slice().sort(function (x, y) { return rank(x) - rank(y); });
     voice = en[0] || null;
-    // 자연스러운(Natural · Online · Google) 목소리를 먼저
-    var good = function (v) { return /natural|online|neural|google|enhanced|premium/i.test(v.name) ? 0 : 1; };
-    en = en.slice().sort(function (a, b) { return good(a) - good(b); });
     voices.all = en;
+    // 남자 · 여자 목소리는 미국 영어에 없으면 영국 · 호주 영어 목소리에서도 찾아요
     voices.m = en.filter(function (v) { return MALE_RE.test(v.name) && !FEMALE_RE.test(v.name.replace(/google us english/i, "")); });
     voices.f = en.filter(function (v) { return FEMALE_RE.test(v.name) && !MALE_RE.test(v.name); });
   }
@@ -38,29 +39,26 @@
     if (/♂|👨|👦|👴|🧔|🤵|👮(?!‍♀)|🎅|🤴|🕺/.test(e)) return "m";
     if (/엄마|언니|누나|할머니|아주머니|이모|고모|여자|아기 엄마|여동생|공주/.test(n)) return "f";
     if (/아빠|형|오빠|할아버지|아저씨|삼촌|남자|남동생|왕자/.test(n)) return "m";
+    // 성별이 없는 어른 그림(🧑 · 🧑‍🍳 · 🧑‍💼 …)은 남자처럼 보여서 남자 목소리로
+    if (/🧑/.test(e)) return 'm';
     var h = 0; for (var i = 0; i < n.length; i++) h = (h * 31 + n.charCodeAt(i)) | 0;
     return (h & 1) ? "f" : "m";
   }
-  // who: "m" · "f" (상대방) / "me" (내가 고른 대답: 상대방과 다른 목소리, 조금 높게 아이처럼)
+  // who: "m" · "f" (상대방) / "me" (내가 고른 대답: 상대방과 반대 성별 목소리)
   var lastNpc = "f";
   function voiceFor(who) {
+    if (!voices.all.length) pickVoice();   // 목소리 목록이 늦게 오면 지금 다시 읽어요
     var g = who === "me" ? (lastNpc === "m" ? "f" : "m") : who;
     if (who === "m" || who === "f") lastNpc = who;
-    var list = voices[g] && voices[g].length ? voices[g] : voices.all;
-    var v = list[0] || voice;
-    // 내 목소리: 상대방과 같은 목소리가 걸리면 다른 목소리로
-    if (who === "me") {
-      var npcV = (voices[lastNpc] && voices[lastNpc][0]) || voice;
-      if (v === npcV) v = voices.all.filter(function (x) { return x !== npcV; })[0] || v;
-    }
-    // 같은 성별 목소리가 없으면 높낮이로 구분해요
     var hasG = !!(voices[g] && voices[g].length);
-    var pitch = who === "me" ? 1.35 : g === "m" ? (hasG ? 0.95 : 0.7) : (hasG ? 1.1 : 1.3);
+    var v = hasG ? voices[g][0] : (voices.all[0] || voice);
+    // 기기에 그 성별 목소리가 없으면(안드로이드 등) 같은 목소리의 높낮이를 크게 달리해서 구분해요
+    var pitch = g === "m" ? (hasG ? 0.95 : 0.5) : (hasG ? 1.1 : 1.3);
     return { v: v, pitch: pitch };
   }
   function makeUtter(text, who) {
     var u = new SpeechSynthesisUtterance(text);
-    u.lang = "en-US"; u.rate = who === "me" ? 0.95 : 0.88; u.pitch = 1.05;
+    u.lang = "en-US"; u.rate = 0.88; u.pitch = 1.05;
     if (who) { var vf = voiceFor(who); if (vf.v) u.voice = vf.v; u.pitch = vf.pitch; }
     else if (voice) u.voice = voice;
     return u;
