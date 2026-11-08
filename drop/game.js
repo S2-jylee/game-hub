@@ -259,7 +259,8 @@
     if (G.lives <= 0) { finish(false); return; }
     G.i++;
     if (G.i >= ROUNDS) { finish(true); return; }
-    if (G.fallen) { G.fallen = false; G.px = 0.5; G.py = 0.5; }
+    // 문제가 끝나면 아바타는 늘 가운데에서 다시 출발해요
+    G.fallen = false; G.px = 0.5; G.py = 0.5; G.walkT = 0;
     setRound(false);
   }
 
