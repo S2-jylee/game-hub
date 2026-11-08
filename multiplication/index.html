@@ -2301,14 +2301,21 @@ button{font-family:inherit;font-weight:inherit;color:inherit;cursor:pointer;bord
   function spawnCatch(g) {
     if (cg.waitT > 0 || cg.overT > 0) { cg.spawnT = 0.2; return; }
     const lv = catchLevel();
-    cg.spawnT = Math.max(0.7, 1.4 - lv * 0.023) * (0.85 + Math.random() * 0.3);
+    // 느긋하게는 열매가 드문드문 떨어져요
+    cg.spawnT = Math.max(0.7, 1.4 - lv * 0.023) * (0.85 + Math.random() * 0.3) * (state.diff === 'easy' ? 1.7 : 1);
     if (Math.random() < Math.min(0.2, 0.08 + lv * 0.004)) { addItem('bomb', g); return; }
     const { ans, wrongs } = state.cur;
     const onScreen = cg.items.filter(it => it.kind === 'num' && !it.done && it.v === ans).length;
+    // 다음 문제의 정답도 미리 섞어 떨어뜨려요: 이번 문제를 맞히자마자 다음 정답이 이미 내려오고 있어서 기다리지 않아요
+    const nextAns = (([na, nb]) => na * nb)(state.qs[(state.i + 1) % state.qs.length]);
+    const nextOn = cg.items.filter(it => it.kind === 'num' && !it.done && it.v === nextAns).length;
     // 정답은 너무 오래 안 나오지 않게, 한 번에 너무 많지도 않게
     if (cg.sinceAns >= 3 || (onScreen < 2 && Math.random() < 0.32)) {
       addItem('num', g, ans);
       cg.sinceAns = 0;
+    } else if (nextAns !== ans && nextOn < 1 && Math.random() < 0.5) {
+      addItem('num', g, nextAns);
+      cg.sinceAns++;
     } else {
       addItem('num', g, pick(wrongs));
       cg.sinceAns++;

@@ -507,11 +507,21 @@
     }
     drawFrog(c, px, py, g.r * 0.95 * s, alpha, look, G.winT > 0);
     if (ROW_TIME && nextPads()) drawTimer(c, W);
+    else if (!ROW_TIME) drawProgress(c, W);   // 느긋하게는 시간 대신 얼마나 건넜는지 보여줘요
     // 빠진 동안에는 출발했던 자리에 흐릿한 개구리가 다시 나와요
     if (G.sink) drawFrog(c, G.x * W, rowY(g, G.row), g.r * 0.95, Math.min(1, G.sink.t * 1.4) * 0.9, 0, false);
   }
 
   // 위쪽 남은 시간 막대 (3초 남으면 빨개져요)
+  function drawProgress(c, W) {
+    var k = Math.max(0, Math.min(1, G.row / PER_ROUND)), bw = Math.min(W - 24, 420), x = (W - bw) / 2;
+    c.fillStyle = "rgba(255,255,255,.7)";
+    c.beginPath(); if (c.roundRect) c.roundRect(x, 10, bw, 12, 6); else c.rect(x, 10, bw, 12); c.fill();
+    if (k <= 0) return;
+    var gr = c.createLinearGradient(x, 0, x + bw, 0); gr.addColorStop(0, "#34d399"); gr.addColorStop(1, "#7ee8b8");
+    c.fillStyle = gr;
+    c.beginPath(); if (c.roundRect) c.roundRect(x, 10, Math.max(12, bw * k), 12, 6); else c.rect(x, 10, bw * k, 12); c.fill();
+  }
   function drawTimer(c, W) {
     var k = Math.max(0, Math.min(1, G.rowT / ROW_TIME)), bw = Math.min(W - 24, 420), x = (W - bw) / 2;
     c.fillStyle = "rgba(255,255,255,.7)";
