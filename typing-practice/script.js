@@ -706,6 +706,12 @@ function showResult() {
   renderRanking(localRanking(stageKey, 5));
 }
 
+// PC: 입력 미리보기 칸에 커서를 둬요. 휴대폰은 숨은 키패드 입력칸을 쓰니까 미리보기 칸이 포커스를 뺏지 않게 해요
+function focusPreview() {
+  if (window.matchMedia('(pointer: coarse)').matches) return;
+  el.typingPreview.focus();
+}
+
 function hideResult() {
   el.resultModal.classList.remove('show');
 }
@@ -810,11 +816,11 @@ const MODE_GUIDES = {
 };
 function openModeGuide(mode) {
   // 방법 팝업은 타자게임에만 띄워요. 다른 연습은 바로 칠 수 있게 입력칸에 커서를 둬요
-  if (mode !== 'game') { if (mode !== 'position') setTimeout(() => el.typingPreview.focus(), 0); return; }
+  if (mode !== 'game') { if (mode !== 'position') setTimeout(() => focusPreview(), 0); return; }
   const g = MODE_GUIDES[mode];
   if (!g || !window.GuideBook) return;
   GuideBook.intro({ id: 'typing_' + mode, title: g.title, icon: g.icon, pages: g.pages, startLabel: '확인',
-    onStart: () => { if (mode !== 'position' && mode !== 'game') el.typingPreview.focus(); } }, showHome);
+    onStart: () => { if (mode !== 'position' && mode !== 'game') focusPreview(); } }, showHome);
 }
 // 홈 화면(연습 고르기)의 '📖 게임 방법': 모든 연습을 한눈에
 function openHomeGuide() {
@@ -1254,7 +1260,7 @@ function startTypingDrill() {
   updateTypingKeyboardHighlight();
   updateTypingHint();
   el.typingPreview.value = '';
-  el.typingPreview.focus();
+  focusPreview();
 }
 
 // 입력 상태에 따라 안내 문구를 바꾼다: 오타가 나면 빨갛게, 다 쓰면 Enter를 안내한다
@@ -1799,7 +1805,7 @@ el.restartBtn.addEventListener('click', () => {
 el.modeTyping.addEventListener('click', () => {
   // 휴대폰에서는 '여기를 터치하세요' 칸으로 숨은 입력칸에 키패드를 띄우니까, 미리보기 칸으로 포커스를 뺏지 않아요
   if (window.matchMedia('(pointer: coarse)').matches) return;
-  el.typingPreview.focus();
+  focusPreview();
 });
 
 el.resultRestart.addEventListener('click', () => {
@@ -1993,8 +1999,24 @@ showHome();
   }
   // 결과 팝업이 뜨거나 홈으로 나가면 키패드를 내려요 (키패드가 떠 있으면 '한번 더'를 처음 누를 때 키패드만 닫히고 버튼이 안 눌려요)
   const closeKeypad = () => { if (document.activeElement === input) input.blur(); reset(); };
-  new MutationObserver(() => { if (el.resultModal.classList.contains('show') || !active()) closeKeypad(); })
+  // 키패드를 띄워 놓고 치다가 결과 팝업이 떴다면, '한번 더'를 누를 때 키패드를 다시 띄워요
+  // (계속하겠다는 뜻이니까 처음 시작할 때처럼 '여기를 터치하세요'를 다시 누르지 않아도 돼요)
+  let keepOpen = false;
+  let shown = false;
+  new MutationObserver(() => {
+    const now = el.resultModal.classList.contains('show');
+    if (now && !shown) keepOpen = document.activeElement === input;   // 팝업이 막 뜬 순간에 키패드가 떠 있었는지
+    shown = now;
+    if (now || !active()) closeKeypad();
+  })
     .observe(el.resultModal, { attributes: true, attributeFilter: ['class'] });
   document.addEventListener('click', e => { if (e.target.closest('.tab, #home-link, .gt-back, .tile')) setTimeout(() => { if (!active()) closeKeypad(); }, 0); });
+  el.resultRestart.addEventListener('click', () => {
+    if (!keepOpen || !coarse.matches) return;
+    keepOpen = false;
+    if (!active()) return;
+    reset();
+    input.focus({ preventScroll: true });   // 버튼을 누른 그 순간에 바로 띄워야 휴대폰이 키패드를 열어 줘요
+  });
   reset();
 })();

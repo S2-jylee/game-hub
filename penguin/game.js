@@ -456,28 +456,12 @@
     ctx.beginPath(); ctx.moveTo(top.x, top.y); ctx.lineTo(top.x + w, top.y + h * 0.08); ctx.lineTo(top.x + w * 0.9, top.y + h * 0.4); ctx.lineTo(top.x, top.y + h * 0.36); ctx.closePath(); ctx.fill();
     ctx.restore();
   }
-  // 점프 효과음 '뛰용~': 음이 쭉 올라갔다가 살짝 흔들리며 내려와요 (용수철 소리처럼)
+  // 점프 효과음: 바탕화면의 727650__cjspellsfish__basic-retro-jump.wav (penguin/jump.wav)
+  const jumpSnd = new Audio('../penguin/jump.wav');
+  jumpSnd.preload = 'auto'; jumpSnd.volume = 0.7;
   function playJump() {
     if (!state.sound) return;
-    try {
-      actx = actx || new (window.AudioContext || window.webkitAudioContext)();
-      const t = actx.currentTime;
-      const o = actx.createOscillator(), g = actx.createGain();
-      const lfo = actx.createOscillator(), lg = actx.createGain();
-      o.type = 'triangle';
-      o.frequency.setValueAtTime(260, t);
-      o.frequency.exponentialRampToValueAtTime(820, t + 0.13);   // 뛰~
-      o.frequency.exponentialRampToValueAtTime(640, t + 0.34);   // 용~
-      lfo.frequency.setValueAtTime(14, t); lg.gain.setValueAtTime(0, t);
-      lg.gain.linearRampToValueAtTime(38, t + 0.16);              // 끝에서 '용~' 하고 떨려요
-      lfo.connect(lg).connect(o.frequency);
-      g.gain.setValueAtTime(0.0001, t);
-      g.gain.exponentialRampToValueAtTime(0.2, t + 0.02);
-      g.gain.setValueAtTime(0.2, t + 0.16);
-      g.gain.exponentialRampToValueAtTime(0.001, t + 0.38);
-      o.connect(g).connect(actx.destination);
-      o.start(t); lfo.start(t); o.stop(t + 0.4); lfo.stop(t + 0.4);
-    } catch (e) { /* 소리를 못 내는 브라우저 */ }
+    try { jumpSnd.currentTime = 0; jumpSnd.play().catch(() => {}); } catch (e) { /* 소리를 못 내는 브라우저 */ }
   }
 
   /* ---------- 통나무: 걸리면 하트 반 개 + 1초 동안 꽁꽁, 점프로 피해요 ---------- */

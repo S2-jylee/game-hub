@@ -366,3 +366,14 @@ html body :is(.play-card, .arcade-game, .level-btn, .grade-btn, .diff-btn, .mode
     max-width: none !important; width: 100% !important; overflow-x: visible;
   }
 }
+
+/* ---- 휴대폰(560px 이하): 첫 화면 타일 영역 좌우 여백을 모든 놀이에서 16px 로 똑같이 (시계 놀이터 기준) ---- */
+@media (max-width: 560px) {
+  html body { --m-w: calc(100vw - 32px); }
+  html body .play-grid, html body #tile-grid, html body .mode-grid, html body .level-grid,
+  html body #screen-difficulty .difficulty-options {
+    width: var(--m-w) !important; max-width: none !important;
+    margin-left: calc((100% - var(--m-w)) / 2) !important; margin-right: calc((100% - var(--m-w)) / 2) !important;
+    box-sizing: border-box; padding-left: 0 !important; padding-right: 0 !important;
+  }
+}
