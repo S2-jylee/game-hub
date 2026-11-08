@@ -317,7 +317,7 @@
       if (stage > 0) $('#runMsg').textContent = '◀ ▶ 로 정답 허들로! 🪵 통나무는 스페이스(화면 톡)로 점프!';
     }
     $('#runProgressText').textContent = `스테이지 ${stage + 1} / ${RUN_STAGES}  ·  ${state.i + 1} / ${state.total}`;
-    run.speed = Z_SPAWN / (STAGE_TIME[stage] * (LINK ? EL.by({ easy: 1.3, normal: 1, hard: 0.8 }) : 1));
+    run.speed = Z_SPAWN / (STAGE_TIME[stage] * (LINK ? EL.by({ easy: 1.4, normal: 1.15, hard: 0.92 }) : 1));
     run.gates.push({ z: Z_SPAWN, vals: wordChoices(w, 3), ans: w[0], done: false, pick: -1, ok: false });
     run.flags = run.flags.filter(fl => Math.abs(fl.z - Z_SPAWN) > run.speed * 1.0);   // 정답 허들 자리의 깃발은 치워요
     // 이 허들 뒤(다음 허들 전)에 굴러올 통나무를 지금 미리 놓아요 → 허들 너머로 멀리서부터 보여요
