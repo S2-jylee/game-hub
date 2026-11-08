@@ -16,6 +16,8 @@
   const UP = EL.by ? EL.by({ easy: 2.8, normal: 1.9, hard: 1.3 }) : 1.9;
   const GAP = EL.by ? EL.by({ easy: 1.0, normal: 0.75, hard: 0.5 }) : 0.75;
   const MAX = EL.by ? EL.by({ easy: 2, normal: 3, hard: 4 }) : 3;
+  // 한 문제에 주는 시간(초): 게이지가 다 줄어들 때까지 못 잡으면 하트 -1
+  const QTIME = EL.by ? EL.by({ easy: 16, normal: 12, hard: 9 }) : 12;
   const PRAISE = ['딩동댕! 🔔', '잘했어! 🎉', '최고야! 👍', '우와, 천재다! 🌟', '멋져요! 💖', '정답이야! 🍭'];
   const rand = (a, b) => a + Math.floor(Math.random() * (b - a + 1));
   const pick = arr => arr[Math.floor(Math.random() * arr.length)];
@@ -56,6 +58,7 @@
   const sfx = {
     correct() { [523, 659, 784, 1047].forEach((f, i) => tone(f, 0.18, 'triangle', i * 0.08)); },
     wrong() { tone(260, 0.22, 'triangle', 0, 0.14); tone(196, 0.3, 'triangle', 0.14, 0.14); },
+    tick() { tone(1250, 0.04, 'square', 0, 0.03); },
     win() { [523, 659, 784, 659, 784, 1047].forEach((f, i) => tone(f, 0.22, 'triangle', i * 0.13)); }
   };
   function speakEn(text) {
@@ -140,7 +143,7 @@
   }
 
   /* ---------- 두더지 ---------- */
-  const mg = { active: false, raf: 0, last: 0, holes: [], spawnT: 0, sinceAns: 0, waitT: 0, overT: 0 };
+  const mg = { active: false, raf: 0, last: 0, holes: [], spawnT: 0, sinceAns: 0, waitT: 0, overT: 0, timeLeft: 0, tickSec: 0 };
   function buildField() {
     const f = $('#moleField'); f.innerHTML = '';
     mg.holes = [];
@@ -161,7 +164,7 @@
       pages: [
         { icon: '🕳️', title: '두더지가 쑥쑥', text: '구멍에서 <b>한글 뜻</b>을 든 두더지들이 쑥쑥 올라왔다 내려가요.' },
         { icon: '🔨', title: '맞는 뜻을 뿅!', text: '위에 나온 <b>영어 단어</b>의 뜻을 든 두더지를 눌러서 잡아요.<br>예) Apple → <b>사과</b> 두더지' },
-        { icon: '❤️', title: '틀리면 하트가 줄어요', text: '틀린 두더지를 잡으면 ❤️ 하트가 하나 줄어요.<br><b>하트 3개</b>를 다 쓰면 끝!' },
+        { icon: '❤️', title: '틀리면 하트가 줄어요', text: '틀린 두더지를 잡거나 <b>시간 게이지</b>가 다 줄어들면 ❤️ 하트가 하나 줄어요.<br><b>하트 3개</b>를 다 쓰면 끝!' },
         { icon: '⌨️', title: '키보드로도 OK', text: '키보드 <b>1 ~ 9</b> 번으로도 잡을 수 있어요 (왼쪽 위부터).<br>단어 <b>' + TOTAL + '개</b>를 다 잡으면 성공!' }
       ],
       startText: '자, 두더지를 잡아 볼까?', startLabel: '시작! 🔨', onStart: null
@@ -195,6 +198,29 @@
     $('#moleProgress').style.width = (state.i / TOTAL * 100) + '%';
     $('#moleProgressText').textContent = `${grade.grade}학년 · ${EL.diffName || ''}  ·  ${state.i + 1} / ${TOTAL}`;
     speakEn(w[0]);
+    mg.timeLeft = QTIME; mg.tickSec = 4;
+    renderTimer();
+  }
+  function renderTimer() {
+    const fill = $('#moleTimer');
+    fill.style.width = Math.max(0, mg.timeLeft / QTIME * 100) + '%';
+    fill.classList.toggle('hurry', mg.timeLeft <= 3);
+  }
+  // 시간 끝: 하트 -1, 정답을 보여주고 다음 단어로
+  function timeUp() {
+    const { w, ans } = state.cur;
+    sfx.wrong();
+    state.combo = 0;
+    if (!state.missedThis) state.wrong.push(w);
+    state.lives--;
+    renderHearts(true);
+    fitAns($('#mqans'), ans, 'q-mark reveal');
+    mg.holes.forEach(o => { if (o.st === 'up') moleDown(o, true); });
+    $('#moleMsg').textContent = `⏰ 시간 끝! ${cap(w[0])} = ${ans} 이에요`;
+    state.i++;
+    if (state.lives <= 0) { mg.overT = 1.6; $('#moleMsg').textContent = '하트를 다 썼어요! 💪'; return; }
+    if (state.i >= TOTAL) { mg.overT = 1.6; return; }
+    mg.waitT = 1.8;
   }
   function moleDown(h, fast) {
     h.st = 'down'; h.cool = fast ? 0.15 : 0.3;
@@ -273,9 +299,15 @@
       if ((mg.overT -= dt) <= 0) { finish(); return; }
     } else if (mg.waitT > 0) {
       if ((mg.waitT -= dt) <= 0) { setQuestion(); mg.sinceAns = 0; mg.spawnT = 0.2; }
-    } else if ((mg.spawnT -= dt) <= 0) {
-      spawn();
-      mg.spawnT = GAP * (0.8 + Math.random() * 0.4);
+    } else {
+      mg.timeLeft -= dt;
+      if (mg.timeLeft <= 3 && Math.ceil(mg.timeLeft) < mg.tickSec) { mg.tickSec = Math.ceil(mg.timeLeft); if (mg.timeLeft > 0) sfx.tick(); }
+      renderTimer();
+      if (mg.timeLeft <= 0) timeUp();
+      else if ((mg.spawnT -= dt) <= 0) {
+        spawn();
+        mg.spawnT = GAP * (0.8 + Math.random() * 0.4);
+      }
     }
     mg.holes.forEach(h => {
       if (h.st === 'down') { h.cool -= dt; return; }

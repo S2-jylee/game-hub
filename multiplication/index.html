@@ -261,6 +261,8 @@ button{font-family:inherit;font-weight:inherit;color:inherit;cursor:pointer;bord
 #progressFill,#runProgress{background:linear-gradient(90deg,var(--green),#7ee8b8)}
 #timerFill{background:linear-gradient(90deg,var(--orange),var(--yellow));transition:none}
 #timerFill.hurry{background:var(--red)}
+#moleTimer{background:linear-gradient(90deg,var(--orange),var(--yellow));transition:none}
+#moleTimer.hurry{background:var(--red)}
 .bar-label{font-size:15px;color:var(--muted);text-align:right;margin-top:-2px}
 
 .stage{display:flex;align-items:center;gap:10px;margin:2px 0 0;min-height:64px}
@@ -578,6 +580,7 @@ button{font-family:inherit;font-weight:inherit;color:inherit;cursor:pointer;bord
     <div class="bars">
       <div class="bar"><div id="moleProgress" style="width:0"></div></div>
       <div class="bar-label" id="moleProgressText">1 / 15</div>
+      <div class="bar mole-timer"><div id="moleTimer" style="width:100%"></div></div>
     </div>
     <div class="question run-q">
       <span class="n" id="mqa">2</span><span class="x">×</span><span class="n" id="mqb">3</span>
@@ -685,6 +688,8 @@ button{font-family:inherit;font-weight:inherit;color:inherit;cursor:pointer;bord
   // 두더지 잡기: 난이도마다 두더지가 올라와 있는 시간(초) · 나오는 간격(초) · 한 번에 나오는 수
   const MOLE_TOTAL = 15;
   const MOLE_UP = { easy: 2.4, normal: 1.6, hard: 1.05 };
+  // 두더지 한 문제에 주는 시간(초): 게이지가 다 줄어들 때까지 못 잡으면 하트 -1
+  const MOLE_TIME = { easy: 14, normal: 10, hard: 7 };
   const MOLE_GAP = { easy: 0.9, normal: 0.65, hard: 0.45 };
   const MOLE_MAX = { easy: 2, normal: 3, hard: 4 };
   // 게임 카드 목록: 새 게임은 여기에 한 줄 더하면 게임 선택 화면에 나와요 (href 가 있으면 다른 페이지에서 ?mul=1&d=난이도 로 열어요)
@@ -944,7 +949,7 @@ button{font-family:inherit;font-weight:inherit;color:inherit;cursor:pointer;bord
     mole: () => ({ emoji: '🔨', title: '두더지 잡기 · ' + DIFF_NAME[state.diff], list: [
       ['🕳️', '구멍에서 <b>숫자 두더지</b>들이 쑥쑥 올라왔다 내려가요'],
       ['🔨', '<b>정답 숫자</b>를 든 두더지를 눌러서 뿅! 잡아요'],
-      ['❤️', '틀린 두더지를 잡으면 하트가 하나 줄어요. <b>하트 3개</b>를 다 쓰면 끝!'],
+      ['❤️', '틀린 두더지를 잡거나 <b>시간 게이지</b>가 다 줄어들면 하트가 하나 줄어요. <b>하트 3개</b>를 다 쓰면 끝!'],
       ['⌨️', '키보드 <b>1 ~ 9</b> 번으로도 잡을 수 있어요 (왼쪽 위부터)']] })
   };
   function startWithIntro() {
@@ -2670,7 +2675,7 @@ button{font-family:inherit;font-weight:inherit;color:inherit;cursor:pointer;bord
   };
 
   /* ---------- 두더지 잡기: 구멍에서 올라오는 숫자 두더지 중 정답 두더지만 잡아요 ---------- */
-  const mg = { active: false, raf: 0, last: 0, holes: [], spawnT: 0, sinceAns: 0, waitT: 0, overT: 0 };
+  const mg = { active: false, raf: 0, last: 0, holes: [], spawnT: 0, sinceAns: 0, waitT: 0, overT: 0, timeLeft: 0, tickSec: 0 };
   function buildMoleField() {
     const f = $('#moleField'); f.innerHTML = '';
     mg.holes = [];
@@ -2705,6 +2710,29 @@ button{font-family:inherit;font-weight:inherit;color:inherit;cursor:pointer;bord
     const qm = $('#mqans'); qm.textContent = '?'; qm.className = 'q-mark';
     $('#moleProgress').style.width = (state.i / state.total * 100) + '%';
     $('#moleProgressText').textContent = `${DIFF_NAME[state.diff]}  ·  ${state.i + 1} / ${state.total}`;
+    mg.timeLeft = MOLE_TIME[state.diff]; mg.tickSec = 4;
+    renderMoleTimer();
+  }
+  function renderMoleTimer() {
+    const fill = $('#moleTimer');
+    fill.style.width = Math.max(0, mg.timeLeft / MOLE_TIME[state.diff] * 100) + '%';
+    fill.classList.toggle('hurry', mg.timeLeft <= 3);
+  }
+  // 시간 끝: 하트 -1, 정답을 보여주고 다음 문제로
+  function moleTimeUp() {
+    const { a, b, ans } = state.cur;
+    sfx.wrong();
+    state.combo = 0;
+    if (!state.missedThis) state.wrong.push({ a, b, ans });
+    state.lives--;
+    renderHearts(true);
+    const qm = $('#mqans'); qm.textContent = ans; qm.className = 'q-mark reveal';
+    mg.holes.forEach(o => { if (o.st === 'up') moleDown(o, true); });
+    $('#moleMsg').textContent = `⏰ 시간 끝! ${a} × ${b} = ${ans} 이야!`;
+    state.i++;
+    if (state.lives <= 0) { mg.overT = 1.6; $('#moleMsg').textContent = '하트를 다 썼어요! 💪'; return; }
+    if (state.i >= state.total) { mg.overT = 1.6; return; }
+    mg.waitT = 1.8;
   }
   function moleDown(h, fast) {
     h.st = 'down'; h.cool = fast ? 0.15 : 0.3;
@@ -2786,9 +2814,15 @@ button{font-family:inherit;font-weight:inherit;color:inherit;cursor:pointer;bord
     } else if (mg.waitT > 0) {
       // 새 문제: 정답 두더지가 첫 번째로 나올지 두세 번째로 나올지는 그때그때 달라요 (늘 첫 두더지가 정답이면 안 돼요)
       if ((mg.waitT -= dt) <= 0) { setMoleQuestion(); mg.sinceAns = 0; mg.spawnT = 0.2; }
-    } else if ((mg.spawnT -= dt) <= 0) {
-      spawnMole();
-      mg.spawnT = MOLE_GAP[state.diff] * (0.8 + Math.random() * 0.4);
+    } else {
+      mg.timeLeft -= dt;
+      if (mg.timeLeft <= 3 && Math.ceil(mg.timeLeft) < mg.tickSec) { mg.tickSec = Math.ceil(mg.timeLeft); if (mg.timeLeft > 0) sfx.tick(); }
+      renderMoleTimer();
+      if (mg.timeLeft <= 0) moleTimeUp();
+      else if ((mg.spawnT -= dt) <= 0) {
+        spawnMole();
+        mg.spawnT = MOLE_GAP[state.diff] * (0.8 + Math.random() * 0.4);
+      }
     }
     mg.holes.forEach(h => {
       if (h.st === 'down') { h.cool -= dt; return; }
