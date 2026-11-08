@@ -11,7 +11,8 @@
   const KIND = "penguin";                 // penguin | basket
   const PROFILES_KEY = KIND + "_profiles", GUIDE_ID = KIND;
   const LIVES = 3, CATCH_LIVES = 5;
-  const RUN_STAGES = 5, PER_STAGE = 6;    // 스테이지 5개 × 단어 6개
+  // 한 판 = 단어 20개를 지나 이글루에 도착하면 끝 (구구단 펭귄과 같아요). 끝나면 '한 번 더 / 게임 선택' 팝업
+  const RUN_STAGES = 1, PER_STAGE = 20;
   const STAGE_TIME = [6, 5.3, 4.7, 4.2, 3.8]; // 스테이지별 허들이 다가오는 시간(초) (영어 단어는 읽을 시간이 더 필요해요)
   const COLORS = ['#ff7eb6', '#ffbe0b', '#60a5fa', '#34d399', '#a78bfa', '#ff9f43'];
   const PRAISE = ['딩동댕! 🔔', '잘했어! 🎉', '최고야! 👍', '우와, 천재다! 🌟', '멋져요! 💖', '정답이야! 🍭'];
@@ -316,10 +317,10 @@
     const stage = Math.floor(state.i / PER_STAGE);
     if (stage !== run.stage || state.i === 0) {
       run.stage = stage;
-      run.banner = { text: stage === 0 ? '스테이지 1 출발! 🐧' : `스테이지 ${stage + 1}! 더 빨라져요 🚀`, t: 1.8 };
+      run.banner = { text: (LINK && EL.diffName ? EL.diffName + ' ' : '') + '출발! 🐧', t: 1.8 };
       if (stage > 0) $('#runMsg').textContent = '◀ ▶ 로 정답 허들로! 🪵 통나무는 스페이스(화면 톡)로 점프!';
     }
-    $('#runProgressText').textContent = `스테이지 ${stage + 1} / ${RUN_STAGES}  ·  ${state.i + 1} / ${state.total}`;
+    $('#runProgressText').textContent = `${LINK && EL.diffName ? EL.diffName + '  ·  ' : ''}${state.i + 1} / ${state.total}`;
     run.speed = Z_SPAWN / (STAGE_TIME[stage] * (LINK ? EL.by({ easy: 1.4, normal: 1.15, hard: 0.92 }) : 1));
     run.gates.push({ z: Z_SPAWN, vals: wordChoices(w, 3), ans: w[0], done: false, pick: -1, ok: false });
     run.flags = run.flags.filter(fl => Math.abs(fl.z - Z_SPAWN) > run.speed * 1.0);   // 정답 허들 자리의 깃발은 치워요
@@ -1154,7 +1155,7 @@
         { icon: '⬅️➡️', title: '옮기는 방법', text: '<b>← →</b> 방향키로 움직여요.<br>태블릿은 <b>옆으로 밀거나</b> 아래 <b>◀ ▶</b> 를 눌러요.' },
         { icon: '🪵', title: '통나무는 점프!', text: '<b>통나무</b>는 <b>스페이스바</b>(화면 톡)로 점프해서 피해요.<br>걸리면 꽁꽁 얼고 하트가 반 개 줄어요.' },
         { icon: '🐟', title: '물고기 냠냠', text: '<b>물고기</b>를 먹어서 게이지를 채우면 <b>❤️ 하트 반 개</b>가 차요!' },
-        { icon: '🏠', title: '이글루까지', text: '스테이지마다 단어 <b>' + PER_STAGE + '개</b>, 스테이지 <b>' + RUN_STAGES + '개</b>를 지나면 끝!' }
+        { icon: '🏠', title: '이글루까지', text: '단어 <b>' + PER_STAGE + '개</b>를 지나 이글루에 도착하면 끝!' }
       ],
       startText: '자, 달려 볼까?', startLabel: '출발! 🐧', onStart
     };
@@ -1170,7 +1171,7 @@
     const ratio = state.correct / state.total;
     const stars = ratio >= 0.9 ? 3 : ratio >= 0.6 ? 2 : 1;
     showResult(stars, state.lives <= 0,
-      `도착한 스테이지 <b>${Math.min(RUN_STAGES, run.stage + 1)}</b> / ${RUN_STAGES}<br>맞힌 단어 <b>${state.correct}</b> / ${state.total}<br>`, '🐧');
+      `맞힌 단어 <b>${state.correct}</b> / ${state.total}<br>`, '🐧');
   }
   $('#runQuit').onclick = () => { stopRun(); if ('speechSynthesis' in window) speechSynthesis.cancel(); if (LINK) { EL.back(); return; } renderGrades(); show('#grade'); };
 
