@@ -158,7 +158,7 @@
         { icon: "🌼", title: "꽃길이 다가와요", text: "꽃 기둥에 <b>위 · 가운데 · 아래</b> 세 길이 있어요.<br>길마다 " + (MATH ? "<b>숫자</b>" : "<b>한글 뜻</b>") + "이 하나씩 달려 있어요." },
         { icon: MATH ? "🔢" : "🔤", title: "맞는 길로 쏙!", text: MATH ? "위에 나온 <b>구구단의 정답</b> 길로 지나가요.<br>예) 6 × 7 → <b>42</b> 길" : "위에 나온 <b>영어 단어</b>의 뜻에 맞는 <b>한글 길</b>로 지나가요.<br>예) Apple → <b>사과</b> 길" },
         { icon: "💎", title: "보석을 먹어요", text: "꽃길 사이에 <b>보석 💎</b>이 줄지어 떠 있어요. 꿀벌이 지나가며 먹으면 <b>점수</b>가 올라가요!<br>가끔 <b>⭐ 별</b>이 날아오고, <b>❤️</b>를 먹으면 하트가 다시 차요." },
-        { icon: "💫", title: "틀리면 꽈당", text: "틀린 길로 가면 꽃잎에 부딪혀 ❤️ 하트가 하나 줄어요.<br>꽃길 <b>" + TOTAL + "개</b>를 지나면 <b>벌집</b> 도착!" }
+        { icon: "💫", title: "틀리면 꽈당", text: "틀린 길로 가거나 <b>바닥에 닿으면</b> ❤️ 하트가 하나 줄어요.<br>꽃길 <b>" + TOTAL + "개</b>를 지나면 <b>벌집</b> 도착!" }
       ],
       startText: "자, 날아 볼까?", startLabel: "출발! 🐝", onStart
     };
@@ -217,7 +217,7 @@
     Object.assign(G, {
       active: true, started: false, y: 0.45, vy: 0, cols: [], scroll: 0, speed: MATH ? MUL_SPEED : LINK ? EL.by({ easy: 0.15, normal: 0.19, hard: 0.25 }) : 0.19,
       qs: MATH ? mathQuestions() : englishQuestions(), i: 0, cur: null,
-      lives: LIVES, score: 0, combo: 0, correct: 0, learned: [], hurtT: 0, happyT: 0, ending: 0, hive: null, trail: [], t: 0,
+      lives: LIVES, score: 0, combo: 0, correct: 0, learned: [], hurtT: 0, happyT: 0, groundT: 0, ending: 0, hive: null, trail: [], t: 0,
       gems: [], gemT: 5, gemsGot: 0
     });
     $("#hud-score").textContent = "0";
@@ -312,7 +312,19 @@
       G.y += G.vy * dt;
       const minY = 0.05, maxY = groundY() / H - 0.04;
       if (G.y < minY) { G.y = minY; G.vy = 0.1; }
-      if (G.y > maxY) { G.y = maxY; G.vy = -0.35; }
+      if (G.y > maxY) {
+        G.y = maxY; G.vy = -0.9;
+        // 바닥에 닿으면 하트 1개가 닳아요 (잠깐은 다시 안 닳아요)
+        if (!(G.groundT > 0)) {
+          G.groundT = 1.2; G.combo = 0; G.lives--;
+          renderHearts(true); sfx.wrong(); G.hurtT = 0.9;
+          const r = canvas.getBoundingClientRect();
+          floatAt(r.left + BEE_X * W, r.top + G.y * H - 30, "쿵! ❤️-1", "#ef4444");
+          if (G.lives <= 0) { G.ending = 1.4; msg("하트를 다 썼어요… 😢"); }
+          else msg("앗! 바닥에 닿았어요. 위로 날아요!");
+        }
+      }
+      G.groundT = Math.max(0, (G.groundT || 0) - dt);
       const move = G.speed * dt;
       G.scroll += move * W;
       G.cols.forEach(c => { c.x -= move; if (!c.done && c.x <= BEE_X) judge(c); if (c.pop > 0) c.pop += dt; });
