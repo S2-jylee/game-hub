@@ -23,7 +23,13 @@
   .cafe-name { font-size: 0.8rem; font-weight: 800; color: #9a3412; }
   .cafe-bubble { position: relative; width: 100%; }
   .cafe-hidden-text { color: var(--text-soft) !important; font-family: "Pretendard", sans-serif !important; font-size: 0.9rem !important; }
-  .cafe-sub-btn { border: none; border-radius: 999px; background: #f4eefd; padding: 5px 12px; font-weight: 800; font-size: 0.78rem; cursor: pointer; margin-top: 4px; }
+  /* 주문 글은 처음에 가려져 있어요. 💡 를 누르면 보여요 */
+  .cafe-tip { width: 100%; text-align: center; font-size: 0.8rem; font-weight: 700; color: #9a3412; line-height: 1.4; word-break: keep-all; }
+  .cafe-bulb { flex: none; width: 44px; height: 44px; border-radius: 50%; border: none; cursor: pointer; margin-left: 6px;
+    background: #fef3c7; font-size: 1.2rem; box-shadow: 0 2px 6px rgba(36, 27, 58, 0.1); }
+  .cafe-bulb:active { transform: scale(0.92); }
+  .cafe-bulb.used { background: #fde68a; }
+  @media (max-width: 560px) { .cafe-bulb { width: 38px; height: 38px; font-size: 1.05rem; } .cafe-tip { font-size: 0.72rem; } }
   /* 담는 칸: 누른 메뉴가 가운데 정렬로 쌓여요 (칸을 누르면 빼요) */
   .cafe-box { flex: none; min-height: 64px; display: flex; flex-wrap: wrap; align-content: center; justify-content: center; gap: 8px;
     padding: 10px; border: 3px dashed #e7d5c3; border-radius: 20px; background: #fffaf3; }
@@ -196,19 +202,17 @@
   Talk.mount({
     id: "talk_cafe", title: "주문받아 서빙하기", unit: "손님", total: 10, goLabel: "오픈 ▶", startLabel: "가게 오픈! ☕",
     levels: [
-      { id: "easy", name: "쉬움", emoji: "🐣", desc: "한 가지 · 개수 · 자막 있음", bg: "#ecfccb", c: "#65a30d" },
-      { id: "normal", name: "보통", emoji: "🐥", desc: "두 가지 · 크기 · 곁들임 · 자막 있음", bg: "#dbeafe", c: "#2563eb" },
-      { id: "hard", name: "어려움", emoji: "🦅", desc: "정중한 부탁 · 빼 주세요 · 소리만 듣기", bg: "#fce7f3", c: "#db2777" }
+      { id: "easy", name: "쉬움", emoji: "🐣", desc: "한 가지 · 개수", bg: "#ecfccb", c: "#65a30d" },
+      { id: "normal", name: "보통", emoji: "🐥", desc: "두 가지 · 크기 · 곁들임", bg: "#dbeafe", c: "#2563eb" },
+      { id: "hard", name: "어려움", emoji: "🦅", desc: "정중한 부탁 · 빼 주세요", bg: "#fce7f3", c: "#db2777" }
     ],
     guide: function (lv) {
       return [
-        { icon: "🐻", title: "손님이 주문해요", text: "동물 손님이 영어로 주문하고 <b>소리</b>로도 들려줘요. 🔊 를 누르면 다시 들어요." },
+        { icon: "🎧", title: "귀로 듣고 풀어요", text: "<b>소리를 켜요!</b> 동물 손님이 영어로 주문해요. 주문 글은 <b>가려져 있어요</b>.<br>🔊 를 누르면 다시 듣고, 너무 어려우면 💡 를 눌러 주문 글을 봐요." },
         { icon: "🍽️", title: "메뉴를 담아요", text: "아래 <b>영어 메뉴 버튼 4개</b> 중에서 주문한 메뉴를 <b>개수만큼</b> 눌러요. 예) two pizzas → <b>pizza</b> 를 두 번! 담은 메뉴를 누르면 빠져요." },
         { icon: "✅", title: "확인!", text: "다 담았으면 <b>확인</b>을 눌러요. <b>small / large</b>(크기), <b>with</b>(곁들임), <b>without / no</b>(빼 주세요)도 버튼 이름을 잘 봐요." },
         { icon: "🪙", title: "코인 받기", text: "맞으면 손님이 기뻐하며 <b>코인</b>을 줘요. 틀리면 하트가 하나 줄어요." },
-        lv.id === "hard"
-          ? { icon: "👂", title: "소리만 듣기", text: "어려움은 주문 글자가 숨어 있어요. 잘 들어 보고, 어려우면 <b>자막 보기</b>를 눌러요." }
-          : { icon: "🏆", title: "손님 10명", text: "손님 <b>10명</b>에게 서빙하면 성공!" }
+        { icon: "🏆", title: "손님 10명", text: "손님 <b>10명</b>에게 서빙하면 성공!" }
       ];
     },
     create: function (stage, lv) {
@@ -222,13 +226,26 @@
       var guests = Talk.shuffle(GUESTS.slice());
       stage.innerHTML =
         '<div class="cafe-counter"><div class="cafe-guest" id="cf-guest">🐻</div><div class="cafe-name" id="cf-name"></div>' +
-        '<div class="talk-bubble cafe-bubble" id="cf-bubble"><div class="tb-main"><div class="tb-text" id="cf-text"></div><div id="cf-subwrap"></div></div></div></div>' +
+        '<div class="cafe-tip">🔊 소리를 켜고 손님의 주문을 귀로 듣고 풀어요. 다시 들으려면 🔊, 그래도 어려우면 💡 를 눌러 주문 글을 봐요.</div>' +
+        '<div class="talk-bubble cafe-bubble" id="cf-bubble"><div class="tb-main"><div class="tb-text" id="cf-text"></div></div></div></div>' +
         '<div class="talk-msg" id="talk-msg"></div>' +
         '<div class="cafe-box" id="cf-box"></div>' +
         '<div class="cafe-menu" id="cf-menu"></div>' +
         '<div class="cafe-actions"><button type="button" class="cafe-clear" id="cf-clear">↺ 다시 담기</button><button type="button" class="cafe-ok" id="cf-ok">확인</button></div>';
       var cur = null, lock = false, timer = 0;
       Talk.$("#cf-bubble").appendChild(Talk.sayButton(function () { return cur ? cur.text : ""; }));
+      // 💡 주문 글 보기 (한 번 더 누르면 다시 가려요)
+      var bulb = document.createElement("button");
+      bulb.type = "button"; bulb.className = "cafe-bulb"; bulb.textContent = "💡"; bulb.title = "주문 글 보기";
+      bulb.addEventListener("click", function () {
+        if (!cur || Talk.paused()) return;
+        var text = Talk.$("#cf-text"), shown = !text.classList.contains("cafe-hidden-text");
+        text.textContent = shown ? "🎧 주문을 잘 듣고 담아요!" : cur.text;
+        text.classList.toggle("cafe-hidden-text", shown);
+        bulb.classList.toggle("used", !shown);
+        bulb.title = shown ? "주문 글 보기" : "주문 글 가리기";
+      });
+      Talk.$("#cf-bubble").appendChild(bulb);
       // 메뉴 버튼 하나 = 메뉴 + 크기 + 곁들임/빼기 (개수는 누르는 횟수로)
       function variant(it) { return { k: it.k, size: it.size, add: it.add, no: it.no }; }
       function vKey(v) { return [v.k, v.size, v.add, v.no].join("/"); }
@@ -333,19 +350,12 @@
         var ge = Talk.$("#cf-guest");
         ge.textContent = g[0]; ge.className = "cafe-guest";
         Talk.$("#cf-name").textContent = g[1] + " 손님";
-        var text = Talk.$("#cf-text"), sub = Talk.$("#cf-subwrap");
-        sub.innerHTML = "";
-        if (lv.id === "hard") {
-          text.textContent = "🎧 잘 듣고 담아요!";
-          text.classList.add("cafe-hidden-text");
-          var sb = document.createElement("button");
-          sb.type = "button"; sb.className = "cafe-sub-btn"; sb.textContent = "자막 보기";
-          sb.addEventListener("click", function () { text.textContent = cur.text; text.classList.remove("cafe-hidden-text"); sb.remove(); });
-          sub.appendChild(sb);
-        } else {
-          text.textContent = cur.text;
-          text.classList.remove("cafe-hidden-text");
-        }
+        // 주문 글은 가려 두고, 💡 를 누르면 보여요 (모든 난이도)
+        var text = Talk.$("#cf-text");
+        text.textContent = "🎧 주문을 잘 듣고 담아요!";
+        text.classList.add("cafe-hidden-text");
+        bulb.classList.remove("used");
+        bulb.title = "주문 글 보기";
         var b = Talk.$("#cf-bubble"); b.classList.remove("pop"); void b.offsetWidth; b.classList.add("pop");
         Talk.msg("주문한 메뉴를 개수만큼 담고 확인!");
         Talk.speak(cur.text);
