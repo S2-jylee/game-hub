@@ -24,42 +24,41 @@
   .cafe-bubble { position: relative; width: 100%; }
   .cafe-hidden-text { color: var(--text-soft) !important; font-family: "Pretendard", sans-serif !important; font-size: 0.9rem !important; }
   .cafe-sub-btn { border: none; border-radius: 999px; background: #f4eefd; padding: 5px 12px; font-weight: 800; font-size: 0.78rem; cursor: pointer; margin-top: 4px; }
-  .cafe-trays { flex: 1; min-height: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; align-content: start; }
-  .cafe-tray {
-    border: 3px solid #e7d5c3; border-radius: 22px; background: #fff; cursor: pointer; padding: 14px 6px 10px;
-    display: flex; flex-direction: column; align-items: center; gap: 6px; font-family: inherit; transition: transform 0.12s;
-    box-shadow: 0 6px 0 #e7d5c3; min-height: 132px; justify-content: center;
-  }
-  .cafe-tray:active { transform: translateY(3px); box-shadow: 0 3px 0 #e7d5c3; }
-  .cafe-tray .ct-food { font-size: 2.2rem; line-height: 1.15; display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 2px 8px; text-align: center; }
-  .ct-item { position: relative; display: inline-flex; flex-wrap: wrap; justify-content: center; align-items: center; max-width: 100%; }
-  .ct-item.s-small { font-size: 0.72em; }
-  .ct-item.s-large { font-size: 1.15em; }
-  .ct-size { position: absolute; left: -6px; top: -6px; z-index: 1; font: 800 11px/1 "Nunito", sans-serif; color: #fff; background: #f97316; border-radius: 999px; padding: 3px 5px; }
-  .ct-pic { position: relative; display: inline-block; }
-  .ct-pic i { position: absolute; right: -0.2em; bottom: -0.1em; font-size: 0.55em; font-style: normal; }
-  .ct-mod { font-size: 0.6em; margin-left: 2px; }
-  /* 빼 주세요: 재료 그림은 보이게 두고, 빨간 동그라미 + 빗금 */
-  .ct-mod.no { position: relative; display: inline-flex; align-items: center; justify-content: center; width: 1.45em; height: 1.45em; border: 2px solid #ef4444; border-radius: 50%; }
-  .ct-mod.no::after { content: ""; position: absolute; left: 8%; right: 8%; top: 50%; height: 2px; margin-top: -1px; background: #ef4444; transform: rotate(-45deg); }
-  .cafe-tray .ct-label { font-family: "Nunito", "Pretendard", sans-serif; font-weight: 800; font-size: 0.8rem; color: #7c2d12; text-align: center; line-height: 1.25; }
-  .cafe-tray.ok { border-color: #22c55e; box-shadow: 0 6px 0 #16a34a; background: #f0fdf4; }
-  .cafe-tray.no { border-color: #ef4444; box-shadow: 0 6px 0 #dc2626; background: #fef2f2; animation: guestShake 0.4s ease; pointer-events: none; opacity: 0.7; }
+  /* 담는 칸: 누른 메뉴가 가운데 정렬로 쌓여요 (칸을 누르면 빼요) */
+  .cafe-box { flex: none; min-height: 64px; display: flex; flex-wrap: wrap; align-content: center; justify-content: center; gap: 8px;
+    padding: 10px; border: 3px dashed #e7d5c3; border-radius: 20px; background: #fffaf3; }
+  .cafe-box.ok { border-style: solid; border-color: #22c55e; background: #f0fdf4; }
+  .cafe-box.no { border-style: solid; border-color: #ef4444; background: #fef2f2; animation: guestShake 0.4s ease; }
+  .cafe-empty { font-size: 0.9rem; color: var(--text-soft); }
+  .cafe-chip { border: 2px solid #fdba74; border-radius: 12px; background: #fff; padding: 6px 12px; cursor: pointer;
+    font-family: "Nunito", "Pretendard", sans-serif; font-weight: 800; font-size: 1rem; color: #7c2d12; animation: chipIn 0.18s ease; }
+  .cafe-chip::after { content: " ×"; color: #c2410c; opacity: 0.6; }
+  @keyframes chipIn { from { transform: scale(0.6); opacity: 0; } }
+  /* 메뉴 버튼 4개: PC 한 줄에 4개 · 휴대폰 2개씩 */
+  .cafe-menu { flex: none; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; }
+  .cafe-item { border: 3px solid #e7d5c3; border-radius: 18px; background: #fff; cursor: pointer; min-height: 64px; padding: 8px 6px;
+    font-family: "Nunito", "Pretendard", sans-serif; font-weight: 800; font-size: 1.05rem; line-height: 1.2; color: #3b2a63;
+    box-shadow: 0 5px 0 #e7d5c3; transition: transform 0.1s; word-break: keep-all; }
+  .cafe-item:active { transform: translateY(3px); box-shadow: 0 2px 0 #e7d5c3; }
+  .cafe-item .ci-num { display: block; font-size: 0.75rem; color: #c2410c; margin-bottom: 2px; }
+  .cafe-actions { flex: none; display: flex; gap: 10px; justify-content: center; }
+  .cafe-actions button { border: none; border-radius: 999px; padding: 12px 22px; font-family: inherit; font-weight: 800; font-size: 1.05rem; cursor: pointer; }
+  .cafe-clear { background: #f4eefd; color: #4b3a75; }
+  .cafe-ok { min-width: 140px; color: #fff; background: linear-gradient(135deg, #f97316, #db2777); box-shadow: 0 4px 0 #be185d; }
+  .cafe-ok:active { transform: translateY(2px); box-shadow: 0 2px 0 #be185d; }
   .cafe-coin { position: fixed; z-index: 70; font-size: 1.8rem; pointer-events: none; animation: coinFly 0.9s ease forwards; }
   @keyframes coinFly { to { transform: translate(var(--dx), var(--dy)) scale(0.5); opacity: 0; } }
-  /* PC: 쟁반을 크게 */
   @media (min-width: 561px) {
-    .cafe-tray { min-height: 190px; gap: 10px; }
-    .cafe-tray .ct-food { font-size: 3rem; }
-    .cafe-tray .ct-label { font-size: 0.95rem; }
-    .cafe-tray:hover { transform: translateY(-3px); }
+    .cafe-item:hover { transform: translateY(-3px); }
+    .cafe-box { min-height: 76px; }
+    .cafe-chip { font-size: 1.15rem; padding: 8px 14px; }
   }
   @media (max-width: 560px) {
     .cafe-guest { font-size: 3rem; }
-    .cafe-trays { gap: 6px; }
-    .cafe-tray { min-height: 112px; padding: 10px 4px 8px; border-radius: 18px; }
-    .cafe-tray .ct-food { font-size: 1.5rem; gap: 2px 4px; }
-    .cafe-tray .ct-label { font-size: 0.7rem; }
+    .cafe-menu { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+    .cafe-item { min-height: 54px; font-size: 0.95rem; border-radius: 14px; }
+    .cafe-chip { font-size: 0.9rem; padding: 5px 10px; }
+    .cafe-actions button { padding: 10px 18px; font-size: 1rem; }
   }
 </style>
 </head>
@@ -187,43 +186,9 @@
     }
     return order;
   }
-  function clone(o) { return o.map(function (it) { return Object.assign({}, it); }); }
-  // 틀린 쟁반: 정답 주문에서 딱 한 군데만 바꿔요 (메뉴 · 개수 · 크기 · 빼기 · 곁들임 · 한 가지 빠짐)
-  function mutate(order, lvId) {
-    var o = clone(order), i = Math.floor(Math.random() * o.length), it = o[i], op = opt(it.k);
-    var ways = ["food", "count"];
-    if (it.size) ways.push("size", "size");
-    if (it.no) ways.push("no", "no", "no");
-    if (it.add) ways.push("add", "add");
-    if (o.length > 1) ways.push("drop");
-    var w = pick(ways);
-    if (w === "food") {
-      var same = KEYS.filter(function (k) { return M[k][3] === M[it.k][3] && !o.some(function (x) { return x.k === k; }); });
-      var nk = pick(same), no = opt(nk);
-      it.k = nk;
-      if (!no.size) it.size = "";
-      if (!(no.no && no.no.indexOf(it.no) >= 0)) it.no = "";
-      if (!(no.add && no.add.indexOf(it.add) >= 0)) it.add = "";
-    } else if (w === "count") it.n = pick([1, 2, 3].filter(function (n) { return n !== it.n; }));
-    else if (w === "size") it.size = it.size === "small" ? "large" : "small";
-    else if (w === "no") it.no = "";
-    else if (w === "add") {
-      var others = (op.add || []).filter(function (a) { return a !== it.add; });
-      it.add = others.length && chance(0.5) ? pick(others) : "";
-    } else o.splice(i, 1);
-    return o;
-  }
   function makeQuestion(lvId) {
-    var order = makeOrder(lvId), keys = [orderKey(order)], wrong = [];
-    for (var tries = 0; wrong.length < 2 && tries < 60; tries++) {
-      var m = mutate(order, lvId), k = orderKey(m);
-      if (keys.indexOf(k) < 0) { keys.push(k); wrong.push(m); }
-    }
-    while (wrong.length < 2) { // 혹시 모자라면 아예 다른 주문
-      var r = makeOrder(lvId), rk = orderKey(r);
-      if (keys.indexOf(rk) < 0) { keys.push(rk); wrong.push(r); }
-    }
-    return { text: orderText(order, lvId), right: order, wrong: wrong };
+    var order = makeOrder(lvId);
+    return { text: orderText(order, lvId), right: order };
   }
   var GUESTS = [["🐻", "Bear"], ["🐰", "Bunny"], ["🦊", "Fox"], ["🐼", "Panda"], ["🐨", "Koala"], ["🐯", "Tiger"], ["🐷", "Piggy"], ["🐱", "Kitty"], ["🦁", "Lion"], ["🐸", "Froggy"],
     ["🐵", "Monkey"], ["🐧", "Penguin"], ["🐮", "Cow"], ["🐹", "Hammy"], ["🦉", "Owl"], ["🐙", "Octopus"], ["🦄", "Unicorn"], ["🐲", "Dragon"], ["🦒", "Giraffe"], ["🐘", "Ellie"]];
@@ -238,7 +203,8 @@
     guide: function (lv) {
       return [
         { icon: "🐻", title: "손님이 주문해요", text: "동물 손님이 영어로 주문하고 <b>소리</b>로도 들려줘요. 🔊 를 누르면 다시 들어요." },
-        { icon: "🍽️", title: "맞는 쟁반을 톡!", text: "아래 <b>쟁반 3개</b> 중에서 주문과 <b>똑같은</b> 쟁반을 눌러요. <b>개수</b>, <b>small / large</b>(크기), <b>with</b>(곁들임), <b>without / no</b>(빼 주세요 🚫)를 잘 들어요." },
+        { icon: "🍽️", title: "메뉴를 담아요", text: "아래 <b>영어 메뉴 버튼 4개</b> 중에서 주문한 메뉴를 <b>개수만큼</b> 눌러요. 예) two pizzas → <b>pizza</b> 를 두 번! 담은 메뉴를 누르면 빠져요." },
+        { icon: "✅", title: "확인!", text: "다 담았으면 <b>확인</b>을 눌러요. <b>small / large</b>(크기), <b>with</b>(곁들임), <b>without / no</b>(빼 주세요)도 버튼 이름을 잘 봐요." },
         { icon: "🪙", title: "코인 받기", text: "맞으면 손님이 기뻐하며 <b>코인</b>을 줘요. 틀리면 하트가 하나 줄어요." },
         lv.id === "hard"
           ? { icon: "👂", title: "소리만 듣기", text: "어려움은 주문 글자가 숨어 있어요. 잘 들어 보고, 어려우면 <b>자막 보기</b>를 눌러요." }
@@ -258,32 +224,37 @@
         '<div class="cafe-counter"><div class="cafe-guest" id="cf-guest">🐻</div><div class="cafe-name" id="cf-name"></div>' +
         '<div class="talk-bubble cafe-bubble" id="cf-bubble"><div class="tb-main"><div class="tb-text" id="cf-text"></div><div id="cf-subwrap"></div></div></div></div>' +
         '<div class="talk-msg" id="talk-msg"></div>' +
-        '<div class="cafe-trays" id="cf-trays"></div>';
+        '<div class="cafe-box" id="cf-box"></div>' +
+        '<div class="cafe-menu" id="cf-menu"></div>' +
+        '<div class="cafe-actions"><button type="button" class="cafe-clear" id="cf-clear">↺ 다시 담기</button><button type="button" class="cafe-ok" id="cf-ok">확인</button></div>';
       var cur = null, lock = false, timer = 0;
       Talk.$("#cf-bubble").appendChild(Talk.sayButton(function () { return cur ? cur.text : ""; }));
-      // 쟁반 그림: 개수만큼 그림을 놓고(그림이 두 글자면 ×개수), 크기는 S/L, 곁들임은 +그림, 빼기는 🚫 를 겹쳐요
-      function itemHtml(it) {
-        var m = M[it.k], o = opt(it.k);
-        // 그림이 두 개(🍎🧃 사과 주스)면 하나로 보이게: 큰 그림(🧃) 귀퉁이에 맛 그림(🍎)을 작게
-        var g = Array.from(m[0]);
-        var one = g.length > 1 ? '<span class="ct-pic">' + g[1] + "<i>" + g[0] + "</i></span>" : m[0];
-        var pic = "";
-        for (var i = 0; i < it.n; i++) pic += one;
-        var h = '<span class="ct-item' + (it.size ? " s-" + it.size : "") + '">' + (it.size ? '<b class="ct-size">' + (it.size === "small" ? "S" : "L") + "</b>" : "") + pic;
-        if (it.add) h += '<span class="ct-mod">+' + T[it.add][0] + "</span>";
-        if (it.no) h += '<span class="ct-mod no">' + T[it.no][0] + "</span>";
-        return h + "</span>";
+      // 메뉴 버튼 하나 = 메뉴 + 크기 + 곁들임/빼기 (개수는 누르는 횟수로)
+      function variant(it) { return { k: it.k, size: it.size, add: it.add, no: it.no }; }
+      function vKey(v) { return [v.k, v.size, v.add, v.no].join("/"); }
+      function vLabel(v) {
+        var m = M[v.k], o = opt(v.k), noun = o.unit ? o.unit[2] : m[1];
+        if (v.size) noun = v.size + " " + noun;
+        if (v.add) noun += " with " + T[v.add][1].replace(/^an? /, "");
+        if (v.no) noun += " without " + T[v.no][1];
+        return noun;
       }
-      function itemLabel(it) {
-        var m = M[it.k], o = opt(it.k);
-        var noun = o.unit ? (it.n === 1 ? o.unit[2] : it.n + " " + o.unit[1] + " of " + o.unit[2]) : (it.n > 1 ? it.n + " " : "") + (it.size ? it.size + " " : "") + (it.n > 1 ? m[2] : m[1]);
-        if (o.unit && it.size) noun = it.size + " " + noun;
-        return noun + (it.add ? " + " + T[it.add][1] : "") + (it.no ? " (no " + T[it.no][1] + ")" : "");
-      }
-      function trayHtml(order) {
-        var food = order.map(itemHtml).join("");
-        var label = order.map(itemLabel).join(" + ");
-        return '<span class="ct-food">' + food + '</span>' + (lv.id === "hard" ? "" : '<span class="ct-label">' + Talk.esc(label) + "</span>");
+      // 보기 4개: 주문한 메뉴 + 다른 메뉴 (보통·어려움은 크기·곁들임·빼기만 다른 헷갈리는 보기도 하나)
+      function choices(order) {
+        var right = order.map(variant), keys = right.map(vKey), out = right.slice(), tricky = [];
+        if (lv.id !== "easy") right.forEach(function (v) {
+          var o = opt(v.k);
+          if (v.size) tricky.push(Object.assign({}, v, { size: v.size === "small" ? "large" : "small" }));
+          if (v.no) tricky.push(Object.assign({}, v, { no: "" }));
+          if (v.add) tricky.push(Object.assign({}, v, { add: "" }));
+          if (lv.id === "hard" && o.no && !v.no) tricky.push(Object.assign({}, v, { no: pick(o.no), add: "" }));
+        });
+        var others = Talk.shuffle(KEYS.filter(function (k) { return !right.some(function (v) { return v.k === k; }); }))
+          .map(function (k) { return { k: k, size: "", add: "", no: "" }; });
+        Talk.shuffle(tricky).slice(0, 1).concat(others).forEach(function (v) {
+          if (out.length < 4 && keys.indexOf(vKey(v)) < 0) { keys.push(vKey(v)); out.push(v); }
+        });
+        return Talk.shuffle(out);
       }
       function coin(from) {
         var box = Talk.$("#hud-score-box").getBoundingClientRect();
@@ -299,6 +270,63 @@
         }
         Talk.sfx.coin();
       }
+      var picked = [], opts = [], MAX = 9;
+      var boxEl = Talk.$("#cf-box"), menuEl = Talk.$("#cf-menu");
+      function renderBox() {
+        boxEl.className = "cafe-box";
+        boxEl.innerHTML = "";
+        if (!picked.length) { boxEl.innerHTML = '<span class="cafe-empty">메뉴 버튼을 눌러 주문을 담아요</span>'; return; }
+        picked.forEach(function (v, idx) {
+          var c = document.createElement("button");
+          c.type = "button"; c.className = "cafe-chip"; c.textContent = vLabel(v); c.title = "빼기";
+          c.addEventListener("click", function () { if (lock || Talk.paused()) return; picked.splice(idx, 1); renderBox(); });
+          boxEl.appendChild(c);
+        });
+      }
+      function add(i) {
+        if (lock || Talk.paused() || !opts[i]) return;
+        if (picked.length >= MAX) { Talk.msg("너무 많이 담았어요! 담은 메뉴를 눌러 빼요"); return; }
+        picked.push(opts[i]); renderBox(); Talk.sfx.pop && Talk.sfx.pop();
+      }
+      function clearBox() { if (lock || Talk.paused()) return; picked = []; renderBox(); }
+      // 맞았는지: 메뉴마다 담은 개수가 주문 개수와 똑같아야 해요
+      function check() {
+        if (lock || Talk.paused()) return;
+        if (!picked.length) { Talk.msg("먼저 메뉴 버튼을 눌러 담아요!"); return; }
+        var want = {}, got = {};
+        cur.right.forEach(function (it) { want[vKey(it)] = (want[vKey(it)] || 0) + it.n; });
+        picked.forEach(function (v) { got[vKey(v)] = (got[vKey(v)] || 0) + 1; });
+        var extra = Object.keys(got).some(function (k) { return !want[k]; });
+        var missing = Object.keys(want).some(function (k) { return !got[k]; });
+        var ok = !extra && !missing && Object.keys(want).every(function (k) { return want[k] === got[k]; });
+        var r = Talk.$("#cf-ok").getBoundingClientRect(), ge = Talk.$("#cf-guest");
+        if (ok) {
+          lock = true;
+          boxEl.classList.add("ok");
+          ge.classList.add("happy");
+          Talk.good(r.left + r.width / 2, r.top);
+          coin(boxEl.getBoundingClientRect());
+          Talk.msg("😋 Thank you! 손님이 기뻐해요!");
+          Talk.speak("Thank you!");
+          timer = setTimeout(next, 1500);
+        } else {
+          boxEl.classList.remove("no"); void boxEl.offsetWidth; boxEl.classList.add("no");
+          ge.classList.remove("sad"); void ge.offsetWidth; ge.classList.add("sad");
+          Talk.msg(extra ? "앗, 주문에 없는 메뉴가 있어요! 눌러서 빼요" : missing ? "앗, 빠진 메뉴가 있어요! 다시 잘 들어 봐요 🔊" : "앗, 개수가 달라요! 몇 개인지 다시 세어 봐요");
+          if (!Talk.bad()) lock = true;
+          else setTimeout(function () { Talk.speak(cur.text); }, 500);
+        }
+      }
+      Talk.$("#cf-clear").addEventListener("click", clearBox);
+      Talk.$("#cf-ok").addEventListener("click", check);
+      // 키보드: 1~4 담기 · Backspace 하나 빼기 · Enter 확인
+      function onKey(e) {
+        if (stage.offsetParent === null || document.querySelector(".gb-overlay.show")) return;
+        if (/^[1-4]$/.test(e.key)) { e.preventDefault(); add(+e.key - 1); }
+        else if (e.key === "Backspace") { e.preventDefault(); if (!lock && !Talk.paused() && picked.length) { picked.pop(); renderBox(); } }
+        else if (e.key === "Enter") { e.preventDefault(); check(); }
+      }
+      document.addEventListener("keydown", onKey);
       function ask(i) {
         cur = list[i]; lock = false;
         var g = guests[i % guests.length];
@@ -308,7 +336,7 @@
         var text = Talk.$("#cf-text"), sub = Talk.$("#cf-subwrap");
         sub.innerHTML = "";
         if (lv.id === "hard") {
-          text.textContent = "🎧 잘 듣고 골라요!";
+          text.textContent = "🎧 잘 듣고 담아요!";
           text.classList.add("cafe-hidden-text");
           var sb = document.createElement("button");
           sb.type = "button"; sb.className = "cafe-sub-btn"; sb.textContent = "자막 보기";
@@ -319,40 +347,21 @@
           text.classList.remove("cafe-hidden-text");
         }
         var b = Talk.$("#cf-bubble"); b.classList.remove("pop"); void b.offsetWidth; b.classList.add("pop");
-        Talk.msg("주문에 맞는 쟁반을 눌러요!");
+        Talk.msg("주문한 메뉴를 개수만큼 담고 확인!");
         Talk.speak(cur.text);
-        var trays = Talk.shuffle([{ items: cur.right, ok: true }, { items: cur.wrong[0] }, { items: cur.wrong[1] }]);
-        var box = Talk.$("#cf-trays");
-        box.innerHTML = "";
-        trays.forEach(function (t) {
+        picked = []; renderBox();
+        opts = choices(cur.right);
+        menuEl.innerHTML = "";
+        opts.forEach(function (v, idx) {
           var el = document.createElement("button");
-          el.type = "button"; el.className = "cafe-tray";
-          el.innerHTML = trayHtml(t.items);
-          el.addEventListener("click", function () {
-            if (lock || Talk.paused()) return;
-            var r = el.getBoundingClientRect();
-            if (t.ok) {
-              lock = true;
-              el.classList.add("ok");
-              ge.classList.add("happy");
-              Talk.good(r.left + r.width / 2, r.top);
-              coin(r);
-              Talk.msg("😋 Thank you! 손님이 기뻐해요!");
-              Talk.speak("Thank you!");
-              timer = setTimeout(next, 1500);
-            } else {
-              el.classList.add("no");
-              ge.classList.remove("sad"); void ge.offsetWidth; ge.classList.add("sad");
-              Talk.msg("앗, 주문과 달라요! 다시 잘 들어 봐요 🔊");
-              if (!Talk.bad()) lock = true;
-              else setTimeout(function () { Talk.speak(cur.text); }, 500);
-            }
-          });
-          box.appendChild(el);
+          el.type = "button"; el.className = "cafe-item";
+          el.innerHTML = '<span class="ci-num">' + (idx + 1) + "</span>" + Talk.esc(vLabel(v));
+          el.addEventListener("click", function () { add(idx); });
+          menuEl.appendChild(el);
         });
       }
       function next() { if (Talk.G.over) return; if (Talk.next()) ask(Talk.G.q); }
-      return { begin: function () { ask(0); }, stop: function () { clearTimeout(timer); } };
+      return { begin: function () { ask(0); }, stop: function () { clearTimeout(timer); document.removeEventListener("keydown", onKey); } };
     }
   });
 })();
