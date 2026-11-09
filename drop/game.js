@@ -11,7 +11,8 @@
 
   var ROUNDS = 15, PER_STAGE = 3, LIVES = 3;
   // 스테이지(3문제씩)마다 고를 시간(초): 갈수록 줄어들어요
-  var TIMES = { easy: [6, 5.5, 5, 4.5, 4], normal: [5, 4.5, 4, 3.5, 3], hard: [4, 3.5, 3, 2.8, 2.5] };
+  // (모든 난이도 1초씩 빠르게: 느긋하게 마지막 3초 · 알맞게 2초 · 빠르게 1.5초)
+  var TIMES = { easy: [5, 4.5, 4, 3.5, 3], normal: [4, 3.5, 3, 2.5, 2], hard: [3, 2.5, 2, 1.8, 1.5] };
   var DIFF = MATH ? ML.diff : LINK ? EL.diff : "normal";
   var DIFF_NAME = MATH ? ML.diffName : LINK ? EL.diffName : "알맞게";
   var STAGE_TIMES = TIMES[DIFF] || TIMES.normal;
@@ -219,13 +220,17 @@
     msg(newStage && st > 0 ? "⏱️ 스테이지 " + (st + 1) + "! 이제 " + G.timeMax + "초밖에 없어요" : "정답 발판으로 달려가요! 🏃");
     speak(q.say, q.lang);
   }
+  // 3·2·1 카운트다운: 마지막 3초(고를 시간이 3초보다 짧으면 그 시간 전체)를 셋으로 똑같이 나눠요.
+  // 2.5초처럼 시간이 딱 떨어지지 않아도 3, 2, 1 이 같은 길이로 나와요
+  function cdLen() { return Math.min(3, G.timeMax); }
+  function cdNum() { return Math.max(1, Math.ceil(G.timeLeft / cdLen() * 3 - 1e-9)); }
   function renderTime() {
     var f = $("#time-fill");
     f.style.width = Math.max(0, G.timeLeft / G.timeMax * 100) + "%";
     f.classList.toggle("hurry", G.timeLeft <= 2.5);
     var sec = $("#time-sec");
     sec.textContent = "⏱️ " + Math.ceil(G.timeLeft) + "초";
-    sec.classList.toggle("hurry", G.phase === "count" && G.timeLeft <= 3);
+    sec.classList.toggle("hurry", G.phase === "count" && G.timeLeft <= cdLen());
   }
 
   // 0초! 오답 발판이 꺼져요
@@ -282,8 +287,8 @@
     } else if (G.phase === "count") {
       move(dt);
       G.timeLeft -= dt;
-      var sec = Math.ceil(G.timeLeft);
-      if (G.timeLeft <= 3 && sec < G.tickSec && G.timeLeft > 0) { G.tickSec = sec; sfx.tick(); }
+      var sec = cdNum();
+      if (G.timeLeft <= cdLen() && sec < G.tickSec && G.timeLeft > 0) { G.tickSec = sec; sfx.tick(); }
       renderTime();
       if (G.timeLeft <= 0) { G.timeLeft = 0; renderTime(); dropTiles(); }
     } else if (G.phase === "drop") {
@@ -339,10 +344,10 @@
 
     // 큰 숫자 카운트다운
     // 마지막 3초는 가운데에 큰 숫자 (3, 2, 1)
-    if (G.phase === "count" && G.timeLeft <= 3) {
-      var n = Math.ceil(G.timeLeft), hurry = true;
+    if (G.phase === "count" && G.timeLeft <= cdLen()) {
+      var n = cdNum(), hurry = true, step = cdLen() / 3;
       ctx.globalAlpha = 0.9;
-      var fs = Math.min(110, g.S * 0.28) * (1 + 0.15 * (1 - (G.timeLeft % 1)));
+      var fs = Math.min(110, g.S * 0.28) * (1 + 0.15 * (1 - (G.timeLeft % step) / step));
       ctx.font = "900 " + fs + "px CookieRun, Jua, sans-serif";
       ctx.textAlign = "center"; ctx.textBaseline = "middle";
       ctx.lineWidth = 6; ctx.strokeStyle = "rgba(15,10,46,.85)";
